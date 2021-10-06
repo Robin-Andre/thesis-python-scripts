@@ -3,15 +3,26 @@ import re
 
 class Config:
 
-    def __init__(self, path):
-        f = open(path, "r")
+    def __init__(self, cwd, path):
+        f = open(cwd + path, "r")
         self.text = f.read()
+        self.cwd = cwd
         self.path = path
+        self.name = path.split("/")[-1]
         f.close()
 
     def get_parameter_list(self):
         parameters = []
-        for line in self.text:
+        splits = self.text.split("\n")
+        for line in splits:
+            name = line.split("=")[0].strip()
+            parameters.append(name)
+        return parameters
+
+    def get_parameter_tuples(self):
+        parameters = []
+        splits = self.text.split("\n")
+        for line in splits:
             name = line.split("=")[0].strip()
             # TODO evil eval
             value = eval(line.split("=")[1])
@@ -26,13 +37,18 @@ class Config:
                 return eval(line.split("=")[1])
         print("Parameter [" + parameter_name + "] not found")
 
-    def set_parameter(self, parameter_name, new_value_absolute):
+    def set_parameter(self, parameter_name, new_value, absolute=False):
+        if parameter_name.strip() == "":
+            print("Danger: Called Parameter with whitespace only.")
+            return
         regex = "(" + parameter_name + "\\s+=)(.*)(\n)"
         search = re.search(regex, self.text)
         if search:
             old_value = search.group(2).strip()
             # TODO evil eval
-            diff = new_value_absolute - eval(old_value)
+            temp = 0
+            if absolute: temp = eval(old_value)
+            diff = new_value - temp
             if diff == 0:
                 print("No change performed")
                 return
@@ -55,16 +71,15 @@ class Config:
     def print(self):
         print(self.text)
 
+    def set_path(self, new_path):
+        self.path = new_path
 
-def find_relevant_config_files(path):
-    f = open(path, "r")
-    filenames = []
-    for line in f:
-        if line.__contains__("shared"):
-            print(line.split()[1])
-            filenames.append(line.split()[1])
-    return filenames
+    def write(self):
+        write_config_file(self.text, self.cwd + self.path)
 
 
-def write_configuration_file(parameters):
-    print(parameters)
+def write_config_file(text, path):
+    #print(path)
+    with open(path, "w") as file:
+        file.write(text)
+
