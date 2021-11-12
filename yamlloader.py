@@ -1,6 +1,7 @@
 import re
 import yaml
 from copy import copy, deepcopy
+import configloader
 
 
 class V2Loader(yaml.SafeLoader):
@@ -22,14 +23,30 @@ class YAML:
             self.original = deepcopy(self.data)
             self.path = yaml_file_path
 
+    def find_config(self, cwd, dict_entry1, dict_entry2):
+        co = configloader.Config(cwd, self.data[dict_entry1][dict_entry2])
+        co.set_path("calibration/" + co.name)
+        self.data[dict_entry1][dict_entry2] = co.path
+        co.write()
+        return co
+    # TODO this is hardcoded where the relevant configs are
+
+    def find_configs(self, cwd):
+        configs = []
+        # Find all configs from destinationChoice
+        for key in self.data["destinationChoice"]:
+            configs.append(self.find_config(cwd, "destinationChoice", key))
+        configs.append(self.find_config(cwd, "modeChoice", "main"))
+        return configs
+
     def write(self):
         output = yaml.dump(self.data)
         output = re.sub("dataSource:", "dataSource: !file", output)
-        #print(output)
+        # print(output)
         with open(self.path, "w") as file:
             file.write(output)
 
     def reset(self):
-        print(self.original)
+        print("Restoring Original")
         self.data = deepcopy(self.original)
         self.write()

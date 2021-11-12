@@ -1,4 +1,5 @@
 import re
+from random import random
 
 
 class Config:
@@ -11,12 +12,20 @@ class Config:
         self.name = path.split("/")[-1]
         f.close()
 
+    def randomize(self, parameter_list, lower_bound, upper_bound):
+        for item in parameter_list:
+            value = (upper_bound - lower_bound) * random() + lower_bound
+            value = round(value, 0)
+            self.override_parameter(item, value)
+
     def get_parameter_list(self):
         parameters = []
         splits = self.text.split("\n")
         for line in splits:
-            name = line.split("=")[0].strip()
-            parameters.append(name)
+            if line.__contains__("="):
+                name = line.split("=")[0].strip()
+                parameters.append(name)
+
         return parameters
 
     def get_parameter_tuples(self):
@@ -38,16 +47,21 @@ class Config:
         print("Parameter [" + parameter_name + "] not found")
 
     def set_parameter(self, parameter_name, new_value, absolute=False):
+        assert isinstance(new_value, int) or isinstance(new_value, float)
+        if parameter_name is None:
+            print("Called with empty parameter: exiting")
+            return
         if parameter_name.strip() == "":
             print("Danger: Called Parameter with whitespace only.")
             return
-        regex = "(" + parameter_name + "\\s+=)(.*)(\n)"
+        regex = "(" + parameter_name + "\\s+=)(.*)(\n*)"
         search = re.search(regex, self.text)
         if search:
             old_value = search.group(2).strip()
             # TODO evil eval
             temp = 0
-            if absolute: temp = eval(old_value)
+            if absolute:
+                temp = eval(old_value)
             diff = new_value - temp
             if diff == 0:
                 print("No change performed")
@@ -59,8 +73,19 @@ class Config:
         return
 
     def override_parameter(self, parameter_name, parameter_value_absolute):
+        # print("Inserting[" + parameter_name + "] ["+ str(parameter_value_absolute) + "]")
+        assert isinstance(parameter_value_absolute, int) or isinstance(parameter_value_absolute, float)
         # This method overrides a line in a config
-        regex = "(" + parameter_name + "\\s+=)(.*)(\n)"
+        if not isinstance(parameter_value_absolute, int) and not isinstance(parameter_value_absolute, float):
+            print("Dirty Parameter " + str(parameter_value_absolute))
+            return
+        if parameter_name is None:
+            print("Called with empty parameter: exiting")
+            return
+        if parameter_name.strip() == "":
+            print("Danger: Called Parameter with whitespace only.")
+            return
+        regex = "(" + parameter_name + "\\s*=)(.*)(\n*)"
         search = re.search(regex, self.text)
         if search:
             self.text = re.sub(regex, "\\1 " + str(parameter_value_absolute) + "\\3", self.text)
@@ -79,7 +104,6 @@ class Config:
 
 
 def write_config_file(text, path):
-    #print(path)
+    # print(path)
     with open(path, "w") as file:
         file.write(text)
-

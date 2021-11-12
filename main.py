@@ -22,9 +22,9 @@ def run_mobitopp(directory):
                                 "runRastatt_100p_ShortTermModule"],
                                cwd=directory,
                                stdout=subprocess.PIPE)
-
     stdout = process.communicate()[0]
     print('STDOUT:{}'.format(stdout))
+
     process.wait()
 
 
@@ -38,27 +38,24 @@ def any_constructor(loader, tag_suffix, node):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    evaluation.evaluate("/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results/simulation/demandsimulationResult.csv")
-    exit(0)
     cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
     yaml_file = "config/rastatt/short-term-module-100p.yaml"
-    run_mobitopp(cwd)
-    exit(0)
     yaml = yamlloader.YAML(cwd + yaml_file)
-
+    configs = yaml.find_configs(cwd)
+    print(configs)
+    temp_config = configs[0]
+    for item in temp_config.get_parameter_list():
+        print(item + ": " + str(temp_config.get_parameter(item)))
+        temp_config.override_parameter(item, round(temp_config.get_parameter(item)))
+    temp_config.write()
+    exit()
     configs = []
-    for key in yaml.data['destinationChoice']:
-        print(yaml.data['destinationChoice'][key])
-        co = configloader.Config(cwd, yaml.data['destinationChoice'][key])
-        configs.append(co)
-        co.set_path("calibration/" + co.name)
-        yaml.data['destinationChoice'][key] = co.path
     for i in configs:
         if i.name != "destination_choice_utility_calculation_parameters.txt":
             break
         i.set_path("calibration/" + i.name)
         for item in i.get_parameter_list():
-            val = 20 * random.random()
+            val = 200 * random.random()
             print(item + " " + str(val))
             i.set_parameter(item, val)
         i.print()
