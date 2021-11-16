@@ -1,21 +1,7 @@
 import subprocess
 
 import yamlloader
-
-
-def run_mobitopp(directory):
-    process = subprocess.Popen(["./gradlew",
-                                "runRastatt_100p_ShortTermModule"],
-                               cwd=directory,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout = process.communicate()[1]
-    return_code = process.returncode
-    #print(stdout)
-    #print('STDOUT:{}'.format(stdout))
-
-    process.wait()
-    return return_code
+import mobitopp_execution as simulation
 
 
 def binary_parameter_search(config, cwd_internal, param_name, signum, num_iterations, lower_bound, upper_bound):
@@ -34,7 +20,7 @@ def binary_parameter_search(config, cwd_internal, param_name, signum, num_iterat
     config.override_parameter(param_name, signum * new_value)
     config.write()
     # Has the execution failed yes or no.
-    return_value = run_mobitopp(cwd_internal)
+    return_value = simulation.run_mobitopp(cwd_internal)
     config.override_parameter(param_name, original_value)
     config.write()
     new_upper_bound = upper_bound

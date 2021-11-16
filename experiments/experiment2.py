@@ -1,22 +1,6 @@
-import subprocess
-from pathlib import Path
 import evaluation
 import yamlloader
-
-
-def run_mobitopp(directory):
-    process = subprocess.Popen(["./gradlew",
-                                "runRastatt_100p_ShortTermModule"],
-                               cwd=directory,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout = process.communicate()[1]
-    return_code = process.returncode
-    print(stdout)
-    #print('STDOUT:{}'.format(stdout))
-
-    process.wait()
-    return return_code
+import mobitopp_execution as simulation
 
 
 def binary_parameter_search(config, cwd_internal, param_name, signum, num_iterations, cur_value, upper_bound):
@@ -30,7 +14,7 @@ def binary_parameter_search(config, cwd_internal, param_name, signum, num_iterat
     config.override_parameter(param_name, signum * cur_value)
     config.write()
     # Has the execution failed yes or no.
-    return_value = run_mobitopp(cwd_internal)
+    return_value = simulation.run()
     config.override_parameter(param_name, original_value)
     config.write()
     new_upper_bound = upper_bound
@@ -42,7 +26,7 @@ def binary_parameter_search(config, cwd_internal, param_name, signum, num_iterat
         new_cur_value = cur_value / 2
     else:
         print("Run succeeded! " + param_name + " ")
-        save_compressed_output(param_name,
+        evaluation.save_compressed_output(param_name,
                                "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results"
                                "/calibration/throwaway/demandsimulationResult.csv",
                                "/home/paincrash/Desktop/master-thesis/experiment_results_permanent"
@@ -54,16 +38,8 @@ def binary_parameter_search(config, cwd_internal, param_name, signum, num_iterat
         else:
             new_cur_value = (cur_value + upper_bound) / 2
 
-    return binary_parameter_search(config, cwd_internal, param_name, signum, num_iterations - 1, new_cur_value, new_upper_bound)
-
-
-def save_compressed_output(param_name, input_path, output_path, identifier):
-    Path(output_path).mkdir(parents=True, exist_ok=True)
-
-    temp = evaluation.evaluate_modal(input_path)
-    temp.to_csv(output_path + param_name + identifier + "MODAL")
-    temp = evaluation.evaluate(input_path)
-    temp.to_csv(output_path + param_name + identifier)
+    return binary_parameter_search(config, cwd_internal, param_name, signum, num_iterations - 1, new_cur_value,
+                                   new_upper_bound)
 
 
 def run_parameter(config_internal, cwd_internal, item_internal, signum):
@@ -72,17 +48,17 @@ def run_parameter(config_internal, cwd_internal, item_internal, signum):
     config_internal.override_parameter(item_internal, -500)
     config_internal.write()
     # Has the execution failed yes or no.
-    return_value = run_mobitopp(cwd_internal)
+    return_value = simulation.run()
     if return_value == 1:
         print("Parameter: " + item_internal + "FAILED")
     else:
-        save_compressed_output(item_internal,
-                               "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results"
-                               "/calibration/throwaway/demandsimulationResult.csv",
-                               "/home/paincrash/Desktop/master-thesis/experiment_results_permanent"
-                               "/parameter_experiment/"
-                               + config_internal.name.split(".")[0] + "/",
-                               signum_text)
+        evaluation.save_compressed_output(item_internal,
+                                          "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results"
+                                          "/calibration/throwaway/demandsimulationResult.csv",
+                                          "/home/paincrash/Desktop/master-thesis/experiment_results_permanent"
+                                          "/parameter_experiment/"
+                                          + config_internal.name.split(".")[0] + "/",
+                                          signum_text)
     config_internal.override_parameter(item_internal, original_value)
     config_internal.write()
 
@@ -103,7 +79,7 @@ if __name__ == '__main__':
     yaml.data['seed'] = 1
     yaml.data['fractionOfPopulation'] = 0.01
     yaml.data['resultFolder'] = "output/results/calibration/throwaway"
-    #yaml.data['modeChoice']['main'] = "calibration/mode_choice_main_parameters.txt"
+    # yaml.data['modeChoice']['main'] = "calibration/mode_choice_main_parameters.txt"
     yaml.data['destinationChoice']['base'] = "calibration/destination_choice_utility_calculation_parameters.txt"
     yaml.write()
 
@@ -113,18 +89,15 @@ if __name__ == '__main__':
     lower_bound_vec = []
     upper_bound_vec = []
     for item in config.get_parameter_list():
-
         lower_bound_vec.append(binary_parameter_search(config, cwd, item, -1, 10, 16, -1))
 
         upper_bound_vec.append(binary_parameter_search(config, cwd, item, 1, 10, 16, -1))
 
-    #run_every_parameter_in_config(configs[-1], cwd)
-    #for config in configs:
+    # run_every_parameter_in_config(configs[-1], cwd)
+    # for config in configs:
     #    print(config.name)
     #    run_every_parameter_in_config(config, cwd)
 
     yaml.reset()
     print(lower_bound_vec)
     print(upper_bound_vec)
-
-

@@ -29,8 +29,8 @@ class YAML:
         self.data[dict_entry1][dict_entry2] = co.path
         co.write()
         return co
-    # TODO this is hardcoded where the relevant configs are
 
+    # TODO this is hardcoded where the relevant configs are
     def find_configs(self, cwd):
         configs = []
         # Find all configs from destinationChoice

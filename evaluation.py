@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
-from plotnine import ggplot, aes, geom_line, ggsave
 
 
 def make_unique_df(raw_data, selection_vector):
@@ -43,23 +44,13 @@ def evaluate(path):
     return plot_data
 
 
-def make_plot(data_frame, precision, path="", show=True):
-    temp = data_frame.iloc[::precision]
-    plot = ggplot(temp, aes(x='time', y='active_trips')) + geom_line()
-    if show:
-        print(plot)
-    if path != "":
-        ggsave(plot, file=path)
+def save_compressed_output(param_name, input_path, output_path, identifier):
+    Path(output_path).mkdir(parents=True, exist_ok=True)
 
-
-def make_modal_plot(data_frame, precision, path="", show=True):
-    temp = data_frame.iloc[::precision]
-    temp = temp.reset_index(level="tripMode")
-    plot = ggplot(temp, aes(x='time', y='active_trips', color="factor(tripMode)")) + geom_line()
-    if show:
-        print(plot)
-    if path != "":
-        ggsave(plot, file=path)
+    temp = evaluate_modal(input_path)
+    temp.to_csv(output_path + param_name + identifier + "MODAL")
+    temp = evaluate(input_path)
+    temp.to_csv(output_path + param_name + identifier)
 
 
 def compare_dataframes(df1, df2):

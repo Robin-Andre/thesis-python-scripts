@@ -2,8 +2,6 @@ import os
 import pandas
 from plotnine import ggplot, aes, geom_line, ggsave, scale_size_manual, ggtitle, geom_ribbon
 
-import evaluation
-import experiments.experiment2 as temp
 
 def range_plot(sub_dir):
     file_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/seed_experiment/"
@@ -29,12 +27,9 @@ def range_plot(sub_dir):
     frame = frame.reset_index()
     print(frame["diff"].max())
     plot = ggplot(frame, aes(x='time')) + geom_ribbon(aes(ymin='min_trips', ymax ='max_trips'), fill="grey")
-    #print(plot)
     plot = ggplot(frame, aes(x="time", y="diff")) + geom_line()
-    #print(plot)
     plot = ggplot(frame, aes(x="time", y="diff_quotient")) + geom_line()
-    #print(plot)
-    #print(min_trips)
+
     frame_modal = pandas.concat(data_frames_modal)
     #evaluation.find_boundaries(data_frames)
 

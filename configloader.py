@@ -105,5 +105,5 @@ class Config:
 
 def write_config_file(text, path):
     # print(path)
-    with open(path, "w") as file:
+    with open(path, "w+") as file:
         file.write(text)

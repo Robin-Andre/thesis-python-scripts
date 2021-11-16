@@ -9,7 +9,7 @@ cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
 file_path = "config/shared/parameters/mode_choice_main_parameters.txt"
 
 
-class MyTestCase(unittest.TestCase):
+class ConfigTestCase(unittest.TestCase):
 
     def setUp(self):
         self.config = configloader.Config(cwd, file_path)
