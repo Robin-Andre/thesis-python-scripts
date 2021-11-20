@@ -42,7 +42,6 @@ class VisualizationTestCase(unittest.TestCase):
         plot.draw(pandas.concat([df_original, df_comparison]), plot.aggregate_traffic_modal_two_sets, modulo=1*60)
         self.assertEqual(True, False)  # add assertion here
 
-
     def test_plot5(self):
         file_original = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/parameter_experiment/ReferenceOriginalMODAL"
         comparison = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/parameter_experiment" \

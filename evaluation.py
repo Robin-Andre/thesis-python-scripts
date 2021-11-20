@@ -1,3 +1,4 @@
+from math import radians, cos, sin, asin, sqrt
 from pathlib import Path
 
 import pandas as pd
@@ -32,6 +33,16 @@ def create_plot_data(raw_data):
     return temp
 
 
+def create_travel_time_data(raw_data):
+    temp_df = raw_data[["durationTrip", "tripMode"]]
+    return temp_df
+
+
+def create_travel_distance_data(raw_data):
+    temp_df = raw_data["distanceInKm"] * 1000
+    return temp_df.to_frame()
+
+
 def evaluate_modal(path):
     df = pd.read_csv(path, sep=";", usecols=["tripBegin", "tripEnd", "tripMode"]).groupby("tripMode")
     temp = df.apply(lambda x: create_plot_data(x))
@@ -44,6 +55,34 @@ def evaluate(path):
     return plot_data
 
 
+def check_data(raw_data):
+    temp = raw_data[["fromX", "fromY", "toX", "toY", "distanceInKm"]]
+    temp["haversine"] = temp.apply(haversine, axis=1)
+    temp["distanceInKm"] = temp["distanceInKm"] * 1000
+    print(temp)
+
+
+def haversine(row):
+    return haversine_internal(row.fromX, row.fromY, row.toX, row.toY)
+
+
+def haversine_internal(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance in kilometers between two points
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    r = 6371 # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
+    return c * r
+
+
 def save_compressed_output(param_name, input_path, output_path, identifier):
     Path(output_path).mkdir(parents=True, exist_ok=True)
 
@@ -53,5 +92,4 @@ def save_compressed_output(param_name, input_path, output_path, identifier):
     temp.to_csv(output_path + param_name + identifier)
 
 
-def compare_dataframes(df1, df2):
-    NotImplemented
+
