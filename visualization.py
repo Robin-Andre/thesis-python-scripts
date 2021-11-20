@@ -7,8 +7,9 @@ def aggregate_traffic_two_sets(df):
     temp = "factor(identifier)"
     return ggplot(df, aes(x='time', y='active_trips')) \
            + geom_line(aes(size=temp, alpha=temp, color=temp)) \
-           + scale_size_manual(values=[1, 1.5]) + scale_alpha_manual(values=[0.2, 1]) \
-           + scale_color_manual(values=["#999999", "#E69F00"])
+           + scale_size_manual(values=[1, 1]) + scale_alpha_manual(values=[0.2, 1]) \
+           + scale_color_manual(values=["#999999", "#E69F00"]) \
+           + scale_x_continuous(breaks=[0, 1440, 2880, 4320, 5760, 7200, 8640], labels=["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"])
 
 
 def label_modes(s):
@@ -43,4 +44,4 @@ def draw(dataframe, function, path="", show=True, modulo=1, title=""):
     if show:
         print(plot_data)
     if path != "":
-        ggsave(plot_data, file=path)
+        ggsave(plot_data, path=path, filename=title)
