@@ -35,12 +35,16 @@ def create_plot_data(raw_data):
 
 def create_travel_time_data(raw_data):
     temp_df = raw_data[["durationTrip", "tripMode"]]
+    temp_df = temp_df.groupby(["durationTrip", "tripMode"]).size()
+    temp_df = temp_df.reset_index()
+    temp_df.columns = ["durationTrip", "tripMode", "amount"]
     return temp_df
 
 
 def create_travel_distance_data(raw_data):
-    temp_df = raw_data["distanceInKm"] * 1000
-    return temp_df.to_frame()
+    temp_df = raw_data[["distanceInKm", "tripMode"]]
+    temp_df["distanceInKm"] = temp_df["distanceInKm"] * 1000 # MobiTopp has an incorrect column
+    return temp_df
 
 
 def evaluate_modal(path):

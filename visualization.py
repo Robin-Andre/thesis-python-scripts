@@ -1,6 +1,6 @@
 import pandas
 from plotnine import ggplot, aes, geom_line, ggsave, ggtitle, scale_linetype_manual, scale_size_manual, \
-    scale_alpha_manual, scale_color_manual, facet_wrap, scale_x_continuous, geom_histogram, geom_segment
+    scale_alpha_manual, scale_color_manual, facet_wrap, scale_x_continuous, geom_histogram, geom_segment, geom_bar
 
 
 def aggregate_traffic_two_sets(df):
@@ -39,11 +39,19 @@ def aggregate_traffic_modal(data_frame):
 
 
 def draw_travel_time(data_frame, bin_size=1):
-    return ggplot(data_frame, aes(x="durationTrip", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
+    temp_df = data_frame.groupby(["durationTrip", "tripMode"])
+    return ggplot(data_frame, aes(x="durationTrip", weight="amount", fill="factor(tripMode)")) + geom_bar()
+
+
+def draw_travel_time2(data_frame, bin_size=1):
+    temp_df = data_frame[["durationTrip", "tripMode"]]
+    return ggplot(temp_df, aes(x="durationTrip", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
+
+
 
 
 def draw_travel_distance(data_frame, bin_size=1):
-    return ggplot(data_frame, aes(x="distanceInKm")) + geom_histogram(binwidth=bin_size)
+    return ggplot(data_frame, aes(x="distanceInKm", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
 
 
 def draw_geographic_travels(data_frame):
