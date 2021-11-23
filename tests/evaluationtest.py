@@ -1,3 +1,4 @@
+import time
 import unittest
 
 import pandas
@@ -18,14 +19,23 @@ class MyTestCase(unittest.TestCase):
 
     def test_travel_time_data(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        start = time.time()
         temp_df = evaluation.create_travel_time_data(raw_data)
+        end = time.time()
+        print(end - start)
         graph = plot.draw_travel_time(temp_df, bin_size=1)
 
         print(graph)
 
-        graph = plot.draw_travel_time2(raw_data, bin_size=1)
+        #graph = plot.draw_travel_time2(temp_df, bin_size=5)
 
-        print(graph)
+        #print(graph)
+        #graph = plot.draw_travel_time2(temp_df, bin_size=2)
+
+        #print(graph)
+        #graph = plot.draw_travel_time2(temp_df, bin_size=4)
+
+        #print(graph)
 
 
     def test_travel_distance_data(self):

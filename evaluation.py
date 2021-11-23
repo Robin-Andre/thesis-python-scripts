@@ -43,7 +43,10 @@ def create_travel_time_data(raw_data):
 
 def create_travel_distance_data(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode"]]
-    temp_df["distanceInKm"] = temp_df["distanceInKm"] * 1000 # MobiTopp has an incorrect column
+    temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000) # MobiTopp has an incorrect column
+    temp_df = temp_df.groupby(["distanceInKm", "tripMode"]).size()
+    temp_df = temp_df.reset_index()
+    temp_df.columns = ["distanceInKm", "tripMode", "amount"]
     return temp_df
 
 

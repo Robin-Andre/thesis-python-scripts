@@ -38,20 +38,26 @@ def aggregate_traffic_modal(data_frame):
     return ggplot(data_frame, aes(x='time', y='active_trips', color="factor(tripMode)")) + geom_line()
 
 
-def draw_travel_time(data_frame, bin_size=1):
-    temp_df = data_frame.groupby(["durationTrip", "tripMode"])
-    return ggplot(data_frame, aes(x="durationTrip", weight="amount", fill="factor(tripMode)")) + geom_bar()
+def draw_travel_time(data_frame, bin_size=1, quantile=0.99):
+    count = data_frame["amount"].sum() * quantile
+    temp_df = data_frame
+    temp_df["cumulative"] = temp_df["amount"].cumsum()
+    temp_df = temp_df[temp_df["cumulative"] < count]
+    return ggplot(temp_df, aes(x="durationTrip", weight="amount", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size) # + geom_bar()
 
 
-def draw_travel_time2(data_frame, bin_size=1):
+def draw_travel_time2(data_frame, bin_size=1, quantile=0.99):
+    df_quantile = data_frame["durationTrip"].quantile(quantile)
     temp_df = data_frame[["durationTrip", "tripMode"]]
-    return ggplot(temp_df, aes(x="durationTrip", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
+    sane_data = temp_df[temp_df["durationTrip"] < df_quantile]
+    return ggplot(sane_data, aes(x="durationTrip", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
 
 
-
-
-def draw_travel_distance(data_frame, bin_size=1):
-    return ggplot(data_frame, aes(x="distanceInKm", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
+def draw_travel_distance(data_frame, bin_size=1, quantile=0.99):
+    df_quantile = data_frame["distanceInKm"].quantile(quantile)
+    sane_data = data_frame[data_frame["distanceInKm"] < df_quantile]
+    print(sane_data)
+    return ggplot(sane_data, aes(x="distanceInKm", weight="amount", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
 
 
 def draw_geographic_travels(data_frame):
