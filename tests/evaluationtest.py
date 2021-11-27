@@ -1,6 +1,6 @@
 import time
 import unittest
-
+import numpy as np
 import pandas
 
 import evaluation
@@ -27,15 +27,6 @@ class MyTestCase(unittest.TestCase):
 
         print(graph)
 
-        #graph = plot.draw_travel_time2(temp_df, bin_size=5)
-
-        #print(graph)
-        #graph = plot.draw_travel_time2(temp_df, bin_size=2)
-
-        #print(graph)
-        #graph = plot.draw_travel_time2(temp_df, bin_size=4)
-
-        #print(graph)
 
 
     def test_travel_distance_data(self):
@@ -49,6 +40,26 @@ class MyTestCase(unittest.TestCase):
         print(raw_data.iloc[0])
         raw_data = raw_data.iloc[0:4]
         evaluation.check_data(raw_data)
+
+    def test_plot_data_rename_pls(self):
+        numpy_data = np.array([[1, 4, 0],  # -XXX------
+                               [0, 5, 0],  # XXXXX-----
+                               [2, 8, 1],  # --XXXXXX--
+                               [2, 7, 1]   # --XXXXX---
+                               ])
+        expected_active_trips = [1, 2, 4, 4, 3, 2, 2, 1]
+        df = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["tripBegin", "tripEnd", "tripMode"]).groupby("tripMode")
+        for key in df.groups:
+            print(f"The key is{key}")
+        print(df.get_group(1))
+        temp_df = df.apply(lambda x: evaluation.create_plot_data(x))
+        print(temp_df)
+        temp_df = temp_df.droplevel(level=1)  # This is the level I wanna reach
+        print(temp_df)
+        temp_df = temp_df.groupby("time").sum()
+        print(temp_df)
+
+        #self.assertEqual(temp_df.get["active_trips"].tolist(), expected_active_trips)
 
 if __name__ == '__main__':
     unittest.main()

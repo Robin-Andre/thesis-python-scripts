@@ -75,7 +75,7 @@ def run_every_parameter_in_config(config_internal, cwd_internal):
 if __name__ == '__main__':
     cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
     yaml_file = "config/rastatt/short-term-module-100p.yaml"
-    yaml = yamlloader.YAML(cwd + yaml_file)
+    yaml = yamlloader.YAML(cwd, yaml_file)
     yaml.data['seed'] = 1
     yaml.data['fractionOfPopulation'] = 0.01
     yaml.data['resultFolder'] = "output/results/calibration/throwaway"

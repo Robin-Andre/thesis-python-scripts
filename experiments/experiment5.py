@@ -22,7 +22,7 @@ if __name__ == '__main__':
     cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
     csv_path = cwd + "output/results/calibration/throwaway/demandsimulationResult.csv"
     yaml_file = "config/rastatt/short-term-module-100p.yaml"
-    yaml = yamlloader.YAML(cwd + yaml_file)
+    yaml = yamlloader.YAML(cwd, yaml_file)
     config_list = yaml.find_configs(cwd)
     for config in config_list:
         for i in range(6):

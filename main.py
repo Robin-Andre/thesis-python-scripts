@@ -5,38 +5,10 @@ import yamlloader
 import evaluation
 
 
-def load_config():
-    print(NotImplemented)
-
-
-def interpret_yaml():
-    NotImplemented
-
-
-def run_mobitopp(directory):
-    process = subprocess.Popen(["./gradlew",
-                                "runRastatt_100p_ShortTermModule"],
-                               cwd=directory,
-                               stdout=subprocess.PIPE)
-    stdout = process.communicate()[0]
-    print('STDOUT:{}'.format(stdout))
-
-    process.wait()
-
-
-def any_constructor(loader, tag_suffix, node):
-    if isinstance(node, yaml.MappingNode):
-        return loader.construct_mapping(node)
-    if isinstance(node, yaml.SequenceNode):
-        return loader.construct_sequence(node)
-    return loader.construct_scalar(node)
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+def main():
     cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
     yaml_file = "config/rastatt/short-term-module-100p.yaml"
-    yaml = yamlloader.YAML(cwd + yaml_file)
+    yaml = yamlloader.YAML(cwd, yaml_file)
     configs = yaml.find_configs(cwd)
     print(configs)
     temp_config = configs[0]
@@ -60,6 +32,11 @@ if __name__ == '__main__':
     yaml.data['fractionOfPopulation'] = 0.01
     yaml.data['resultFolder'] = "output/results/calibration/experiment_shuffled_configs/seed_1"
     yaml.write()
-    run_mobitopp(cwd)
     yaml.reset()
+
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    main()
+
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

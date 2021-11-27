@@ -30,7 +30,7 @@ if __name__ == '__main__':
     cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
     csv_path = cwd + "output/results/calibration/throwaway/demandsimulationResult.csv"
     yaml_file = "config/rastatt/short-term-module-100p.yaml"
-    yaml = yamlloader.YAML(cwd + yaml_file)
+    yaml = yamlloader.YAML(cwd, yaml_file)
     yaml.data["fractionOfPopulation"] = 0.05
     yaml.write()
     directory = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/experiment_random_execution/"

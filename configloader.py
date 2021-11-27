@@ -4,13 +4,19 @@ from random import random
 
 class Config:
 
-    def __init__(self, cwd, path):
-        f = open(cwd + path, "r")
-        self.text = f.read()
-        self.cwd = cwd
-        self.path = path
-        self.name = path.split("/")[-1]
-        f.close()
+    def __init__(self, path):
+        with open(path, "r") as file:
+            self.text = file.read()
+            self.path = path
+            self.name = path.name
+        self.entries = {}
+        self.initialize_dictionary()
+
+    def __str__(self):
+        return self.text
+
+    def __repr__(self):
+        return f"Data: {self.entries}\nPath: {self.path}\nName: {self.name}\n"
 
     def randomize(self, parameter_list, lower_bound, upper_bound):
         for item in parameter_list:
@@ -37,6 +43,14 @@ class Config:
             value = eval(line.split("=")[1])
             parameters.append(tuple([name, value]))
         return parameters
+
+    def initialize_dictionary(self):
+        splits = self.text.split("\n")
+        for line in splits:
+            name = line.split("=")[0].strip()
+        # TODO evil eval
+            value = eval(line.split("=")[1])
+            self.entries[name] = value
 
     def get_parameter(self, parameter_name):
         splits = self.text.split("\n")
@@ -99,11 +113,15 @@ class Config:
     def set_path(self, new_path):
         self.path = new_path
 
+    def update_text(self):
+        for key, value in self.entries.items():
+            self.override_parameter(key, value)
+
+    def write_config_file(self, path):
+        self.update_text()
+        with open(path, "w+") as file:
+            file.write(self.text)
+
     def write(self):
-        write_config_file(self.text, self.cwd + self.path)
+        self.write_config_file(self.path)
 
-
-def write_config_file(text, path):
-    # print(path)
-    with open(path, "w+") as file:
-        file.write(text)

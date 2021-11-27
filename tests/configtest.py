@@ -1,18 +1,19 @@
 import random
 import unittest
+from pathlib import Path
 
 import configloader
 
 # TODO hardcoded path
 
-cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
-file_path = "config/shared/parameters/mode_choice_main_parameters.txt"
+#cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
+#file_path = "config/shared/parameters/mode_choice_main_parameters.txt"
 
 
 class ConfigTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.config = configloader.Config(cwd, file_path)
+        self.config = configloader.Config(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
 
     def invalid_parameter_name_overwrite(self, parameter):
 
@@ -33,7 +34,7 @@ class ConfigTestCase(unittest.TestCase):
 
     def test_get_parameter_list(self):
         parameter_list = self.config.get_parameter_list()
-        self.assertEqual(len(parameter_list), 228)
+        self.assertEqual(len(parameter_list), 228)  # 228 is the amount of parameters in mode_choice.
 
     def valid_parameter_target_overwrite(self, parameter, value):
         self.config.override_parameter(parameter, value)
@@ -56,6 +57,18 @@ class ConfigTestCase(unittest.TestCase):
         for parameter in parameter_list:
             for value in test_values_invalid:
                 self.invalid_parameter_target_overwrite(parameter, value)
+
+    def test_dictionary_overwrite_does_not_change_untouched_lines(self):
+        original_config = self.config.text
+        original_text_without_two_lines = "\n".join(original_config.split("\n")[2:])
+        original_text_two_lines = "\n".join(original_config.split("\n")[:2])
+        self.config.entries["asc_car_d_mu"] = 42
+        self.config.entries["asc_car_d_sig"] = 9001
+        self.config.update_text()
+        self.assertEqual(original_text_without_two_lines, "\n".join(self.config.text.split("\n")[2:]))
+        self.assertNotEqual(original_text_two_lines, "\n".join(self.config.text.split("\n")[:2]))
+
+
 
 
 if __name__ == '__main__':

@@ -5,8 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-def make_unique_df(raw_data, selection_vector):
-    # This method should only be invoked on tripBegin / tripEnd
+def __make_unique_df(raw_data, selection_vector):
     assert selection_vector == "tripBegin" or selection_vector == "tripEnd"
     temp_df = raw_data[selection_vector].to_frame()
     temp_df = temp_df.rename(columns={selection_vector: "time"})
@@ -17,8 +16,8 @@ def make_unique_df(raw_data, selection_vector):
 
 
 def create_plot_data(raw_data):
-    begin = make_unique_df(raw_data, "tripBegin")
-    end = make_unique_df(raw_data, "tripEnd")
+    begin = __make_unique_df(raw_data, "tripBegin")
+    end = __make_unique_df(raw_data, "tripEnd")
     temp = pd.concat([begin, end], axis=1)
     temp.columns = ["start", "end"]
     temp = temp.fillna(0)
@@ -35,10 +34,10 @@ def create_plot_data(raw_data):
 
 def create_travel_time_data(raw_data):
     temp_df = raw_data[["durationTrip", "tripMode"]]
-    temp_df = temp_df.groupby(["durationTrip", "tripMode"]).size()
-    temp_df = temp_df.reset_index()
-    temp_df.columns = ["durationTrip", "tripMode", "amount"]
-    return temp_df
+    temp2_df = temp_df.groupby(["durationTrip", "tripMode"]).size().reset_index()
+    temp2_df.columns = ["durationTrip", "tripMode", "amount"]
+    print(temp2_df)
+    return temp2_df
 
 
 def create_travel_distance_data(raw_data):
@@ -50,19 +49,21 @@ def create_travel_distance_data(raw_data):
     return temp_df
 
 
+# Reads File # TODO remove method
 def evaluate_modal(path):
     df = pd.read_csv(path, sep=";", usecols=["tripBegin", "tripEnd", "tripMode"]).groupby("tripMode")
     temp = df.apply(lambda x: create_plot_data(x))
     return temp
 
 
+# Reads File # TODO remove method
 def evaluate(path):
     df = pd.read_csv(path, sep=";", usecols=["tripBegin", "tripEnd", "tripMode"])
     plot_data = create_plot_data(df)
     return plot_data
 
 
-def check_data(raw_data):
+def check_data(raw_data):  # TODO move to experimental??
     temp = raw_data[["fromX", "fromY", "toX", "toY", "distanceInKm"]]
     temp["haversine"] = temp.apply(haversine, axis=1)
     temp["distanceInKm"] = temp["distanceInKm"] * 1000

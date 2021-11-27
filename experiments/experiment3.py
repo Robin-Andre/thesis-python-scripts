@@ -7,7 +7,7 @@ if __name__ == '__main__':
     cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
     csv_path = cwd + "output/results/calibration/throwaway/demandsimulationResult.csv"
     yaml_file = "config/rastatt/short-term-module-100p.yaml"
-    yaml = yamlloader.YAML(cwd + yaml_file)
+    yaml = yamlloader.YAML(cwd, yaml_file)
     yaml.data['resultFolder'] = "output/results/calibration/throwaway"
     fractions = [0.01, 0.1, 1]
     for fraction in fractions:

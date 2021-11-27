@@ -54,7 +54,7 @@ def search_config(config):
 if __name__ == '__main__':
     cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
     yaml_file = "config/rastatt/short-term-module-100p.yaml"
-    yaml = yamlloader.YAML(cwd + yaml_file)
+    yaml = yamlloader.YAML(cwd, yaml_file)
     yaml.data['seed'] = 1
     yaml.data['fractionOfPopulation'] = 0.001
     yaml.data['resultFolder'] = "output/results/calibration/throwaway"

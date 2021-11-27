@@ -1,6 +1,6 @@
 import re
 import yaml
-from copy import copy, deepcopy
+from copy import deepcopy
 import configloader
 
 
@@ -16,21 +16,35 @@ V2Loader.add_constructor(
 
 class YAML:
 
-    def __init__(self, yaml_file_path):
+    def __init__(self, cwd, yaml_file_path):
         # TODO figure out if multiple yamls can be used
-        with open(yaml_file_path) as file:
+        with open(cwd + yaml_file_path) as file:
             self.data = yaml.load(file, Loader=V2Loader)
             self.original = deepcopy(self.data)
-            self.path = yaml_file_path
+            self.path = cwd + yaml_file_path
+            self.name = yaml_file_path
+        self.configs = None
+
+    def __str__(self):
+        return self.data
+
+    def __repr__(self):
+        return [item.name for item in self.configs]
+
+    def set_configs(self, configs):
+        self.configs = configs
 
     def find_config(self, cwd, dict_entry1, dict_entry2):
-        co = configloader.Config(cwd, self.data[dict_entry1][dict_entry2])
-        co.set_path("calibration/" + co.name)
-        self.data[dict_entry1][dict_entry2] = co.path
-        co.write()
-        return co
+        return configloader.Config(cwd, self.data[dict_entry1][dict_entry2])
+
+    # TODO maybe remove
+    def set_config_to_calibration(self, config, dict_entry1, dict_entry2):
+        config.set_path("calibration/" + config.name)
+        self.data[dict_entry1][dict_entry2] = config.path
+        config.write()
 
     # TODO this is hardcoded where the relevant configs are
+    # TODO remove this from this class
     def find_configs(self, cwd):
         configs = []
         # Find all configs from destinationChoice
@@ -39,12 +53,14 @@ class YAML:
         configs.append(self.find_config(cwd, "modeChoice", "main"))
         return configs
 
-    def write(self):
+    def write_path(self, path):
         output = yaml.dump(self.data)
         output = re.sub("dataSource:", "dataSource: !file", output)
-        # print(output)
-        with open(self.path, "w") as file:
+        with open(path, "w+") as file:
             file.write(output)
+
+    def write(self):
+        self.write_path(self.path)
 
     def reset(self):
         print("Restoring Original")
