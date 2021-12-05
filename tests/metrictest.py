@@ -1,9 +1,11 @@
-import time
 import unittest
+from pandas.testing import assert_series_equal
 
 import pandas
 import numpy as np
 import metric
+from metric import TrafficDemand as trd, TravelDistance as td, TravelTime as tt
+import visualization as plot
 
 class MyTestCase(unittest.TestCase):
 
@@ -56,6 +58,98 @@ class MyTestCase(unittest.TestCase):
         data.write()
         data.load()
         data.print()
+
+    def test_for_meeting(self):
+        data = metric.Data()
+        data2 = metric.Data()
+        data.load("resources/example_config_load/results/")
+        data2.load("resources/example_config_load2/results/")
+        data.traffic_demand.data_frame["identifier"] = "Target"
+        data2.traffic_demand.data_frame["identifier"] = "Uncalibrated"
+        data.draw()
+        data2.draw()
+        plot.draw(pandas.concat([data.traffic_demand.data_frame, data2.traffic_demand.data_frame]), plot.aggregate_traffic_modal_two_sets)
+
+        normalization = data2.traffic_demand.data_frame["active_trips"].sum()
+        result = trd.difference(data.traffic_demand, data2.traffic_demand, lambda x, y: abs(x - y), resolution=1)
+        print(result.sum() / normalization)
+        result = trd.difference(data.traffic_demand, data2.traffic_demand, lambda x, y: x - y, resolution=20)
+        print(result.sum() / normalization)
+        result = td.difference(data.travel_distance, data2.travel_distance, lambda x, y: abs(x - y))
+        result = td.difference(data.travel_distance, data2.travel_distance, lambda x, y: 0, resolution=5)
+
+    def test_float_diff_function(self):
+        numpy_data = np.array([[1, 0, 4],
+                               [2, 0, 1],
+                               [5, 0, 2],
+                               [6, 0, 2]
+                               ])
+        df1 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["distanceInKm", "tripMode", "amount"])
+        td1 = metric.TravelDistance()
+        td1.data_frame = df1
+        numpy_data = np.array([[1, 0, 3],
+                               [2, 0, 2],
+                               [5, 0, 1],
+                               [6, 0, 3]
+                               ])
+        df2 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]),
+                               columns=["distanceInKm", "tripMode", "amount"])
+        td2 = metric.TravelDistance()
+        td2.data_frame = df2
+        index = pandas.MultiIndex.from_product([[0], [1, 2, 5, 6]], names=["tripMode", "distanceInKm"])
+
+        expected_result = pandas.Series([0, 0, 0, 0], index=index, name="diff")
+        result = td.difference(td1, td2, lambda x, y: 0)
+        self.assertIsNone(assert_series_equal(result, expected_result))
+
+        result = td.difference(td1, td2, lambda x, y: abs(x - y))
+        expected_result = pandas.Series([1, 1, 1, 1], index=index, name="diff")
+        self.assertIsNone(assert_series_equal(result, expected_result))
+
+        result = td.difference(td1, td2, lambda x, y: x - y)
+        expected_result = pandas.Series([1, -1, 1, -1], index=index, name="diff")
+        self.assertIsNone(assert_series_equal(result, expected_result))
+
+        result = td.difference(td1, td2, lambda x, y: np.sqrt(np.abs(x - y)))
+        expected_result = pandas.Series([1.0, 1.0, 1.0, 1.0], index=index, name="diff")
+        self.assertIsNone(assert_series_equal(result, expected_result))
+
+        result = td.difference(td1, td2, lambda x, y: np.sqrt(np.abs(x - y)), resolution=5)
+        print(result)
+
+    def test_difference_on_incomplete_data(self):
+        numpy_data = np.array([[1, 0, 4],
+                               [2, 0, 1],
+                               ])
+        df1 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["distanceInKm", "tripMode", "amount"])
+        td1 = metric.TravelDistance()
+        td1.data_frame = df1
+        numpy_data = np.array([[1, 0, 3],
+                               [3, 0, 2],
+                               ])
+        df2 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]),
+                               columns=["distanceInKm", "tripMode", "amount"])
+        td2 = metric.TravelDistance()
+        td2.data_frame = df2
+        result = td.difference(td1, td2, lambda x, y: np.abs(x - y))
+        print(result)
+
+    def test_normalization(self):
+        numpy_data = np.array([[1, 0, 4],
+                               [2, 0, 1],
+                               [1, 1, 1]
+                               ])
+        df1 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["distanceInKm", "tripMode", "amount"])
+        td1 = metric.TravelDistance()
+        td1.data_frame = df1
+        numpy_data = np.array([[1, 0, 3],
+                               [3, 0, 2],
+                               ])
+        df2 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]),
+                               columns=["distanceInKm", "tripMode", "amount"])
+        td2 = metric.TravelDistance()
+        td2.data_frame = df2
+        result = td.difference(td1, td2, lambda x, y: np.abs(x - y), normalize=True)
 
 
 if __name__ == '__main__':

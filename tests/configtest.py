@@ -1,13 +1,7 @@
-import random
 import unittest
 from pathlib import Path
 
 import configloader
-
-# TODO hardcoded path
-
-#cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
-#file_path = "config/shared/parameters/mode_choice_main_parameters.txt"
 
 
 class ConfigTestCase(unittest.TestCase):
@@ -15,22 +9,23 @@ class ConfigTestCase(unittest.TestCase):
     def setUp(self):
         self.config = configloader.Config(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
 
-    def invalid_parameter_name_overwrite(self, parameter):
-
-        text = self.config.text
+    def invalid_parameter_name_setting(self, parameter):
+        text = self.config._text
         # Some arbitrary value, the override should not write anything regardless
         self.config.override_parameter(parameter, 9001)
-        self.assertEqual(text, self.config.text)
+        self.assertEqual(text, self.config._text)
+        self.config.set_parameter(parameter, 9001)
+        self.assertEqual(text, self.config._text)
 
-    def test_empty_parameter_name_overwrite(self):
-        self.invalid_parameter_name_overwrite("")
+    def test_empty_parameter_name(self):
+        self.invalid_parameter_name_setting("")
 
-    def test_none_parameter_name_override(self):
-        self.invalid_parameter_name_overwrite(None)
+    def test_none_parameter_name(self):
+        self.invalid_parameter_name_setting(None)
 
-    def test_wrong_parameter_name_override(self):
-        self.invalid_parameter_name_overwrite("asc_car_d_mU")  # Should be the first parameter in the specified config
-        self.invalid_parameter_name_overwrite("Bonanza")  # Hopefully there will never be a parameter called "Bonanza"
+    def test_wrong_parameter_name(self):
+        self.invalid_parameter_name_setting("asc_car_d_mU")  # Should be the first parameter in the specified config
+        self.invalid_parameter_name_setting("Bonanza")  # Hopefully there will never be a parameter called "Bonanza"
 
     def test_get_parameter_list(self):
         parameter_list = self.config.get_parameter_list()
@@ -40,11 +35,14 @@ class ConfigTestCase(unittest.TestCase):
         self.config.override_parameter(parameter, value)
         self.assertEqual(self.config.get_parameter(parameter), value)
 
-    def invalid_parameter_target_overwrite(self, parameter, value):
-        original_config = self.config.text
+    def invalid_parameter_target_setting(self, parameter, value):
+        original_config = self.config._text
         with self.assertRaises(AssertionError):
             self.config.override_parameter(parameter, value)
-        self.assertEqual(self.config.text, original_config)
+        self.assertEqual(self.config._text, original_config)
+        with self.assertRaises(AssertionError):
+            self.config.set_parameter(parameter, value)
+        self.assertEqual(self.config._text, original_config)
 
     def test_parameter_override(self):
         parameter_list = self.config.get_parameter_list()
@@ -56,19 +54,39 @@ class ConfigTestCase(unittest.TestCase):
 
         for parameter in parameter_list:
             for value in test_values_invalid:
-                self.invalid_parameter_target_overwrite(parameter, value)
+                self.invalid_parameter_target_setting(parameter, value)
 
     def test_dictionary_overwrite_does_not_change_untouched_lines(self):
-        original_config = self.config.text
+        original_config = self.config._text
         original_text_without_two_lines = "\n".join(original_config.split("\n")[2:])
         original_text_two_lines = "\n".join(original_config.split("\n")[:2])
         self.config.entries["asc_car_d_mu"] = 42
         self.config.entries["asc_car_d_sig"] = 9001
         self.config.update_text()
-        self.assertEqual(original_text_without_two_lines, "\n".join(self.config.text.split("\n")[2:]))
-        self.assertNotEqual(original_text_two_lines, "\n".join(self.config.text.split("\n")[:2]))
+        self.assertEqual(original_text_without_two_lines, "\n".join(self.config._text.split("\n")[2:]))
+        self.assertNotEqual(original_text_two_lines, "\n".join(self.config._text.split("\n")[:2]))
 
+    def test_write_works_properly(self):
+        test_path = Path("test.txt")
+        assert not test_path.exists()  # The test file should not exist already
+        self.config.write_config_file(test_path)
+        loaded_config = configloader.Config(test_path)
+        self.assertEqual(self.config._text, loaded_config._text)
+        test_path.unlink()
 
+    def test_parameter_append(self):
+        test_parameter = "asc_car_d_mu"
+        original_value = self.config.get_parameter(test_parameter)
+        self.config.set_parameter(test_parameter, 20)  # Append as delta
+        self.assertEqual(original_value + 20, self.config.get_parameter(test_parameter))
+        self.config.set_parameter(test_parameter, 20, absolute=True)  # Append as new target value
+        self.assertEqual(self.config.get_parameter(test_parameter), 20)
+
+    def test_config_load_handles_semi_corrupt_files(self):
+        test_path = Path("resources/invalid_config.txt")
+        config2 = configloader.Config(test_path)
+        self.assertEqual(config2.get_parameter("valid_parameter"), 9001)
+        self.assertEqual(config2.get_parameter("another_valid_parameter"), 42)
 
 
 if __name__ == '__main__':

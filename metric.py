@@ -30,9 +30,6 @@ class Metric:
     def draw(self, resolution=1):
         pass
 
-    def difference(self, metric, resolution=1):
-        pass
-
     def verify(self):
         return True
 
@@ -41,9 +38,6 @@ class Metric:
 
     def write(self, path):
         self.data_frame.to_csv(path, index=False)
-
-    def read(self, path):
-        pass
 
 
 class TrafficDemand(Metric):
@@ -56,14 +50,15 @@ class TrafficDemand(Metric):
         self.data_frame = temp
 
     def draw(self, resolution=1):
-        visualization.draw(self.data_frame, visualization.aggregate_traffic_modal)
-        pass
-
-    def difference(self, metric, resolution=1):
-        pass
+        temp = self.data_frame[self.data_frame["time"] % resolution == 0]
+        visualization.draw(temp, visualization.aggregate_traffic_modal)
 
     def verify(self):
         pass
+
+    @classmethod
+    def difference(cls, data1, data2, function, resolution=1, normalize=False):
+        return difference(data1, data2, function, resolution=resolution, normalize=normalize)
 
 
 class TravelTime(Metric):
@@ -78,6 +73,9 @@ class TravelTime(Metric):
 
     def verify(self):
         pass
+    @classmethod
+    def difference(cls, data1, data2, function, resolution=1, normalize=False):
+        return difference(data1, data2, function, resolution=resolution, aggregate_string="durationTrip", normalize=normalize)
 
 
 class TravelDistance(Metric):
@@ -87,15 +85,22 @@ class TravelDistance(Metric):
     def draw(self, resolution=1):
         print(visualization.draw_travel_distance(self.data_frame))
 
-    def difference(self, metric, resolution=1):
-        pass
-
     def verify(self):
         pass
 
+    @classmethod
+    def difference(cls, data1, data2, function, resolution=1, normalize=False):
+        return difference(data1, data2, function, resolution=resolution, aggregate_string="distanceInKm", normalize=normalize)
+
 
 class Data:
-    def __init__(self, raw_data):
+    def __init__(self, raw_data=None):
+        if raw_data is None:
+            self.traffic_demand = None
+            self.travel_time = None
+            self.travel_distance = None
+            return
+
         self.traffic_demand = TrafficDemand.from_raw_data(raw_data)
         self.travel_time = TravelTime.from_raw_data(raw_data)
         self.travel_distance = TravelDistance.from_raw_data(raw_data)
@@ -114,3 +119,30 @@ class Data:
         self.traffic_demand.print()
         self.travel_time.print()
         self.travel_distance.print()
+
+    def draw(self):
+        self.traffic_demand.draw()
+        self.travel_time.draw()
+        self.travel_distance.draw()
+
+
+def aggregate(data_frame, resolution, aggregate_string):
+    temp = data_frame.copy()
+    temp[aggregate_string] = temp[aggregate_string] // resolution
+    temp = temp.groupby(["tripMode", aggregate_string]).sum()
+    return temp
+
+
+# distanceInKm tripMode amount
+# durationTrip tripMode amount
+# tripMode time active_trips
+def difference(data_frame1, data_frame_2, function, resolution=1, aggregate_string="time", normalize=False):
+    temp = aggregate(data_frame1.data_frame, resolution, aggregate_string)
+    temp_metric = aggregate(data_frame_2.data_frame, resolution, aggregate_string)
+    if normalize:
+        test = (temp / temp.sum())
+        print(test)
+        print(temp)
+    curcur = pandas.concat([temp, temp_metric], axis=1).fillna(0)
+    curcur["diff"] = function(curcur.iloc[:, 0], curcur.iloc[:, 1])
+    return curcur["diff"]

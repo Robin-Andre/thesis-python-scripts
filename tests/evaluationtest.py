@@ -27,8 +27,6 @@ class MyTestCase(unittest.TestCase):
 
         print(graph)
 
-
-
     def test_travel_distance_data(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         temp_df = evaluation.create_travel_distance_data(raw_data)

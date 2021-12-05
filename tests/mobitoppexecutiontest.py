@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas
 
+import configloader
 import metric
 import mobitopp_execution as simulation
 import yamlloader
@@ -73,6 +74,22 @@ class MyTestCase(unittest.TestCase):
         for config in yaml2.configs:
             for key, value in config.entries.items():
                 self.assertEqual(value, 42)
+
+    def test_writing_to_calibration(self):
+        yaml = simulation.load("resources/example_config_load2/")
+        yaml.set_config_to_calibration()
+        for config in yaml.configs:
+            target = configloader.Config(Path("/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/calibration/" + config.name))
+            self.assertEqual(config._text, target._text)
+        simulation.restore_experimental_configs()
+
+    def test_execution(self):
+        yaml = simulation.load("resources/example_config_load/")
+        yaml.set_config_to_calibration()
+        #simulation.run_experiment()
+        data = metric.Data(pandas.read_csv("/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results/calibration/throwaway/demandsimulationResult.csv", sep=";"))
+        simulation.save(yaml, data, "resources/temp")
+        simulation.restore_experimental_configs()
 
 
 if __name__ == '__main__':

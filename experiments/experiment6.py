@@ -7,7 +7,7 @@ import mobitopp_execution as simulation
 
 
 def extract_values_of_iteration(config_internal, iteration):
-    lines = config_internal.text.split("\n")
+    lines = config_internal._text.split("\n")
     results = []
     for line in lines:
         test = re.sub("=\s*([-+])", "= \\1", line)

@@ -9,7 +9,7 @@ import mobitopp_execution as simulation
 
 
 def extract_values_of_iteration(config_internal, iteration):
-    lines = config_internal.text.split("\n")
+    lines = config_internal._text.split("\n")
     results = []
     for line in lines:
         test = re.sub("=\s*([-+])", "= \\1", line)
@@ -31,6 +31,6 @@ if __name__ == '__main__':
     yaml = yamlloader.YAML(cwd, yaml_file)
     simulation.save(yaml, None, "../tests/resources/example_config_load")
     for config in yaml.configs:
-        config.text = extract_values_of_iteration(config, 0)
-        print(config.text)
+        config._text = extract_values_of_iteration(config, 0)
+        print(config._text)
     simulation.save(yaml, None, "../tests/resources/example_config_load2")

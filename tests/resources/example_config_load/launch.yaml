@@ -12,21 +12,21 @@ dataSource: !file
   zoneRepositoryFolder: output/rastatt/zone-repository/
 days: 7
 destinationChoice:
-  base: config/shared/parameters/destination_choice_utility_calculation_parameters.txt
-  business: config/shared/parameters/destination_choice_parameters_BUSINESS.txt
-  leisure: config/shared/parameters/destination_choice_parameters_LEISURE.txt
-  service: config/shared/parameters/destination_choice_parameters_SERVICE.txt
-  shopping: config/shared/parameters/destination_choice_parameters_SHOPPING.txt
+  base: calibration/destination_choice_utility_calculation_parameters.txt
+  business: calibration/destination_choice_parameters_BUSINESS.txt
+  leisure: calibration/destination_choice_parameters_LEISURE.txt
+  service: calibration/destination_choice_parameters_SERVICE.txt
+  shopping: calibration/destination_choice_parameters_SHOPPING.txt
 experimental:
   writeMatrices: false
 fractionOfPopulation: 1
 modeChoice:
-  main: config/shared/parameters/mode_choice_main_parameters.txt
+  main: calibration/mode_choice_main_parameters.txt
   modePreferencesSeed: 42
   preferencesFile: output/results/simulation/preferences.csv
   travelTimeSensitivitiesFile: output/results/simulation/travel-time-sensitivities.csv
   travelTimeSensitivitySeed: 42
-resultFolder: output/results/simulation
+resultFolder: output/results/calibration/throwaway
 seed: 12345
 visumFile: data/rastatt/rastatt.net.bz2
 visumToMobitopp:

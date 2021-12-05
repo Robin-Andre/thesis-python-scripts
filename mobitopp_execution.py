@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 
 import configloader
+import metric
 import yamlloader
 
 
@@ -28,13 +29,14 @@ def run():
 
 # TODO implement loading dumps
 def load(relative_path):
-    yaml = yamlloader.YAML(relative_path, "launch.yaml")
+    yaml = yamlloader.YAML(Path(relative_path + "launch.yaml"))
     config_dir = Path(relative_path + "configs/").glob('*.txt')
     configs = []
     for path in config_dir:
         config = configloader.Config(path)
         configs.append(config)
     yaml.set_configs(configs)
+    data = metric.Data(lo)
     return yaml
 
 
