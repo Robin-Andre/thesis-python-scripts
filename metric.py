@@ -83,7 +83,7 @@ class TravelDistance(Metric):
         self.data_frame = evaluation.create_travel_distance_data(raw_data)
 
     def draw(self, resolution=1):
-        print(visualization.draw_travel_distance(self.data_frame))
+        print(visualization.draw_travel_distance(self.data_frame, bin_size=resolution))
 
     def verify(self):
         pass
@@ -120,10 +120,10 @@ class Data:
         self.travel_time.print()
         self.travel_distance.print()
 
-    def draw(self):
-        self.traffic_demand.draw()
-        self.travel_time.draw()
-        self.travel_distance.draw()
+    def draw(self, resolution=[1, 1, 1]):
+        self.traffic_demand.draw(resolution=resolution[0])
+        self.travel_time.draw(resolution=resolution[1])
+        self.travel_distance.draw(resolution=resolution[2])
 
 
 def aggregate(data_frame, resolution, aggregate_string):
@@ -140,9 +140,8 @@ def difference(data_frame1, data_frame_2, function, resolution=1, aggregate_stri
     temp = aggregate(data_frame1.data_frame, resolution, aggregate_string)
     temp_metric = aggregate(data_frame_2.data_frame, resolution, aggregate_string)
     if normalize:
-        test = (temp / temp.sum())
-        print(test)
-        print(temp)
+        temp = temp / temp.sum()
+        temp_metric = temp_metric / temp_metric.sum()
     curcur = pandas.concat([temp, temp_metric], axis=1).fillna(0)
     curcur["diff"] = function(curcur.iloc[:, 0], curcur.iloc[:, 1])
     return curcur["diff"]

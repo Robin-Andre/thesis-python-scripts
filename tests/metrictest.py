@@ -78,6 +78,11 @@ class MyTestCase(unittest.TestCase):
         result = td.difference(data.travel_distance, data2.travel_distance, lambda x, y: abs(x - y))
         result = td.difference(data.travel_distance, data2.travel_distance, lambda x, y: 0, resolution=5)
 
+    def test_mega_aggregation(self):
+        data = metric.Data()
+        data.load("resources/example_config_load/results/")
+        data.travel_distance.draw(resolution=90001)
+
     def test_float_diff_function(self):
         numpy_data = np.array([[1, 0, 4],
                                [2, 0, 1],
@@ -150,6 +155,19 @@ class MyTestCase(unittest.TestCase):
         td2 = metric.TravelDistance()
         td2.data_frame = df2
         result = td.difference(td1, td2, lambda x, y: np.abs(x - y), normalize=True)
+        print(result.describe())
+        print(result)
+        result = td.difference(td1, td2, lambda x, y: np.abs(x - y), normalize=True)
+        res = pandas.concat([result, result], axis=1)
+        res = pandas.DataFrame(np.outer(result, result), index=result.index, columns=result.index)
+        res = result.to_frame()
+        print(res)
+        res = res.reset_index()
+        print(res)
+        rest = pandas.merge(res, res, how="cross")
+        print(rest)
+        print(result.describe())
+
 
 
 if __name__ == '__main__':
