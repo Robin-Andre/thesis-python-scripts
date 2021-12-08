@@ -4,6 +4,7 @@ from pandas.testing import assert_series_equal
 import pandas
 import numpy as np
 import metric
+import visualization
 from metric import TrafficDemand as trd, TravelDistance as td, TravelTime as tt
 import visualization as plot
 
@@ -21,6 +22,7 @@ class MyTestCase(unittest.TestCase):
         t = metric.TravelDistance(raw_data)
         print(t.data_frame)
         t.draw()
+
 
     def test_something(self):
 
@@ -78,10 +80,24 @@ class MyTestCase(unittest.TestCase):
         result = td.difference(data.travel_distance, data2.travel_distance, lambda x, y: abs(x - y))
         result = td.difference(data.travel_distance, data2.travel_distance, lambda x, y: 0, resolution=5)
 
-    def test_mega_aggregation(self):
+    def test_for_modal_split(self):
         data = metric.Data()
         data.load("resources/example_config_load/results/")
-        data.travel_distance.draw(resolution=90001)
+        td_modal_split = metric.aggregate(data.travel_distance.data_frame, np.inf, "distanceInKm")
+        tt_modal_split = metric.aggregate(data.travel_time.data_frame, np.inf, "durationTrip")
+        self.assertTrue(np.array_equal(td_modal_split.values, tt_modal_split.values))
+
+    def test_draw_modal_split(self):
+        data = metric.Data()
+        data.load("resources/example_config_load/results/")
+        td_modal_split = metric.aggregate(data.travel_distance.data_frame, np.inf, "distanceInKm")
+        td_modal_split["identifier"] = "Test"
+        tt_modal_split = metric.aggregate(data.travel_time.data_frame, np.inf, "durationTrip")
+        tt_modal_split["identifier"] = "Test2"
+        concon = pandas.concat([td_modal_split, tt_modal_split])
+        print(concon)
+        print(td_modal_split)
+        print(visualization.draw_modal_split(concon.reset_index()))
 
     def test_float_diff_function(self):
         numpy_data = np.array([[1, 0, 4],
