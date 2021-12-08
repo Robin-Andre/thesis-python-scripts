@@ -1,4 +1,8 @@
 import unittest
+
+import scipy.stats
+import sklearn.metrics
+import sklearn.feature_selection
 from pandas.testing import assert_series_equal
 
 import pandas
@@ -84,20 +88,25 @@ class MyTestCase(unittest.TestCase):
         data = metric.Data()
         data.load("resources/example_config_load/results/")
         td_modal_split = metric.aggregate(data.travel_distance.data_frame, np.inf, "distanceInKm")
-        tt_modal_split = metric.aggregate(data.travel_time.data_frame, np.inf, "durationTrip")
+        td_modal_split = td_modal_split / td_modal_split.sum()
+        tt_modal_split = data.get_modal_split()
         self.assertTrue(np.array_equal(td_modal_split.values, tt_modal_split.values))
+        self.assertEqual(tt_modal_split["amount"].sum(), 1)
 
     def test_draw_modal_split(self):
         data = metric.Data()
         data.load("resources/example_config_load/results/")
-        td_modal_split = metric.aggregate(data.travel_distance.data_frame, np.inf, "distanceInKm")
-        td_modal_split["identifier"] = "Test"
-        tt_modal_split = metric.aggregate(data.travel_time.data_frame, np.inf, "durationTrip")
-        tt_modal_split["identifier"] = "Test2"
-        concon = pandas.concat([td_modal_split, tt_modal_split])
-        print(concon)
-        print(td_modal_split)
-        print(visualization.draw_modal_split(concon.reset_index()))
+        data2 = metric.Data()
+        data2.load("resources/example_config_load2/results/")
+        modal_split = data.get_modal_split()
+        modal_split2 = data2.get_modal_split()
+        print(scipy.stats.entropy(modal_split, modal_split2))
+        print(sklearn.metrics.normalized_mutual_info_score(modal_split["amount"], modal_split2["amount"]))
+        print(sklearn.metrics.normalized_mutual_info_score(modal_split["amount"], modal_split["amount"]))
+        print(modal_split)
+        print(modal_split2)
+        #print(td_modal_split)
+        #print(visualization.draw_modal_split(concon.reset_index()))
 
     def test_float_diff_function(self):
         numpy_data = np.array([[1, 0, 4],
@@ -183,6 +192,13 @@ class MyTestCase(unittest.TestCase):
         rest = pandas.merge(res, res, how="cross")
         print(rest)
         print(result.describe())
+
+    def test_sklearn_mutual_info(self):
+        #val = sklearn.metrics.mutual_info_classif([.5, .5], [.2, .8])
+        a = np.array([1, 1])
+        b = np.array([2, 1])
+        print(sklearn.metrics.mutual_info_score(a, b))
+
 
 
 

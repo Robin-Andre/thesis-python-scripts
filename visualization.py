@@ -37,8 +37,10 @@ def aggregate_traffic(data_frame):
 def aggregate_traffic_modal(data_frame):
     return ggplot(data_frame, aes(x='time', y='active_trips', color="factor(tripMode)")) + geom_line()
 
+
 def draw_modal_split(data_frame):
     return ggplot(data_frame, aes(x="factor(identifier)", weight="amount", fill="factor(tripMode)")) + geom_bar()
+
 
 def draw_travel_time(data_frame, bin_size=1, quantile=0.99):
     count = data_frame["amount"].sum() * quantile

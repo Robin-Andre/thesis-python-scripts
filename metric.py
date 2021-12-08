@@ -1,4 +1,6 @@
 import logging
+
+import numpy
 import pandas
 
 import evaluation
@@ -26,6 +28,9 @@ class Metric:
         obj = cls()
         obj.read_from_raw_data(raw_data)
         return obj
+
+    def get_data_frame(self):
+        return self.data_frame.copy()
 
     def draw(self, resolution=1):
         pass
@@ -73,9 +78,11 @@ class TravelTime(Metric):
 
     def verify(self):
         pass
+
     @classmethod
     def difference(cls, data1, data2, function, resolution=1, normalize=False):
-        return difference(data1, data2, function, resolution=resolution, aggregate_string="durationTrip", normalize=normalize)
+        return difference(data1, data2, function, resolution=resolution, aggregate_string="durationTrip",
+                          normalize=normalize)
 
 
 class TravelDistance(Metric):
@@ -90,7 +97,8 @@ class TravelDistance(Metric):
 
     @classmethod
     def difference(cls, data1, data2, function, resolution=1, normalize=False):
-        return difference(data1, data2, function, resolution=resolution, aggregate_string="distanceInKm", normalize=normalize)
+        return difference(data1, data2, function, resolution=resolution, aggregate_string="distanceInKm",
+                          normalize=normalize)
 
 
 class Data:
@@ -125,6 +133,12 @@ class Data:
         self.travel_time.draw(resolution=resolution[1])
         self.travel_distance.draw(resolution=resolution[2])
 
+    def get_modal_split(self):
+        agg = aggregate(self.travel_time.get_data_frame(), numpy.inf, "durationTrip")
+        agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the
+        # modal split
+        return agg  # / agg.sum()
+
 
 def aggregate(data_frame, resolution, aggregate_string):
     temp = data_frame.copy()
@@ -136,7 +150,8 @@ def aggregate(data_frame, resolution, aggregate_string):
 # distanceInKm tripMode amount
 # durationTrip tripMode amount
 # tripMode time active_trips
-def difference(data_frame1, data_frame_2, function, resolution=1, aggregate_string="time", normalize=False):
+def difference(data_frame1: pandas.DataFrame, data_frame_2, function, resolution=1, aggregate_string="time",
+               normalize=False):
     temp = aggregate(data_frame1.data_frame, resolution, aggregate_string)
     temp_metric = aggregate(data_frame_2.data_frame, resolution, aggregate_string)
     if normalize:
