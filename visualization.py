@@ -2,7 +2,8 @@ import pandas
 import plotnine
 from plotnine import ggplot, aes, geom_line, ggsave, ggtitle, scale_linetype_manual, scale_size_manual, \
     scale_alpha_manual, scale_color_manual, facet_wrap, scale_x_continuous, geom_histogram, geom_segment, geom_bar, \
-    labs, scale_fill_manual
+    labs, scale_fill_manual, scale_fill_discrete, theme, ylab, xlab, geom_text, position_stack
+from plotnine.themes import theme_bw
 
 
 def aggregate_traffic_two_sets(df):
@@ -39,7 +40,7 @@ def aggregate_traffic(data_frame):
 def aggregate_traffic_modal(data_frame):
     return ggplot(data_frame, aes(x='time', y='active_trips', color="factor(tripMode)")) + geom_line()
 
-
+# Gives unnamed Dataframes a name
 def identify_yourself(data_frame_list):
     for index, frame in enumerate(data_frame_list):
         if not "identifier" in frame:
@@ -50,8 +51,11 @@ def identify_yourself(data_frame_list):
 def draw_modal_split(data_frame_list):
     identify_yourself(data_frame_list)
     return ggplot(pandas.concat(data_frame_list).reset_index(),
-                  aes(x="factor(identifier)", weight="amount", fill="factor(tripMode)")) + geom_bar() \
-        + labs(fill="Mode")
+                  aes(x="factor(identifier)", y="amount", fill="factor(tripMode)", label="amount")) + geom_bar(stat="identity") \
+        + scale_fill_discrete(name="Mode", labels=["Bike", "Car", "Passenger", "Pedestrian", "Public Transport"]) \
+        + theme(subplots_adjust={'right': 0.5}) + ylab("Percentage") + xlab("") \
+        + geom_text(size=8, position=position_stack(vjust=0.5), format_string="%s"%("{:,.2f}"))
+
 
 
 def draw_travel_time(data_frame, bin_size=1, quantile=0.99):

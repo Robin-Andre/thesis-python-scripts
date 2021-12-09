@@ -137,7 +137,7 @@ class Data:
         agg = aggregate(self.travel_time.get_data_frame(), numpy.inf, "durationTrip")
         agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the
         # modal split
-        return agg  # / agg.sum()
+        return agg  / agg.sum()
 
     def compare(self, other):
         pass
