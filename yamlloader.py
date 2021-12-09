@@ -47,6 +47,18 @@ class YAML:
             config.set_path("/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/calibration/" + config.name)
             config.write()
 
+    def set_fraction_of_population(self, target):
+        self.data["fractionOfPopulation"] = target
+
+    def get_fraction_of_population(self):
+        return self.data["fractionOfPopulation"]
+
+    def set_seed(self, seed):
+        self.data["seed"] = seed
+
+    def get_seed(self):
+        return self.data["seed"]
+
     # TODO this is hardcoded where the relevant configs are
     def find_calibration_configs(self, cwd):
         configs = []

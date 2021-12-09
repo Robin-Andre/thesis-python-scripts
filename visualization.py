@@ -1,6 +1,8 @@
 import pandas
+import plotnine
 from plotnine import ggplot, aes, geom_line, ggsave, ggtitle, scale_linetype_manual, scale_size_manual, \
-    scale_alpha_manual, scale_color_manual, facet_wrap, scale_x_continuous, geom_histogram, geom_segment, geom_bar
+    scale_alpha_manual, scale_color_manual, facet_wrap, scale_x_continuous, geom_histogram, geom_segment, geom_bar, \
+    labs, scale_fill_manual
 
 
 def aggregate_traffic_two_sets(df):
@@ -38,8 +40,18 @@ def aggregate_traffic_modal(data_frame):
     return ggplot(data_frame, aes(x='time', y='active_trips', color="factor(tripMode)")) + geom_line()
 
 
-def draw_modal_split(data_frame):
-    return ggplot(data_frame, aes(x="factor(identifier)", weight="amount", fill="factor(tripMode)")) + geom_bar()
+def identify_yourself(data_frame_list):
+    for index, frame in enumerate(data_frame_list):
+        if not "identifier" in frame:
+            frame["identifier"] = "Dataframe_" + str(index)
+            print(f"Setting index for element {index}")
+
+
+def draw_modal_split(data_frame_list):
+    identify_yourself(data_frame_list)
+    return ggplot(pandas.concat(data_frame_list).reset_index(),
+                  aes(x="factor(identifier)", weight="amount", fill="factor(tripMode)")) + geom_bar() \
+        + labs(fill="Mode")
 
 
 def draw_travel_time(data_frame, bin_size=1, quantile=0.99):

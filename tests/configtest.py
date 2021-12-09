@@ -20,6 +20,9 @@ class ConfigTestCase(unittest.TestCase):
     def test_empty_parameter_name(self):
         self.invalid_parameter_name_setting("")
 
+    def test_equal_amount_of_parameters(self):
+        self.assertEqual(len(self.config.entries), len(self.config.get_parameter_list()))
+
     def test_none_parameter_name(self):
         self.invalid_parameter_name_setting(None)
 

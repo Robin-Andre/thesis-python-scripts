@@ -1,5 +1,8 @@
+from datetime import datetime
 import subprocess
 from pathlib import Path
+
+import pandas
 
 import configloader
 import metric
@@ -15,7 +18,6 @@ def run_mobitopp(directory, yaml_name):
     stdout = process.communicate()[0]
     stderr = process.communicate()[1]
     return_code = process.returncode
-    #print(stdout)
     #print('STDOUT:{}'.format(stdout))
 
     process.wait()
@@ -27,7 +29,6 @@ def run():
     return run_mobitopp(default_path, "runRastatt_100p_ShortTermModule")
 
 
-# TODO implement loading dumps
 def load(relative_path):
     yaml = yamlloader.YAML(Path(relative_path + "launch.yaml"))
     config_dir = Path(relative_path + "configs/").glob('*.txt')
@@ -36,7 +37,8 @@ def load(relative_path):
         config = configloader.Config(path)
         configs.append(config)
     yaml.set_configs(configs)
-    data = metric.Data(lo)
+    data = metric.Data()
+    data.load(relative_path + "results/")
     return yaml
 
 
@@ -51,6 +53,20 @@ def save(yaml, data, relative_path):
         Path(relative_path + "/results").mkdir(parents=True, exist_ok=True)
         data.write(relative_path + "/results/")
 
+
+def results():
+    data = metric.Data(pandas.read_csv(
+        "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results/calibration/throwaway/demandsimulationResult.csv",
+        sep=";"))
+    return data
+
+
+def default_yaml():
+    cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
+    yaml_file = "config/rastatt/short-term-module-100p.yaml"
+    yaml = yamlloader.YAML(Path(cwd + yaml_file))
+    yaml.set_configs(yaml.find_calibration_configs(cwd))
+    return yaml
 
 # Restores the configs IF the default experimental yaml is used. TODO make check to test for default experimental yaml
 def restore_experimental_configs():
@@ -70,6 +86,15 @@ def restore_experimental_configs():
     return
 
 
-def run_experiment():
+def run_experiment(experiment_name=""):
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print(f"Running Experiment: {experiment_name} : starting at {current_time}")
     default_path = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
-    return run_mobitopp(default_path, "runRastatt_100p_ShortTermModule")
+    result = run_mobitopp(default_path, "runRastatt_100p_ShortTermModule")
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print(f"Experiment {experiment_name} finished at {current_time} with return code {result}")
+    if result is 0:
+        return results()
+    return None

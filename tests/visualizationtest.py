@@ -1,7 +1,9 @@
 import os
 import unittest
 import pandas
+import scipy
 
+import metric
 import visualization as plot
 
 
@@ -74,6 +76,21 @@ class VisualizationTestCase(unittest.TestCase):
         plot.draw(pandas.concat([df_original, df_comparison, df_comparison2]), plot.aggregate_traffic_modal_two_sets, modulo=1*60)
         self.assertEqual(True, False)  # add assertion here
 
+
+    def test_modal_split_plot(self):
+        data = metric.Data()
+        data2 = metric.Data()
+        data.load("resources/example_config_load/results/")
+        data2.load("resources/example_config_load2/results/")
+        dist_discrete = [d for d in dir(scipy.stats) if
+                         isinstance(getattr(scipy.stats, d), scipy.stats.rv_discrete)]
+        print(dist_discrete)
+        modal_split = data.get_modal_split()
+        modal_split2 = data2.get_modal_split()
+        print(scipy.stats.entropy(modal_split, modal_split2))
+        print(modal_split)
+        print(scipy.stats.wasserstein_distance(modal_split["amount"], modal_split2["amount"]))
+        print(plot.draw_modal_split([modal_split, modal_split2]))
 
 
 

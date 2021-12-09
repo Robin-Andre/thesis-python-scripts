@@ -139,6 +139,10 @@ class Data:
         # modal split
         return agg  # / agg.sum()
 
+    def compare(self, other):
+        pass
+
+
 
 def aggregate(data_frame, resolution, aggregate_string):
     temp = data_frame.copy()
