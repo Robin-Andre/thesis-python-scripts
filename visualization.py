@@ -1,9 +1,14 @@
+import numpy
 import pandas
 import plotnine
+import scipy
+from matplotlib import pyplot as plt
 from plotnine import ggplot, aes, geom_line, ggsave, ggtitle, scale_linetype_manual, scale_size_manual, \
     scale_alpha_manual, scale_color_manual, facet_wrap, scale_x_continuous, geom_histogram, geom_segment, geom_bar, \
-    labs, scale_fill_manual, scale_fill_discrete, theme, ylab, xlab, geom_text, position_stack
+    labs, scale_fill_manual, scale_fill_discrete, theme, ylab, xlab, geom_text, position_stack, facet_grid
 from plotnine.themes import theme_bw
+
+import metric
 
 
 def aggregate_traffic_two_sets(df):
@@ -18,14 +23,29 @@ def aggregate_traffic_two_sets(df):
 
 def label_modes(s):
     d = {
-        "0": "Bike",
-        "1": "Car",
-        "2": "Passenger",
-        "3": "Pedestrian",
-        "4": "Public Transport"
+        -1: "All",
+        0: "Bike",
+        1: "Car",
+        2: "Passenger",
+        3: "Pedestrian",
+        4: "Public Transport"
     }
-    return d[s]
+    if s in d.keys():
+        return d[s]
+    return "Unknown Label"
 
+def color_modes(s):
+    d = {
+        -1: "#888888",
+        0: "#e41a1c",
+        1: "#377eb8",
+        2: "#4daf4a",
+        3: "#984ea3",
+        4: "#ff7f00"
+    }
+    if s in d.keys():
+        return d[s]
+    return "#000000"
 
 def aggregate_traffic_modal_two_sets(df_modal):
     return ggplot(df_modal, aes(x='time', y='active_trips')) \
@@ -57,7 +77,6 @@ def draw_modal_split(data_frame_list):
         + geom_text(size=8, position=position_stack(vjust=0.5), format_string="%s"%("{:,.2f}"))
 
 
-
 def draw_travel_time(data_frame, bin_size=1, quantile=0.99):
     count = data_frame["amount"].sum() * quantile
     temp_df = data_frame
@@ -79,6 +98,72 @@ def draw_travel_distance(data_frame, bin_size=1, quantile=0.99):
     print(sane_data)
     return ggplot(sane_data, aes(x="distanceInKm", weight="amount", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
 
+
+def draw_distribution(distribution, mode=-1, approximation=None, ax=None):
+
+    if ax is None:
+        distribution.plot.bar(width=1.0, alpha=0.5, color=color_modes(mode))
+        plt.plot(numpy.linspace(0, len(approximation) / 10, len(approximation)), approximation, color=color_modes(mode))
+        plt.title(label_modes(mode))
+        plt.xticks([0, 5, 10, 15, 20], [0, 5, 10, 15, 20])
+        plt.tick_params(bottom=None, labelbottom=True)
+        plt.show()
+    else:
+        ax.bar(distribution.index, distribution["amount"], width=1.0, alpha=0.5, color=color_modes(mode))
+        ax.plot(numpy.linspace(0, len(approximation) / 10, len(approximation)), approximation, color=color_modes(mode))
+        #ax.title(label_modes(mode))
+        ax.tick_params(bottom=None, labelbottom=True)
+        return ax
+
+def draw_all_distributions(distribution_list, mode_list, approximation_list):
+    fig, ax = plt.subplots(3, 2)
+    for i, (dist, mode, approx) in enumerate(zip(distribution_list, mode_list, approximation_list)):
+        draw_distribution(dist, mode, approx, ax[i // 2][i % 2])
+    plt.show()
+
+def draw_travel_distance_per_mode(data_frame, bin_size=1, quantile=0.99):
+    fig = plt.figure()
+    fig, ax = plt.subplots(3, 2)
+    for trip_mode in data_frame["tripMode"].unique():
+        temp = data_frame[data_frame["tripMode"] == trip_mode]
+        helper(temp, str(trip_mode), ax[trip_mode // 2][trip_mode % 2])
+    temp = data_frame.groupby("distanceInKm").sum()
+    temp = temp.drop(columns=["tripMode"])
+    helper(temp, "All", ax[2][1])
+    plt.show()
+    return
+
+
+def helper(data_frame, title_num, ax):
+    rounding = 1000
+    data_frame["amount"] = data_frame["amount"] // rounding
+    temp_ys = data_frame["amount"].values
+
+    x = numpy.arange(len(temp_ys))
+    y = temp_ys
+    all_points = numpy.repeat(x, y)  # silly solution
+    dist_names = ["gamma", "norm", "rayleigh"] #  'pareto' 'gamma''norm', 'rayleigh',
+    for dist_name in dist_names:
+        dist = getattr(scipy.stats, dist_name)
+        params = dist.fit(all_points)
+
+        arg = params[:-2]
+        loc = params[-2]
+        scale = params[-1]
+        print(f"arg: {arg}, loc: {loc}, scale: {scale} : name = {dist_name} | title {title_num}")
+        if arg:
+            pdf_fitted = dist.pdf(x, *arg, loc=loc, scale=scale) * len(all_points)
+        else:
+            pdf_fitted = dist.pdf(x, loc=loc, scale=scale) * len(all_points)
+        print(pdf_fitted)
+        ax.set_ylim(y.max() * 1.2)
+        ax.plot(pdf_fitted, label=dist_name, color="black")
+
+    ax.invert_yaxis()
+    #plt.legend(loc='upper right')
+    #ax.set_title(label_modes(title_num))
+    h = ax.hist(all_points, bins=all_points.max(), color=color_modes(str(title_num)))
+    return ax
 
 def draw_geographic_travels(data_frame):
 

@@ -88,7 +88,14 @@ class VisualizationTestCase(unittest.TestCase):
 
         print(plot.draw_modal_split([modal_split, modal_split2]))
 
+    def test_mode_choice_aggregate_time_plot(self):
+        data = metric.Data()
+        data2 = metric.Data()
+        data.load("resources/example_config_load/results/")
+        data2.load("resources/example_config_load2/results/")
 
+        print(plot.draw_travel_distance_per_mode(data.travel_distance.data_frame))
+        plot.draw_travel_distance_per_mode(data2.travel_distance.data_frame)
 
 
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ def create_travel_time_data(raw_data):
     print(temp2_df)
     return temp2_df
 
-
+#TODO fix that there are journeys with distance 0
 def create_travel_distance_data(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode"]]
     temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000) # MobiTopp has an incorrect column
@@ -47,20 +47,6 @@ def create_travel_distance_data(raw_data):
     temp_df = temp_df.reset_index()
     temp_df.columns = ["distanceInKm", "tripMode", "amount"]
     return temp_df
-
-
-# Reads File # TODO remove method
-def evaluate_modal(path):
-    df = pd.read_csv(path, sep=";", usecols=["tripBegin", "tripEnd", "tripMode"]).groupby("tripMode")
-    temp = df.apply(lambda x: create_plot_data(x))
-    return temp
-
-
-# Reads File # TODO remove method
-def evaluate(path):
-    df = pd.read_csv(path, sep=";", usecols=["tripBegin", "tripEnd", "tripMode"])
-    plot_data = create_plot_data(df)
-    return plot_data
 
 
 def check_data(raw_data):  # TODO move to experimental??
@@ -91,13 +77,6 @@ def haversine_internal(lon1, lat1, lon2, lat2):
     return c * r
 
 
-def save_compressed_output(param_name, input_path, output_path, identifier):
-    Path(output_path).mkdir(parents=True, exist_ok=True)
-
-    temp = evaluate_modal(input_path)
-    temp.to_csv(output_path + param_name + identifier + "MODAL")
-    temp = evaluate(input_path)
-    temp.to_csv(output_path + param_name + identifier)
 
 
 
