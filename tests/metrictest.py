@@ -201,6 +201,16 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(result["amount"].sum(), 1)
 
+    def test_incomplete_data_set(self):
+        data = metric.Data()
+        data.load("resources/example_config_load/results/")
+        temp = data.travel_distance.data_frame
+        temp = temp[temp["tripMode"] != 1]
+
+        data.travel_distance.data_frame = temp
+        self.assertTrue(numpy.array_equal(metric.get_all_existing_modes(data.travel_distance.data_frame), np.array([-1, 0, 2, 3, 4])))
+        data.travel_distance.approximations()
+
     def test_difference_on_incomplete_data(self):
         numpy_data = np.array([[1, 0, 4],
                                [2, 0, 1],

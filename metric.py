@@ -13,6 +13,16 @@ import visualization
 default_path = "output/calibration/throwaway/"
 
 
+def get_all_existing_modes(data_frame):
+    """
+    Outsourced method to get all existing modes in a dataframe to easily change representative of all modes
+
+    :param data_frame: data frame with a tripMode column
+    :return: a list with all mode identifiers of the dataframe and -1 as temporary placeholder for all modes
+    """
+    return np.insert(data_frame.tripMode.unique(), 0, -1)
+
+
 class Metric:
 
     def __init__(self):
@@ -84,7 +94,7 @@ class TravelTime(Metric):
 
     def draw_all_distributions(self):
         x, y, z = [], [], []
-        for i in range(-1, 5):
+        for i in get_all_existing_modes(self.data_frame):
             distribution = get_distribution(self.data_frame, "durationTrip", group=i, quantile=0.99)
             pdf, _, _ = metric.get_fit_and_error_from_dataframe(self.data_frame, "durationTrip", i, quantile=0.99)
             x.append(distribution)
@@ -100,7 +110,7 @@ class TravelTime(Metric):
 
     def approximations(self):
         approxis = []
-        for i in [-1, 0, 1, 2, 3, 4]:
+        for i in get_all_existing_modes(self.data_frame):
             _, data, error = metric.get_fit_and_error_from_dataframe(self.data_frame, "durationTrip", i)
             approxis.append([i, data, error])
         return approxis
@@ -128,7 +138,7 @@ class TravelDistance(Metric):
 
     def draw_all_distributions(self):
         x, y, z = [], [], []
-        for i in range(-1, 5):
+        for i in get_all_existing_modes(self.data_frame):
             distribution = get_distribution(self.data_frame, "distanceInKm", group=i, quantile=0.99)
             pdf, _, _ = metric.get_fit_and_error_from_dataframe(self.data_frame, "distanceInKm", i, quantile=0.99)
             x.append(distribution)
@@ -138,7 +148,7 @@ class TravelDistance(Metric):
 
     def approximations(self):
         approxis = []
-        for i in [-1, 0, 1, 2, 3, 4]:
+        for i in get_all_existing_modes(self.data_frame):
             _, data, error = metric.get_fit_and_error_from_dataframe(self.data_frame, "distanceInKm", i)
             approxis.append([i, data, error])
         return approxis
@@ -317,6 +327,7 @@ def get_fit_and_error_from_dataframe(data_frame, aggregation_string, mode_identi
     """
     savess = get_distribution(data_frame, aggregation_string, mode_identifier, resolution=resolution, quantile=quantile)
     counts = get_counts(data_frame, aggregation_string, mode_identifier, resolution=resolution, quantile=quantile)
+
     result = fit_distribution_to_data_frame(counts, rounding=100, distribution_name=dist_name)
     x = np.arange(len(savess))
     pdf_calc = dist_name_to_pdf(result, x, dist_name=dist_name)
