@@ -1,0 +1,36 @@
+dataSource: !file
+  attractivityDataFile: data/rastatt/zoneproperties/analysis/Attractivities.csv
+  bikeSharingPropertiesDataFile: data/rastatt/zoneproperties/analysis/bikesharing-properties.csv
+  carSharingFreeFloatingDataFile: not-existing
+  carSharingPropertiesDataFile: not-existing
+  carSharingStationsDataFile: not-existing
+  defaultChargingPower: config/shared/parameters/ChargingPower.txt
+  demandDataFolder: output/rastatt/demand-data
+  matrixConfigurationFile: data/rastatt/matrices/analysis/matrix-configuration.yaml
+  parkingFacilitiesDataFile: data/rastatt/zoneproperties/analysis/parkingFacilities.csv
+  zonePropertiesDataFile: data/rastatt/zoneproperties/analysis/zoneproperties.csv
+  zoneRepositoryFolder: output/rastatt/zone-repository/
+days: 7
+destinationChoice:
+  base: calibration/destination_choice_utility_calculation_parameters.txt
+  business: calibration/destination_choice_parameters_BUSINESS.txt
+  leisure: calibration/destination_choice_parameters_LEISURE.txt
+  service: calibration/destination_choice_parameters_SERVICE.txt
+  shopping: calibration/destination_choice_parameters_SHOPPING.txt
+experimental:
+  writeMatrices: false
+fractionOfPopulation: 0.1
+modeChoice:
+  main: calibration/mode_choice_main_parameters.txt
+  modePreferencesSeed: 42
+  preferencesFile: output/results/simulation/preferences.csv
+  travelTimeSensitivitiesFile: output/results/simulation/travel-time-sensitivities.csv
+  travelTimeSensitivitySeed: 42
+resultFolder: output/results/calibration/throwaway
+seed: 1
+visumFile: data/rastatt/rastatt.net.bz2
+visumToMobitopp:
+  carTransportSystemCode: CAR
+  individualWalkTransportSystemCode: FUSS
+  ptTransportSystemCode: PUTW
+  ptWalkTransportSystemCode: F
