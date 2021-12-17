@@ -93,6 +93,12 @@ class MyTestCase(unittest.TestCase):
         simulation.save(yaml, data, "resources/temp")
         simulation.restore_experimental_configs()
 
+    def test_clean_directory(self):
+        path = Path(
+            "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results/calibration/throwaway")
+        simulation.clean_result_directory()
+        self.assertTrue(path.is_dir())
+        self.assertFalse(any(path.iterdir()))
 
 if __name__ == '__main__':
     unittest.main()

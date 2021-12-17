@@ -87,6 +87,11 @@ def restore_experimental_configs():
         output_file.close()
     return
 
+def clean_result_directory():
+    path = Path("/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results/calibration/throwaway")
+    for file in path.iterdir():
+        Path.unlink(file)
+
 
 def run_experiment(experiment_name=""):
     now = datetime.now()

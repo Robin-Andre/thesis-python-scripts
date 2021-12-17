@@ -20,14 +20,19 @@ def set_config_to_one(config_internal):
 
 
 def run_singular_value_experiment(key, value, config):
+    print(f"Running Experiment: {key}: {value}")
+    set_config_to_one(config)
     config.entries[key] = value
     config.write()
+    simulation.clean_result_directory()
     data = simulation.run_experiment(key + str(value))
     exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_data_modechoice/"
     yaml = simulation.default_yaml()
     if data is not None:
-        data.draw()
+        # data.draw()
         simulation.save(yaml, data, exp_path + key + str(value) + "/")
+    else:
+        print(f"Experiment failed: {key}, {value}")
 
 
 if __name__ == '__main__':
@@ -38,6 +43,7 @@ if __name__ == '__main__':
     configs = yaml.configs
     for config in configs:
         set_config_to_one(config)
+    simulation.clean_result_directory()
     data = simulation.run_experiment()
     data.draw()
     exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_data/"
@@ -45,8 +51,8 @@ if __name__ == '__main__':
     dest_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     print(dest_config.name)
     #test_val = 100
-    test_vals = [10, 50]
-    for test_val in test_vals:
+    test_values = [10, 50, 100]
+    for test_val in test_values:
         for key in dest_config.entries:
             run_singular_value_experiment(key, test_val, dest_config)
             run_singular_value_experiment(key, -test_val, dest_config)
