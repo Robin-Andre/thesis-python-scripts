@@ -186,6 +186,10 @@ class Data:
         approxis_distance = self.travel_distance.approximations()
         return test["amount"], approxis_time, approxis_distance
 
+    def draw_distributions(self):
+        self.travel_time.draw_all_distributions()
+        self.travel_distance.draw_all_distributions()
+
     def get_modal_split(self):
         agg = aggregate(self.travel_time.get_data_frame(), numpy.inf, "durationTrip")
         agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the

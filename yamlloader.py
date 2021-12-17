@@ -15,7 +15,7 @@ V2Loader.add_constructor(
     u'!file',
     V2Loader.let_v2_through)
 
-
+#TODO make one liner class method for reading in yaml
 class YAML:
 
     def __init__(self, yaml_file_path):

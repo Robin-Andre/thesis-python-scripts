@@ -29,7 +29,8 @@ def run():
     return run_mobitopp(default_path, "runRastatt_100p_ShortTermModule")
 
 
-def load(relative_path):
+def load(relative_path_raw):
+    relative_path = str(relative_path_raw)
     yaml = yamlloader.YAML(Path(relative_path + "launch.yaml"))
     config_dir = Path(relative_path + "configs/").glob('*.txt')
     configs = []
@@ -38,8 +39,9 @@ def load(relative_path):
         configs.append(config)
     yaml.set_configs(configs)
     data = metric.Data()
-    data.load(relative_path + "results/")
-    return yaml
+    if Path(relative_path + "results/").exists():
+        data.load(relative_path + "results/")
+    return yaml, data
 
 
 # Saves all the data in the relative path
@@ -95,6 +97,6 @@ def run_experiment(experiment_name=""):
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print(f"Experiment {experiment_name} finished at {current_time} with return code {result}")
-    if result is 0:
+    if result == 0:
         return results()
     return None

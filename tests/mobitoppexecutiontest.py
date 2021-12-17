@@ -9,7 +9,7 @@ import metric
 import mobitopp_execution as simulation
 import yamlloader
 
-cwd = "../../mobitopp-example-rastatt/"
+cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
 test_path = "dump"
 
 class MyTestCase(unittest.TestCase):
@@ -41,7 +41,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_full_save_function(self):
         yaml_file = "config/rastatt/short-term-module-100p.yaml"
-        yaml = yamlloader.YAML(cwd, yaml_file)
+        yaml = yamlloader.YAML(Path(cwd + yaml_file))
+        yaml.set_configs(yaml.find_calibration_configs(cwd)) # TODO remove and change yaml loading
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         data = metric.Data(raw_data)
         simulation.save(yaml, data, test_path)
@@ -51,7 +52,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_partial_save_function(self):
         yaml_file = "config/rastatt/short-term-module-100p.yaml"
-        yaml = yamlloader.YAML(cwd, yaml_file)
+        yaml = yamlloader.YAML(Path(cwd + yaml_file))
+        yaml.set_configs(yaml.find_calibration_configs(cwd)) # TODO remove and change yaml loading
         #raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         #data = metric.Data(raw_data)
         simulation.save(yaml, None, test_path)
