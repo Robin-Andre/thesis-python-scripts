@@ -328,7 +328,7 @@ def get_fit_and_error_from_dataframe(data_frame, aggregation_string, mode_identi
     savess = get_distribution(data_frame, aggregation_string, mode_identifier, resolution=resolution, quantile=quantile)
     counts = get_counts(data_frame, aggregation_string, mode_identifier, resolution=resolution, quantile=quantile)
 
-    result = fit_distribution_to_data_frame(counts, rounding=100, distribution_name=dist_name)
+    result = fit_distribution_to_data_frame(counts, rounding=1, distribution_name=dist_name)
     x = np.arange(len(savess))
     pdf_calc = dist_name_to_pdf(result, x, dist_name=dist_name)
     # TODO fix that an exponential approximation uses arbitrarily high values at 0

@@ -26,7 +26,7 @@ def run_singular_value_experiment(key, value, config):
     config.write()
     simulation.clean_result_directory()
     data = simulation.run_experiment(key + str(value))
-    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_data_modechoice/"
+    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_close_data/"
     yaml = simulation.default_yaml()
     if data is not None:
         # data.draw()
@@ -41,21 +41,28 @@ if __name__ == '__main__':
     yaml.set_fraction_of_population(0.1)
     yaml.write()
     configs = yaml.configs
-    for config in configs:
-        set_config_to_one(config)
+    #for config in configs:
+    #    set_config_to_one(config)
     simulation.clean_result_directory()
-    data = simulation.run_experiment()
-    data.draw()
-    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_data/"
-    simulation.save(yaml, data, exp_path + "baseline/")
+    #data = simulation.run_experiment()
+    #data.draw()
+    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_random_data/"
+    #simulation.save(yaml, data, exp_path + "baseline/")
     dest_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     print(dest_config.name)
+    for i in range(20, 40):
+        simulation.restore_experimental_configs()
+        simulation.clean_result_directory()
+        dest_config.randomize_except_elasticity(10)
+        data = simulation.run_experiment()
+        simulation.save(yaml, data, exp_path + "iteration" + str(i) + "/")
+
     #test_val = 100
-    test_values = [10, 50, 100]
-    for test_val in test_values:
-        for key in dest_config.entries:
-            run_singular_value_experiment(key, test_val, dest_config)
-            run_singular_value_experiment(key, -test_val, dest_config)
+    #test_values = [10, 50, 100]
+    #for test_val in test_values:
+    #    for key in dest_config.entries:
+    #        run_singular_value_experiment(key, test_val, dest_config)
+    #        run_singular_value_experiment(key, -test_val, dest_config)
 
 
 

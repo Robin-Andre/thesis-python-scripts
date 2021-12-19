@@ -36,7 +36,6 @@ def create_travel_time_data(raw_data):
     temp_df = raw_data[["durationTrip", "tripMode"]]
     temp2_df = temp_df.groupby(["durationTrip", "tripMode"]).size().reset_index()
     temp2_df.columns = ["durationTrip", "tripMode", "amount"]
-    print(temp2_df)
     return temp2_df
 
 #TODO fix that there are journeys with distance 0

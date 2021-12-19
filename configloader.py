@@ -1,6 +1,6 @@
 import re
 import sys
-from random import random
+import random
 
 
 class Config:
@@ -25,6 +25,13 @@ class Config:
             value = round(value, 0)
             self.override_parameter(item, value)
 
+    def randomize_except_elasticity(self, rangev):
+        for key, value in self.entries.items():
+            if key.__contains__("elasti"):
+                print(key)
+            else:
+                self.entries[key] = value + random.uniform(-rangev, rangev)
+
     def get_parameter_list(self):
         parameters = []
         splits = self._text.split("\n")
@@ -44,7 +51,8 @@ class Config:
                 value = eval(line.split("=")[1])
                 self.entries[name] = value
             else:
-                print(f"Error parsing[{line}] no seperator found", file=sys.stderr)
+                pass
+                # print(f"Error parsing[{line}] no seperator found", file=sys.stderr)
 
     def get_parameter(self, parameter_name):
         splits = self._text.split("\n")
