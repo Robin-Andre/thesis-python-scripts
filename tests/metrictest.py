@@ -211,6 +211,12 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(numpy.array_equal(metric.get_all_existing_modes(data.travel_distance.data_frame), np.array([-1, 0, 2, 3, 4])))
         data.travel_distance.approximations()
 
+    def test_broken_data_set(self):
+        data = metric.Data()
+        data.load("resources/asc_car_d_sig10/results/")
+        data.travel_time.draw_distribution(mode=3)
+        #data.draw_distributions()
+
     def test_difference_on_incomplete_data(self):
         numpy_data = np.array([[1, 0, 4],
                                [2, 0, 1],

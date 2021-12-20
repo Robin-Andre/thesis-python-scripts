@@ -70,6 +70,7 @@ def default_yaml():
     yaml.set_configs(yaml.find_calibration_configs(cwd))
     return yaml
 
+
 # Restores the configs IF the default experimental yaml is used. TODO make check to test for default experimental yaml
 def restore_experimental_configs():
     standard_config_path = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
@@ -86,6 +87,7 @@ def restore_experimental_configs():
         input_file.close()
         output_file.close()
     return
+
 
 def clean_result_directory():
     path = Path("/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/output/results/calibration/throwaway")

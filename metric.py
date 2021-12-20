@@ -170,6 +170,11 @@ class Data:
         self.travel_time = TravelTime.from_raw_data(raw_data)
         self.travel_distance = TravelDistance.from_raw_data(raw_data)
 
+    def __eq__(self, other):
+        return self.traffic_demand.data_frame.equals(other.traffic_demand.data_frame)\
+               and self.travel_time.data_frame.equals(other.travel_time.data_frame) \
+               and self.travel_distance.data_frame.equals(other.travel_distance.data_frame)
+
     def write(self, path="dump\\"):
         self.traffic_demand.write(path + "Demand.csv")
         self.travel_time.write(path + "Time.csv")
@@ -328,7 +333,7 @@ def get_fit_and_error_from_dataframe(data_frame, aggregation_string, mode_identi
     savess = get_distribution(data_frame, aggregation_string, mode_identifier, resolution=resolution, quantile=quantile)
     counts = get_counts(data_frame, aggregation_string, mode_identifier, resolution=resolution, quantile=quantile)
 
-    result = fit_distribution_to_data_frame(counts, rounding=1, distribution_name=dist_name)
+    result = fit_distribution_to_data_frame(counts, rounding=100, distribution_name=dist_name)
     x = np.arange(len(savess))
     pdf_calc = dist_name_to_pdf(result, x, dist_name=dist_name)
     # TODO fix that an exponential approximation uses arbitrarily high values at 0

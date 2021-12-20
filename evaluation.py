@@ -38,6 +38,7 @@ def create_travel_time_data(raw_data):
     temp2_df.columns = ["durationTrip", "tripMode", "amount"]
     return temp2_df
 
+
 #TODO fix that there are journeys with distance 0
 def create_travel_distance_data(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode"]]
