@@ -44,7 +44,7 @@ def main():
     full_data = numpy.vstack(neural_data_list)
     full_expected_data = numpy.vstack(neural_expected_output_list)
     res = [x == y for x in data_list for y in data_list]
-    print(res)
+
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(full_data, full_expected_data, random_state=1)
     regr = MLPRegressor(random_state=1, max_iter=15000, verbose=10).fit(X_train, y_train)
 
@@ -60,8 +60,7 @@ def main():
 
 
     temp = regr.predict(X_test)
-    print(y_test[:1])
-    print(temp[:1])
+
     print(regr.score(X_test, y_test))
 
 if __name__ == "__main__":

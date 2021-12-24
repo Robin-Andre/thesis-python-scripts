@@ -1,7 +1,7 @@
 # In this experiment I want to analyze whether an existing calibration step is feasible with the metrics currently
 # extracted. For this reason I rerun the existing calibration steps documented in the mode choice and destination choice
 # parameter files.
-import configloader
+from configurations import configloader
 import evaluation
 import yamlloader
 import re

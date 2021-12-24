@@ -1,5 +1,5 @@
 # This experiment tries to analyze which config has the most impact by setting all other configs to the default values 0
-import configloader
+from configurations import configloader
 import evaluation
 import yamlloader
 import re

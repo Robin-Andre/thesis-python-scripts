@@ -120,3 +120,58 @@ class Config:
     def write(self):
         self.write_config_file(self.path)
 
+
+class ModeChoiceConfig(Config):
+    def __init__(self, path):
+        super().__init__(path)
+
+    def group_description_parameter(self):
+
+        for key in self.entries.keys():
+            # Age, Income, Commuter Ticket, Car Sharing, any else
+            specialized = ["dienst", "ausb", "eink", "arbeit", "freiz", "beruft", "hhgr", "pkw_1", "pkw_0",
+                           "female", "service", "elasticity", "arbwo"]
+            params = [False, False, False, False, False]
+            age = False
+            income = False
+            if key.__contains__("age"):
+                params[0] = True
+            if key.__contains__("inc"):
+                params[1] = True
+            if key.__contains__("zk"):
+                params[2] = True
+            if key.__contains__("csmit"):
+                params[3] = True
+            if any(x in key for x in specialized):
+                params[4] = True
+
+            if not any(params):
+                print(f"Key: {key}, requires: {params}")
+
+    def get_corresponding_mode(self):
+        d = {
+            "ped": "Pedestrian",
+            "bike": "Bike",
+            "car_d": "Driver",
+            "car_p": "Passenger",
+            "put": "Public Transport",
+            "taxi": "Taxi",
+            "bs": "Bike Sharing",
+            "cs": "Car Sharing",
+            "rp": "Ride Pooling",
+            "b_cost": "Driver",
+            "elasticity_parken": "Driver"
+        }
+        for key in self.entries.keys():
+
+            if not any(x in key for x in d.keys()):
+                print(f"Key {key}")
+            fitting_tokens = []
+            for x in d.keys():
+
+                if x in key:
+                    fitting_tokens.append(x)
+
+            print(f"{key} : {fitting_tokens}")
+
+

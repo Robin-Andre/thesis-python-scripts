@@ -1,8 +1,6 @@
 # This experiment tries to analyze which config has the most impact by setting all other configs to the default values 0
-import os
 
-import configloader
-import evaluation
+from configurations import configloader
 import yamlloader
 import re
 import mobitopp_execution as simulation
