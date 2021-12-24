@@ -1,8 +1,5 @@
 import random
-import subprocess
-import configloader
 import yamlloader
-import evaluation
 
 
 def main():

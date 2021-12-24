@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas
 
-import configloader
+from configurations import configloader
 import metric
 import mobitopp_execution as simulation
 import yamlloader

@@ -1,5 +1,5 @@
 # This experiment is to test the original configs and testing which config has the biggest impact
-import configloader
+from configurations import configloader
 import evaluation
 import yamlloader
 import re

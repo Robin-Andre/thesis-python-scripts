@@ -3,7 +3,7 @@ from pathlib import Path
 
 import yaml
 from copy import deepcopy
-import configloader
+from configurations import configloader
 
 
 class V2Loader(yaml.SafeLoader):

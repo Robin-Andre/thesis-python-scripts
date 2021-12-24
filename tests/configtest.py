@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-import configloader
+from configurations import configloader
 
 
 class ConfigTestCase(unittest.TestCase):
@@ -90,6 +90,12 @@ class ConfigTestCase(unittest.TestCase):
         config2 = configloader.Config(test_path)
         self.assertEqual(config2.get_parameter("valid_parameter"), 9001)
         self.assertEqual(config2.get_parameter("another_valid_parameter"), 42)
+
+    def test_subclass_config(self):
+        mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
+        self.assertEqual(len(mc_c.entries), 228)
+        #mc_c.group_description_parameter()
+        mc_c.get_corresponding_mode()
 
 
 if __name__ == '__main__':
