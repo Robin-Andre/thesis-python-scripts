@@ -50,12 +50,15 @@ if __name__ == '__main__':
     #simulation.save(yaml, data, exp_path + "baseline/")
     dest_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     print(dest_config.name)
-    for i in range(20, 40):
+    data_list = []
+    for i in range(50, 70):
         simulation.restore_experimental_configs()
         simulation.clean_result_directory()
         dest_config.randomize_except_elasticity(10)
-        data = simulation.run_experiment()
+        dest_config.write()
+        data = simulation.run_experiment(str(i))
         simulation.save(yaml, data, exp_path + "iteration" + str(i) + "/")
+
 
     #test_val = 100
     #test_values = [10, 50, 100]

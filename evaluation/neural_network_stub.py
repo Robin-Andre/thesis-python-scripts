@@ -19,9 +19,14 @@ def make_neural_numpy_array(neural_data):
             data_list.append(element)
     return numpy.asarray(data_list)
 
+def set_config_from_output(config, data):
+    for item in enumerate(config.entries):
+        config.entries.values[item] = data[item]
+    config.write()
+    print(config.entries)
 
 def main():
-    path = Path("C:/Users/Admin/Desktop/master-thesis/neural_network_data/neural_network_random_data")
+    path = Path("/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_random_data")
     data_list = []
     neural_data_list = []
     neural_expected_output_list = []
@@ -42,6 +47,18 @@ def main():
     print(res)
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(full_data, full_expected_data, random_state=1)
     regr = MLPRegressor(random_state=1, max_iter=15000, verbose=10).fit(X_train, y_train)
+
+    for test in X_test:
+        result = regr.predict(test)
+        simulation.restore_experimental_configs()
+        simulation.clean_result_directory()
+        # set_config_from_output(d)
+        # TODO plot the simulation data,
+        data = simulation.run_experiment()
+        data.draw_distributions()
+        #simulation.save(yaml, data, exp_path + "iteration" + str(i) + "/")
+
+
     temp = regr.predict(X_test)
     print(y_test[:1])
     print(temp[:1])
