@@ -30,7 +30,7 @@ def run():
 
 
 def load(relative_path_raw):
-    relative_path = str(relative_path_raw)
+    relative_path = str(relative_path_raw) + "/"
     yaml = yamlloader.YAML(Path(relative_path + "launch.yaml"))
     config_dir = Path(relative_path + "configs/").glob('*.txt')
     configs = []
