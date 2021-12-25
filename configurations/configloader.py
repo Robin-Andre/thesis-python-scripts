@@ -1,7 +1,39 @@
 import re
 import sys
 import random
+from enum import Enum
 
+
+class Mode(Enum):
+    BIKE = 0
+    DRIVER = 1
+    PASSENGER = 2
+    PEDESTRIAN = 3
+    PUBLIC_TRANSPORT = 4
+    TAXI = 7
+    BIKE_SHARING = 9001  # TODO these modes have multiple representors in mobitopp and are not yet in the simulation
+    CAR_SHARING = 9002
+    RIDE_POOLING = 9003
+
+    @classmethod
+    def get_mode_from_string(cls, string):
+        d = {
+            "ped": 3,
+            "bike": 0,
+            "car_d": 1,
+            "car_p": 2,
+            "put": 4,
+            "taxi": 7,
+            "bs": 9001,
+            "cs": 9002,
+            "rp": 9003,
+            "b_cost": 1,
+            "elasticity_parken": 1
+        }
+        for x in d.keys():
+            if x in string:
+                return Mode(d[x])
+        return None
 
 class Config:
 
@@ -125,12 +157,31 @@ class ModeChoiceConfig(Config):
     def __init__(self, path):
         super().__init__(path)
 
+    def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
+        params = self.get_main_parameters(active_mode_numerical)
+        for param in params:
+            self.entries[param] = random.uniform(-15, 15)
+
+    def get_main_parameters(self, active_mode_numerical):
+        active_mode_list = [Mode(x) for x in active_mode_numerical]
+        param_list = []
+        specialized = ["dienst", "ausb", "eink", "arbeit", "freiz", "beruft", "hhgr", "pkw_1", "pkw_0", "female",
+                       "service", "elasticity", "arbwo", "student", "shift_relief", "ebike", "age", "inc", "zk",
+                       "csmit"]
+        for key in self.entries.keys():
+            if not any(x in key for x in specialized) and (Mode.get_mode_from_string(key) in active_mode_list):
+                param_list.append(key)
+
+        return param_list
+
     def group_description_parameter(self):
+
+        param_list = []
 
         for key in self.entries.keys():
             # Age, Income, Commuter Ticket, Car Sharing, any else
-            specialized = ["dienst", "ausb", "eink", "arbeit", "freiz", "beruft", "hhgr", "pkw_1", "pkw_0",
-                           "female", "service", "elasticity", "arbwo"]
+            specialized = ["dienst", "ausb", "eink", "arbeit", "freiz", "beruft", "hhgr", "pkw_1", "pkw_0","female",
+                           "service", "elasticity", "arbwo", "student", "shift_relief", "ebike", "age", "inc", "zk", "csmit"]
             params = [False, False, False, False, False]
             age = False
             income = False
@@ -146,7 +197,13 @@ class ModeChoiceConfig(Config):
                 params[4] = True
 
             if not any(params):
-                print(f"Key: {key}, requires: {params}")
+                param_list.append(key)
+                #print(f"Key: {key}, requires: {params}")
+        return param_list
+
+    def temp_name(self):
+        for key in self.entries.keys():
+            print(f"{key} : {Mode.get_mode_from_string(key)}")
 
     def get_corresponding_mode(self):
         d = {

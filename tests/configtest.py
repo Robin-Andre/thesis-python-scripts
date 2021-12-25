@@ -94,8 +94,17 @@ class ConfigTestCase(unittest.TestCase):
     def test_subclass_config(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
         self.assertEqual(len(mc_c.entries), 228)
-        #mc_c.group_description_parameter()
-        mc_c.get_corresponding_mode()
+        #print(mc_c.group_description_parameter())
+        #mc_c.get_corresponding_mode()
+        #mc_c.temp_name()
+        print(mc_c.entries)
+        mc_c.randomize_main_parameters()
+        print(mc_c.entries)
+
+
+    def test_mode_enum(self):
+        temp = configloader.Mode(1)
+        print(temp)
 
 
 if __name__ == '__main__':

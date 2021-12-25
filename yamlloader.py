@@ -39,6 +39,8 @@ class YAML:
     # TODO mobitopp might not be at the same location
     def find_config(self, cwd, dict_entry1, dict_entry2):
         path = Path(cwd + self.data[dict_entry1][dict_entry2])
+        if dict_entry1 == "modeChoice":
+            return configloader.ModeChoiceConfig(path)
         return configloader.Config(path)
 
     # TODO hardcoded

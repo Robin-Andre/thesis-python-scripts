@@ -41,21 +41,17 @@ if __name__ == '__main__':
     yaml.set_fraction_of_population(0.1)
     yaml.write()
     configs = yaml.configs
-    #for config in configs:
-    #    set_config_to_one(config)
+
     simulation.clean_result_directory()
-    #data = simulation.run_experiment()
-    #data.draw()
-    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_random_data/"
-    #simulation.save(yaml, data, exp_path + "baseline/")
-    dest_config = configs[-1]  # 0 for destination choice, -1 for mode choice
-    print(dest_config.name)
+
+    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_only_change_main_params/"
+    mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     data_list = []
-    for i in range(50, 70):
+    for i in range(500, 1500):
         simulation.restore_experimental_configs()
         simulation.clean_result_directory()
-        dest_config.randomize_except_elasticity(10)
-        dest_config.write()
+        mode_config.randomize_main_parameters()
+        mode_config.write()
         data = simulation.run_experiment(str(i))
         simulation.save(yaml, data, exp_path + "iteration" + str(i) + "/")
 
