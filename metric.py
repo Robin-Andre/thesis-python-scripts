@@ -175,6 +175,9 @@ class Data:
                and self.travel_time.data_frame.equals(other.travel_time.data_frame) \
                and self.travel_distance.data_frame.equals(other.travel_distance.data_frame)
 
+    def empty(self):
+        return all(v is None for v in [self.traffic_demand, self.travel_time, self.travel_distance])
+
     def write(self, path="dump\\"):
         self.traffic_demand.write(path + "Demand.csv")
         self.travel_time.write(path + "Time.csv")
