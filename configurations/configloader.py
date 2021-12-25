@@ -160,9 +160,15 @@ class ModeChoiceConfig(Config):
     def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         params = self.get_main_parameters(active_mode_numerical)
         for param in params:
-            self.entries[param] = random.uniform(-15, 15)
+            if param.startswith("b_"):
+                if param == "b_tt_ped":
+                    self.entries[param] = random.uniform(-1, 0)
+                else:
+                    self.entries[param] = random.uniform(-15, 0)
+            else:
+                self.entries[param] = random.uniform(-15, 15)
 
-    def get_main_parameters(self, active_mode_numerical):
+    def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         active_mode_list = [Mode(x) for x in active_mode_numerical]
         param_list = []
         specialized = ["dienst", "ausb", "eink", "arbeit", "freiz", "beruft", "hhgr", "pkw_1", "pkw_0", "female",
