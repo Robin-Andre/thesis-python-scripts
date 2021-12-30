@@ -44,10 +44,10 @@ if __name__ == '__main__':
 
     simulation.clean_result_directory()
 
-    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_only_change_main_params_better_beta_params/"
+    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_only_change_main_params_no_sig_better_beta/"
     mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     data_list = []
-    for i in range(0, 500):
+    for i in range(0, 1000):
         simulation.restore_experimental_configs()
         simulation.clean_result_directory()
         mode_config.randomize_main_parameters()

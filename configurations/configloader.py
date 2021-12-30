@@ -167,6 +167,8 @@ class ModeChoiceConfig(Config):
                     self.entries[param] = random.uniform(-15, 0)
             else:
                 self.entries[param] = random.uniform(-15, 15)
+            if param.__contains__("sig"):
+                self.entries[param] = 0
 
     def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         active_mode_list = [Mode(x) for x in active_mode_numerical]
