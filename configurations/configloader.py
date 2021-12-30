@@ -3,6 +3,8 @@ import sys
 import random
 from enum import Enum
 
+from configurations.limits import ModeLimitSimple, DestinationLimitSimple
+
 
 class Mode(Enum):
     BIKE = 0
@@ -73,6 +75,9 @@ class Config:
                 parameters.append(name)
 
         return parameters
+
+    def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
+        return []
 
     def initialize_dictionary(self):
         splits = self._text.split("\n")
@@ -156,17 +161,13 @@ class Config:
 class ModeChoiceConfig(Config):
     def __init__(self, path):
         super().__init__(path)
+        self.limit = ModeLimitSimple(self)
 
     def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         params = self.get_main_parameters(active_mode_numerical)
         for param in params:
-            if param.startswith("b_"):
-                if param == "b_tt_ped":
-                    self.entries[param] = random.uniform(-1, 0)
-                else:
-                    self.entries[param] = random.uniform(-15, 0)
-            else:
-                self.entries[param] = random.uniform(-15, 15)
+            a, b = self.limit.limits[param]
+            self.entries[param] = random.uniform(a, b)
 
     def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         active_mode_list = [Mode(x) for x in active_mode_numerical]
@@ -180,61 +181,25 @@ class ModeChoiceConfig(Config):
 
         return param_list
 
-    def group_description_parameter(self):
 
+class DestinationChoiceConfig(Config):
+    def __init__(self, path):
+        super().__init__(path)
+        self.limit = DestinationLimitSimple(self)
+
+    def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
+        params = self.get_main_parameters(active_mode_numerical)
+        for parm in params:
+            a, b = self.limit.limits[parm]
+            self.entries[parm] = random.uniform(a, b)
+
+    def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
+        active_mode_list = [Mode(x) for x in active_mode_numerical]
         param_list = []
-
         for key in self.entries.keys():
-            # Age, Income, Commuter Ticket, Car Sharing, any else
-            specialized = ["dienst", "ausb", "eink", "arbeit", "freiz", "beruft", "hhgr", "pkw_1", "pkw_0","female",
-                           "service", "elasticity", "arbwo", "student", "shift_relief", "ebike", "age", "inc", "zk", "csmit"]
-            params = [False, False, False, False, False]
-            age = False
-            income = False
-            if key.__contains__("age"):
-                params[0] = True
-            if key.__contains__("inc"):
-                params[1] = True
-            if key.__contains__("zk"):
-                params[2] = True
-            if key.__contains__("csmit"):
-                params[3] = True
-            if any(x in key for x in specialized):
-                params[4] = True
-
-            if not any(params):
+            if Mode.get_mode_from_string(key) in active_mode_list and key != "elasticity_acc_put":
                 param_list.append(key)
-                #print(f"Key: {key}, requires: {params}")
         return param_list
 
-    def temp_name(self):
-        for key in self.entries.keys():
-            print(f"{key} : {Mode.get_mode_from_string(key)}")
-
-    def get_corresponding_mode(self):
-        d = {
-            "ped": "Pedestrian",
-            "bike": "Bike",
-            "car_d": "Driver",
-            "car_p": "Passenger",
-            "put": "Public Transport",
-            "taxi": "Taxi",
-            "bs": "Bike Sharing",
-            "cs": "Car Sharing",
-            "rp": "Ride Pooling",
-            "b_cost": "Driver",
-            "elasticity_parken": "Driver"
-        }
-        for key in self.entries.keys():
-
-            if not any(x in key for x in d.keys()):
-                print(f"Key {key}")
-            fitting_tokens = []
-            for x in d.keys():
-
-                if x in key:
-                    fitting_tokens.append(x)
-
-            print(f"{key} : {fitting_tokens}")
 
 

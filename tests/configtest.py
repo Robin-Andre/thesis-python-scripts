@@ -105,6 +105,13 @@ class ConfigTestCase(unittest.TestCase):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
         print(mc_c.get_main_parameters())
 
+    def test_get_main_params_dest(self):
+        dest_config = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/destination_choice_utility_calculation_parameters.txt"))
+
+        print(dest_config.entries)
+        dest_config.randomize_main_parameters()
+        print(dest_config.entries)
+
     def test_mode_enum(self):
         temp = configloader.Mode(1)
         print(temp)
