@@ -43,6 +43,6 @@ class DestinationLimitSimple(Limit):
 
         if parameter.__contains__("b_tt"):
             # If the parameter is based on travel time positive values seem unfeasible:
-            return -15, 0
+            return -1, 0
 
         return -50, 50

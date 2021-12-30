@@ -3,8 +3,8 @@ from pathlib import Path
 
 import mobitopp_execution as simulation
 
-experiment_path = "C:/Users/Admin/Desktop/master-thesis/neural_network_data"
-# experiment_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/"
+#experiment_path = "C:/Users/Admin/Desktop/master-thesis/neural_network_data"
+experiment_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/"
 
 accepted_files = ["configs", "launch.yaml", "destination_choice_parameters_BUSINESS.txt",
                   "destination_choice_parameters_LEISURE.txt", "destination_choice_parameters_SERVICE.txt",
@@ -36,6 +36,13 @@ def get_configs_from_failures(paths):
 
     return data_list
 
+def get_dest_configs_from_failures(paths):
+    data_list = []
+    for path in paths:
+        yaml, data = simulation.load(path)
+        data_list.append(yaml.configs[2])
+
+    return data_list
 
 def move_data_to_failure(data_path):
     temp = Path(experiment_path + "/FAILED_RUNS")
