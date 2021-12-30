@@ -41,6 +41,8 @@ class YAML:
         path = Path(cwd + self.data[dict_entry1][dict_entry2])
         if dict_entry1 == "modeChoice":
             return configloader.ModeChoiceConfig(path)
+        if dict_entry1 == "destinationChoice" and dict_entry2 == "base":
+            return configloader.DestinationChoiceConfig(path)
         return configloader.Config(path)
 
     # TODO hardcoded
