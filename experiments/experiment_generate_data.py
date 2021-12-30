@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     simulation.clean_result_directory()
 
-    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_dest_data/"
+    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_dest_data_version2/"
     mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     dest_config = configs[0]
     data_list = []
