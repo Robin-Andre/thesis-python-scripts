@@ -44,17 +44,17 @@ if __name__ == '__main__':
 
     simulation.clean_result_directory()
 
-    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_dest_data_version2/"
+    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_mode_choice-b_only_one_zero/"
     mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     dest_config = configs[0]
     data_list = []
     for i in range(0, 1000):
         simulation.restore_experimental_configs()
         simulation.clean_result_directory()
-        #mode_config.randomize_main_parameters()
-        #mode_config.write()
-        dest_config.randomize_main_parameters()
-        dest_config.write()
+        mode_config.randomize_main_parameters()
+        mode_config.write()
+        #dest_config.randomize_main_parameters()
+        #dest_config.write()
         data = simulation.run_experiment(str(i))
         simulation.save(yaml, data, exp_path + "iteration" + str(i) + "/")
 
