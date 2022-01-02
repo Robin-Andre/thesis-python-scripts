@@ -48,7 +48,7 @@ if __name__ == '__main__':
     mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     dest_config = configs[0]
     data_list = []
-    for i in range(0, 1000):
+    for i in range(500, 1000):
         simulation.restore_experimental_configs()
         simulation.clean_result_directory()
         mode_config.randomize_main_parameters()
