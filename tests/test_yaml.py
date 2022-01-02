@@ -6,6 +6,7 @@ import pandas
 import mobitopp_execution as simulation
 import metric
 import yamlloader
+from configurations import SPECS
 
 
 class MyTestCase(unittest.TestCase):
@@ -30,15 +31,14 @@ class MyTestCase(unittest.TestCase):
 
     def test_locate_configs(self):
         # TODO either remove or make global
-        mobitopp_cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
-        yaml = yamlloader.YAML(Path(mobitopp_cwd + "config/rastatt/short-term-module-100p.yaml"))
+        yaml = yamlloader.YAML(Path(SPECS.CWD + "config/rastatt/short-term-module-100p.yaml"))
         self.assertIsNotNone(yaml)
-        configs = yaml.find_calibration_configs(mobitopp_cwd)
+        configs = yaml.find_calibration_configs(SPECS.CWD)
         self.assertEqual(len(configs), 6)
 
     def test_read_write_is_invariant(self):
-        mobitopp_cwd = "/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/"
-        path = Path(mobitopp_cwd + "config/rastatt/short-term-module-100p.yaml")
+
+        path = Path(SPECS.CWD + "config/rastatt/short-term-module-100p.yaml")
         yaml = yamlloader.YAML(path)
         original_text = yaml.data
         self.assertEqual(yaml.path, path)

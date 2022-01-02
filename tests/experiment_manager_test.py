@@ -1,11 +1,13 @@
 import unittest
 
 import experiment_manager
+from configurations import SPECS
 
 
 class MyTestCase(unittest.TestCase):
 
-    def test_something(self):
+    # TODO this is not a test but rather an evaluation
+    def nontest_something(self):
         #print(experiment_manager.get_experiments())  # add assertion here
         #experiment_manager.find_failed_data("neural_network_random_data")
         #experiment_manager.find_failed_data("broken_sets")
@@ -25,16 +27,20 @@ class MyTestCase(unittest.TestCase):
             print(f"Bounds for parameter {key}: {min(seq)} -> {max(seq)}")
         #print(lol)
 
+    # TODO move to test resources
     def test_locate_broken_data(self):
-        expected_result = [('C:\\Users\\Admin\\Desktop\\master-thesis\\neural_network_data\\neural_network_random_data\\iteration60', 'iteration60'), ('C:\\Users\\Admin\\Desktop\\master-thesis\\neural_network_data\\neural_network_random_data\\iteration61', 'iteration61'), ('C:\\Users\\Admin\\Desktop\\master-thesis\\neural_network_data\\neural_network_random_data\\iteration63', 'iteration63'), ('C:\\Users\\Admin\\Desktop\\master-thesis\\neural_network_data\\neural_network_random_data\\iteration66', 'iteration66')]
+        path = SPECS.EXP_PATH + "neural_network_random_data\\"
+        expected_result = [(path + 'iteration61', 'iteration61'),
+                           (path + 'iteration63', 'iteration63'), (path + 'iteration66', 'iteration66')]
 
         self.assertEqual([(str(x), x.name) for x in experiment_manager.find_failed_data("neural_network_random_data")], expected_result)
 
-    def test_move_broken_data(self):
+    # TODO this requires appropriate test resources to work
+    def nontest_move_broken_data(self):
         print(experiment_manager.get_experiments())
         experiment_manager.move_data_to_failure("neural_network_random_data")
-
-    def test_verify_all_clean(self):
+    # TODO this requires test resources and can be merged with the test above
+    def nontest_verify_all_clean(self):
         experiment_manager.test_cleanliness("neural_network_random_data")
 
 if __name__ == '__main__':

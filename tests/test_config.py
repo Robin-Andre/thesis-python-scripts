@@ -110,7 +110,7 @@ class ConfigTestCase(unittest.TestCase):
 
         print(dest_config.entries)
         dest_config.randomize_main_parameters()
-        print(dest_config.entries)
+        print(dest_config.entries )
 
     def test_mode_enum(self):
         temp = configloader.Mode(1)

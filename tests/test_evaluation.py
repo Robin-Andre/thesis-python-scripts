@@ -10,14 +10,14 @@ import visualization as plot
 
 class MyTestCase(unittest.TestCase):
 
-    def test_temporary(self):
+    def nontest_temporary(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         temp_df = evaluation.create_plot_data(raw_data)
         temp_df["identifier"] = "LOL"
         plot.draw(temp_df, plot.aggregate_traffic_two_sets)
         print(temp_df)
 
-    def test_travel_time_data(self):
+    def nontest_travel_time_data(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         start = time.time()
         temp_df = evaluation.create_travel_time_data(raw_data)
@@ -27,19 +27,19 @@ class MyTestCase(unittest.TestCase):
 
         print(graph)
 
-    def test_travel_distance_data(self):
+    def nontest_travel_distance_data(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         temp_df = evaluation.create_travel_distance_data(raw_data)
         graph = plot.draw_travel_distance(temp_df, bin_size=5)
         print(graph)
 
-    def test_geo_plot(self):
+    def nontest_geo_plot(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         print(raw_data.iloc[0])
         raw_data = raw_data.iloc[0:4]
         evaluation.check_data(raw_data)
 
-    def test_plot_data_rename_pls(self):
+    def nontest_plot_data_rename_pls(self):
         numpy_data = np.array([[1, 4, 0],  # -XXX------
                                [0, 5, 0],  # XXXXX-----
                                [2, 8, 1],  # --XXXXXX--

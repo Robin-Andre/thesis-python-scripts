@@ -3,7 +3,7 @@ from pathlib import Path
 
 import yaml
 from copy import deepcopy
-from configurations import configloader
+from configurations import configloader, SPECS
 
 
 class V2Loader(yaml.SafeLoader):
@@ -48,7 +48,7 @@ class YAML:
     # TODO hardcoded
     def set_config_to_calibration(self):
         for config in self.configs:
-            config.set_path("/home/paincrash/Desktop/master-thesis/mobitopp-example-rastatt/calibration/" + config.name)
+            config.set_path(SPECS.CWD + "calibration/" + config.name)
             config.write()
 
     def set_fraction_of_population(self, target):
