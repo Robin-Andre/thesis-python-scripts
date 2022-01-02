@@ -105,7 +105,7 @@ class MyTestCase(unittest.TestCase):
         simulation.restore_experimental_configs()
 
     def test_execution(self):
-        simulation.clean_result_directory()
+
         yaml, _ = simulation.load("resources/example_config_load/")
         yaml.set_fraction_of_population(0.01)
         simulation.run_experiment(yaml)
@@ -116,7 +116,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_clean_directory(self):
         path = Path(cwd + "output/results/calibration/throwaway")
-        simulation.clean_result_directory()
+        simulation.clean_directory(path)
         self.assertTrue(path.is_dir())
         self.assertFalse(any(path.iterdir()))
 

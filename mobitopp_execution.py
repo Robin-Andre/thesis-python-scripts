@@ -21,6 +21,7 @@ def default_yaml():
 
 def run_mobitopp(yaml=default_yaml()):
     yaml.write_path(SPECS.CWD + "config/rastatt/short-term-module-100p.yaml")
+    clean_result_directory(yaml)
     if platform.system() == "Linux":
         return __run_mobitopp_linux(), results(yaml)
     if platform.system() == "Windows":
@@ -102,8 +103,10 @@ def save(yaml, data, relative_path):
 
 
 def results(yaml=default_yaml()):
-    data = metric.Data(pandas.read_csv(SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv", sep=";"))
-    return data
+    file = SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv"
+    if Path(file).exists():
+        return metric.Data(pandas.read_csv(file, sep=";"))
+    return None
 
 
 # Restores the configs IF the default experimental yaml is used. TODO make check to test for default experimental yaml
@@ -136,11 +139,13 @@ def restore_default_yaml():
     output_file.close()
 
 
-def clean_result_directory():
-    path = Path(SPECS.CWD + "output/results/calibration/throwaway")
+def clean_result_directory(yaml=default_yaml()):
+    clean_directory(Path(SPECS.CWD + yaml.data["resultFolder"]))
+
+
+def clean_directory(path):
     for file in path.iterdir():
         Path.unlink(file)
-
 
 def run_experiment(yaml=default_yaml(), experiment_name=""):
     now = datetime.now()
