@@ -1,0 +1,6 @@
+
+valid_parameter = 9001
+The first line is empty
+# This line pretends to be a comment
+
+another_valid_parameter = 21 + 21
