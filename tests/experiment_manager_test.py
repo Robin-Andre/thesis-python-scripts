@@ -11,7 +11,7 @@ class MyTestCase(unittest.TestCase):
         #print(experiment_manager.get_experiments())  # add assertion here
         #experiment_manager.find_failed_data("neural_network_random_data")
         #experiment_manager.find_failed_data("broken_sets")
-        temp = experiment_manager.find_failed_data("neural_network_only_change_main_params")
+        temp = experiment_manager.find_failed_data("neural_network_dest_data")
         #print(temp)
         print(f"Amount of failures: {len(temp)}")
         all_keys = ['asc_car_d_mu', 'asc_car_d_sig', 'asc_car_p_mu', 'asc_car_p_sig', 'asc_put_mu', 'asc_put_sig',
@@ -21,8 +21,11 @@ class MyTestCase(unittest.TestCase):
                     'b_mode_bef_ped', 'b_mode_bef_bike', 'b_home_car_p', 'b_home_put']
 
         lol = experiment_manager.get_configs_from_failures(temp)
+        dest_configs = experiment_manager.get_dest_configs_from_failures(temp)
+        all_keys = dest_configs[0].entries.keys()
+        print(all_keys)
         for key in all_keys:
-            seq = [x.entries[key] for x in lol]
+            seq = [x.entries[key] for x in dest_configs]
 
             print(f"Bounds for parameter {key}: {min(seq)} -> {max(seq)}")
         #print(lol)
