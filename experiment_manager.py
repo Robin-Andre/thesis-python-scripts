@@ -36,6 +36,7 @@ def get_configs_from_failures(paths):
 
     return data_list
 
+
 def get_dest_configs_from_failures(paths):
     data_list = []
     for path in paths:
@@ -43,6 +44,7 @@ def get_dest_configs_from_failures(paths):
         data_list.append(yaml.configs[2])
 
     return data_list
+
 
 def move_data_to_failure(data_path):
     temp = Path(experiment_path + "/FAILED_RUNS")
@@ -59,8 +61,10 @@ def test_cleanliness(ex_path):
 
 
 def verify(experiment_full_path):
+    simulation.clean_result_directory()
     yaml, data = simulation.load(experiment_full_path)
-    #simulation.run
+    simulation.run_mobitopp(yaml)
+    return data, simulation.results()
 
 def rerun(experiment_full_path):
     pass

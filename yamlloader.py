@@ -45,7 +45,6 @@ class YAML:
             return configloader.DestinationChoiceConfig(path)
         return configloader.Config(path)
 
-    # TODO hardcoded
     def set_config_to_calibration(self):
         for config in self.configs:
             config.set_path(SPECS.CWD + "calibration/" + config.name)

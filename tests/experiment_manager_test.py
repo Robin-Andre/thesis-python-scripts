@@ -46,5 +46,10 @@ class MyTestCase(unittest.TestCase):
     def nontest_verify_all_clean(self):
         experiment_manager.test_cleanliness("neural_network_random_data")
 
+    def test_verification(self):
+        original_data, data = experiment_manager.verify("resources/example_config_load")
+        self.assertEqual(original_data, data)
+        print(original_data)
+
 if __name__ == '__main__':
     unittest.main()

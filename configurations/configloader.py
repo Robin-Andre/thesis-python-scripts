@@ -53,19 +53,6 @@ class Config:
     def __repr__(self):
         return f"Data: {self.entries}\nPath: {self.path}\nName: {self.name}\n"
 
-    def randomize(self, parameter_list, lower_bound, upper_bound):
-        for item in parameter_list:
-            value = (upper_bound - lower_bound) * random() + lower_bound
-            value = round(value, 0)
-            self.override_parameter(item, value)
-
-    def randomize_except_elasticity(self, rangev):
-        for key, value in self.entries.items():
-            if key.__contains__("elasti"):
-                print(key)
-            else:
-                self.entries[key] = value + random.uniform(-rangev, rangev)
-
     def get_parameter_list(self):
         parameters = []
         splits = self._text.split("\n")

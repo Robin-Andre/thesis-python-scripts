@@ -12,17 +12,24 @@ import metric
 import yamlloader
 
 
-def run_mobitopp(directory, yaml):
+def default_yaml():
+    yaml_file = "config/rastatt/short-term-module-100p.yaml"
+    yaml = yamlloader.YAML(Path(SPECS.CWD + yaml_file))
+    yaml.set_configs(yaml.find_calibration_configs(SPECS.CWD))
+    return yaml
+
+
+def run_mobitopp(yaml=default_yaml()):
     yaml.write_path(SPECS.CWD + "config/rastatt/short-term-module-100p.yaml")
     if platform.system() == "Linux":
-        return __run_mobitopp_linux(directory, yaml)
+        return __run_mobitopp_linux(), results(yaml)
     if platform.system() == "Windows":
-        return __run_mobitopp_windows(directory, yaml)
+        return __run_mobitopp_windows(), results(yaml)
 
     raise EnvironmentError("Platform not supported by calibration tool: " + inspect.currentframe())
 
 
-def __run_mobitopp_linux(directory, yaml):
+def __run_mobitopp_linux():
     process = subprocess.Popen(["./gradlew",
                                 "runRastatt_100p_ShortTermModule"],
                                cwd=Path(SPECS.CWD),
@@ -40,7 +47,7 @@ def __run_mobitopp_linux(directory, yaml):
     return return_code
 
 
-def __run_mobitopp_windows(directory, yaml):
+def __run_mobitopp_windows():
     old_dir = os.getcwd()
     os.chdir(SPECS.CWD)
 
@@ -50,8 +57,10 @@ def __run_mobitopp_windows(directory, yaml):
                                #  the directory but changing to shell=True is not a solution
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-    stdout = process.communicate()[0]
-    stderr = process.communicate()[1]
+    for line in iter(process.stdout.readline, b''):
+        print(line)
+    #stdout = process.communicate()[0]
+    #stderr = process.communicate()[1]
     return_code = process.returncode
     #print(stdout)
     #print(stderr)
@@ -70,8 +79,10 @@ def load(relative_path_raw):
     configs = []
     for path in config_dir:
         config = configloader.Config(path)
+
         configs.append(config)
     yaml.set_configs(configs)
+    yaml.set_config_to_calibration()
     data = metric.Data()
     if Path(relative_path + "results/").exists():
         data.load(relative_path + "results/")
@@ -90,17 +101,9 @@ def save(yaml, data, relative_path):
         data.write(relative_path + "/results/")
 
 
-def results():
-    data = metric.Data(
-        pandas.read_csv(SPECS.CWD + "output/results/calibration/throwaway/demandsimulationResult.csv", sep=";"))
+def results(yaml=default_yaml()):
+    data = metric.Data(pandas.read_csv(SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv", sep=";"))
     return data
-
-
-def default_yaml():
-    yaml_file = "config/rastatt/short-term-module-100p.yaml"
-    yaml = yamlloader.YAML(Path(SPECS.CWD + yaml_file))
-    yaml.set_configs(yaml.find_calibration_configs(SPECS.CWD))
-    return yaml
 
 
 # Restores the configs IF the default experimental yaml is used. TODO make check to test for default experimental yaml
@@ -144,7 +147,7 @@ def run_experiment(yaml=default_yaml(), experiment_name=""):
     current_time = now.strftime("%H:%M:%S")
     print(f"Running Experiment: {experiment_name} : starting at {current_time}")
 
-    result = run_mobitopp(SPECS.CWD, yaml)
+    result = run_mobitopp(yaml)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print(f"Experiment {experiment_name} finished at {current_time} with return code {result}")
