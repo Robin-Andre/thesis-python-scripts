@@ -47,6 +47,7 @@ class MyTestCase(unittest.TestCase):
         experiment_manager.test_cleanliness("neural_network_random_data")
 
     def test_verification(self):
+        #TODO this test fails because of population synthesis
         original_data, data = experiment_manager.verify("resources/example_config_load")
         self.assertEqual(original_data, data)
         print(original_data)

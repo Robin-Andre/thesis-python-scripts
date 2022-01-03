@@ -29,9 +29,9 @@ def run_mobitopp(yaml=default_yaml()):
 
     raise EnvironmentError("Platform not supported by calibration tool: " + inspect.currentframe())
 
-
-def __run_mobitopp_linux():
-    process = subprocess.Popen(["./gradlew",
+#TODO eventually pass that windows do not need a change of path
+def __run(command):
+    process = subprocess.Popen([command,
                                 "runRastatt_100p_ShortTermModule"],
                                cwd=Path(SPECS.CWD),
                                stdout=subprocess.PIPE,
@@ -44,33 +44,22 @@ def __run_mobitopp_linux():
     # print('STDOUT:{}'.format(stdout))
 
     process.wait()
-    restore_default_yaml()
     return return_code
+
+
+def __run_mobitopp_linux():
+    ret = __run(".gradlew")
+    restore_default_yaml()
+    return ret
 
 
 def __run_mobitopp_windows():
     old_dir = os.getcwd()
     os.chdir(SPECS.CWD)
-
-    process = subprocess.Popen(["gradlew.bat",
-                                "runRastatt_100p_ShortTermModule"],
-                               # cwd=Path(SPECS.CWD), TODO windows seems to not properly change
-                               #  the directory but changing to shell=True is not a solution
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    for line in iter(process.stdout.readline, b''):
-        print(line)
-    #stdout = process.communicate()[0]
-    #stderr = process.communicate()[1]
-    return_code = process.returncode
-    #print(stdout)
-    #print(stderr)
-    # print('STDOUT:{}'.format(stdout))
-
-    process.wait()
+    ret = __run("gradlew.bat")
     os.chdir(old_dir)
     restore_default_yaml()
-    return return_code
+    return ret
 
 
 def load(relative_path_raw):

@@ -1,4 +1,5 @@
 # This experiment is to test the original configs and testing which config has the biggest impact
+import utils
 from configurations import configloader
 import evaluation
 import yamlloader
@@ -6,15 +7,7 @@ import re
 import mobitopp_execution as simulation
 
 
-def extract_values_of_iteration(config, iteration):
-    lines = config._text.split("\n")
-    results = []
-    for line in lines:
-        test = re.sub("=\s*([-+])", "= \\1", line)
-        test = re.split("(?<!=\s)([-+])", test)
-        temp = 2 * iteration + 1
-        results.append(" ".join(test[0:temp]))
-    return "\n".join(results)
+
 
 
 if __name__ == '__main__':
@@ -27,7 +20,7 @@ if __name__ == '__main__':
     for config in config_list:
         for i in range(6):
             simulation.restore_experimental_configs()
-            text = extract_values_of_iteration(config, i)
+            text = utils.extract_values_of_iteration(config, i)
             configloader.write_config_file(text, cwd + config.path)
             print("Running config[" + config.name + "] number: " + str(i))
             simulation.run_experiment()

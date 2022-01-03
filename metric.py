@@ -80,6 +80,14 @@ class TrafficDemand(Metric):
         return difference(data1, data2, function, resolution=resolution, normalize=normalize)
 
 
+def get_approximations(dataframe, string):
+    approxis = []
+    for i in get_all_existing_modes(dataframe):
+        _, data, error = metric.get_fit_and_error_from_dataframe(dataframe, string, i)
+        approxis.append([i, data, error])
+    return approxis
+
+
 class TravelTime(Metric):
     def read_from_raw_data(self, raw_data):
         self.data_frame = evaluation.create_travel_time_data(raw_data)
@@ -88,15 +96,18 @@ class TravelTime(Metric):
         print(visualization.draw_travel_time(self.data_frame))
 
     def draw_distribution(self, mode=-1):
+        distribution, pdf = self.get_distribution_and_pdf(mode)
+        visualization.draw_distribution(distribution, mode, pdf)
+
+    def get_distribution_and_pdf(self, mode):
         distribution = get_distribution(self.data_frame, "durationTrip", group=mode)
         pdf, _, _ = metric.get_fit_and_error_from_dataframe(self.data_frame, "durationTrip", mode)
-        visualization.draw_distribution(distribution, mode, pdf)
+        return distribution, pdf
 
     def draw_all_distributions(self):
         x, y, z = [], [], []
         for i in get_all_existing_modes(self.data_frame):
-            distribution = get_distribution(self.data_frame, "durationTrip", group=i, quantile=0.99)
-            pdf, _, _ = metric.get_fit_and_error_from_dataframe(self.data_frame, "durationTrip", i, quantile=0.99)
+            distribution, pdf = self.get_distribution_and_pdf(i)
             x.append(distribution)
             y.append(i)
             z.append(pdf)
@@ -109,11 +120,9 @@ class TravelTime(Metric):
         pass
 
     def approximations(self):
-        approxis = []
-        for i in get_all_existing_modes(self.data_frame):
-            _, data, error = metric.get_fit_and_error_from_dataframe(self.data_frame, "durationTrip", i)
-            approxis.append([i, data, error])
-        return approxis
+        return get_approximations(self.data_frame, "durationTrip")
+
+
 
     @classmethod
     def difference(cls, data1, data2, function, resolution=1, normalize=False):
@@ -147,11 +156,8 @@ class TravelDistance(Metric):
         visualization.draw_all_distributions(x, y, z)
 
     def approximations(self):
-        approxis = []
-        for i in get_all_existing_modes(self.data_frame):
-            _, data, error = metric.get_fit_and_error_from_dataframe(self.data_frame, "distanceInKm", i)
-            approxis.append([i, data, error])
-        return approxis
+        return get_approximations(self.data_frame, "distanceInKm")
+
     @classmethod
     def difference(cls, data1, data2, function, resolution=1, normalize=False):
         return difference(data1, data2, function, resolution=resolution, aggregate_string="distanceInKm",

@@ -101,16 +101,28 @@ class ConfigTestCase(unittest.TestCase):
         mc_c.randomize_main_parameters()
         print(mc_c.entries)
 
+    def test_base_config_randomization_does_nothing(self):
+        config = configloader.Config(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
+        expected_results = config.entries
+        config.randomize_main_parameters()
+        self.assertEqual(expected_results, config.entries)
+
+    def test_mode_config_randomization_respects_bounds(self):
+        mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
+        mc_c.randomize_main_parameters()
+
     def test_get_main_params(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
-        print(mc_c.get_main_parameters())
+        self.assertEqual(mc_c.get_main_parameters(active_mode_numerical=[]), [])
+        self.assertEqual(mc_c.get_main_parameters(active_mode_numerical=[0]), ["asc_bike_mu", "asc_bike_sig", "b_tt_bike_mu", "b_tt_bike_sig", "b_mode_bef_bike"])
+
 
     def test_get_main_params_dest(self):
         dest_config = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/destination_choice_utility_calculation_parameters.txt"))
 
         print(dest_config.entries)
         dest_config.randomize_main_parameters()
-        print(dest_config.entries )
+        print(dest_config.entries)
 
     def test_mode_enum(self):
         temp = configloader.Mode(1)

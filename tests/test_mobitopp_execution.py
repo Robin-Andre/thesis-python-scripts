@@ -78,13 +78,11 @@ class MyTestCase(unittest.TestCase):
     def test_read_write(self):
         yaml, _ = simulation.load("resources/example_config_load/")
         namelist = [x.path for x in yaml.configs]
-
+        dest_configs = ["base", "business", "leisure", "service", "shopping"]
         self.assertTrue(SPECS.CWD + yaml.data["modeChoice"]["main"] in namelist)
-        self.assertTrue(SPECS.CWD + yaml.data["destinationChoice"]["base"] in namelist)
-        self.assertTrue(SPECS.CWD + yaml.data["destinationChoice"]["business"] in namelist)
-        self.assertTrue(SPECS.CWD + yaml.data["destinationChoice"]["leisure"] in namelist)
-        self.assertTrue(SPECS.CWD + yaml.data["destinationChoice"]["service"] in namelist)
-        self.assertTrue(SPECS.CWD + yaml.data["destinationChoice"]["shopping"] in namelist)
+        for x in dest_configs:
+            self.assertTrue(SPECS.CWD + yaml.data["destinationChoice"][x] in namelist)
+
 
         for config in yaml.configs:
             for key in config.entries.keys():

@@ -3,7 +3,7 @@ import sys
 import random
 from enum import Enum
 
-from configurations.limits import ModeLimitSimple, DestinationLimitSimple
+from configurations.limits import ModeLimitSimple, DestinationLimitSimple, Limit
 
 
 class Mode(Enum):
@@ -46,6 +46,7 @@ class Config:
             self.name = path.name
         self.entries = {}
         self.initialize_dictionary()
+        self.limit = Limit(self)
 
     def __str__(self):
         return self._text
@@ -65,6 +66,12 @@ class Config:
 
     def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         return []
+
+    def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
+        params = self.get_main_parameters(active_mode_numerical)
+        for param in params:
+            a, b = self.limit.limits[param]
+            self.entries[param] = random.uniform(a, b)
 
     def initialize_dictionary(self):
         splits = self._text.split("\n")
@@ -150,12 +157,6 @@ class ModeChoiceConfig(Config):
         super().__init__(path)
         self.limit = ModeLimitSimple(self)
 
-    def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
-        params = self.get_main_parameters(active_mode_numerical)
-        for param in params:
-            a, b = self.limit.limits[param]
-            self.entries[param] = random.uniform(a, b)
-
     def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         active_mode_list = [Mode(x) for x in active_mode_numerical]
         param_list = []
@@ -173,12 +174,6 @@ class DestinationChoiceConfig(Config):
     def __init__(self, path):
         super().__init__(path)
         self.limit = DestinationLimitSimple(self)
-
-    def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
-        params = self.get_main_parameters(active_mode_numerical)
-        for parm in params:
-            a, b = self.limit.limits[parm]
-            self.entries[parm] = random.uniform(a, b)
 
     def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         active_mode_list = [Mode(x) for x in active_mode_numerical]
