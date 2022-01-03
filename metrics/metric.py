@@ -19,7 +19,7 @@ def get_all_existing_modes(data_frame):
 class Metric:
 
     def __init__(self):
-        self.data_frame = None
+        self._data_frame = None
 
     def read_from_raw_data(self, raw_data):
         pass
@@ -27,7 +27,7 @@ class Metric:
     @classmethod
     def from_file(cls, file_path):
         obj = cls()
-        obj.data_frame = pandas.read_csv(file_path)
+        obj._data_frame = pandas.read_csv(file_path)
         return obj
 
     @classmethod
@@ -37,16 +37,16 @@ class Metric:
         return obj
 
     def get_data_frame(self):
-        return self.data_frame.copy()
+        return self._data_frame.copy()
 
     def draw(self, resolution=1):
         pass
 
     def print(self):
-        print(self.data_frame)
+        print(self._data_frame)
 
     def write(self, path):
-        self.data_frame.to_csv(path, index=False)
+        self._data_frame.to_csv(path, index=False)
 
 
 def get_approximations(dataframe, string):

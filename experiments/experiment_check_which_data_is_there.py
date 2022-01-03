@@ -10,9 +10,9 @@ if __name__ == '__main__':
         yaml, data = simulation.load(str(path) + "/")
         if not str(path).__contains__("elastic"):
             print(path)
-            print(data.travel_time.data_frame.columns)
+            print(data.travel_time._data_frame.columns)
             #data.travel_time.draw()
-            print(metric.get_all_existing_modes(data.travel_time.data_frame))
+            print(metric.get_all_existing_modes(data.travel_time._data_frame))
             data.draw_distributions()
         #data.draw_distributions()
 

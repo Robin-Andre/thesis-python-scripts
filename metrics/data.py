@@ -19,9 +19,9 @@ class Data:
         self.travel_distance = TravelDistance.from_raw_data(raw_data)
 
     def __eq__(self, other):
-        return self.traffic_demand.data_frame.equals(other.traffic_demand.data_frame)\
-               and self.travel_time.data_frame.equals(other.travel_time.data_frame) \
-               and self.travel_distance.data_frame.equals(other.travel_distance.data_frame)
+        return self.traffic_demand._data_frame.equals(other.traffic_demand._data_frame)\
+               and self.travel_time._data_frame.equals(other.travel_time._data_frame) \
+               and self.travel_distance._data_frame.equals(other.travel_distance._data_frame)
 
     def empty(self):
         return all(v is None for v in [self.traffic_demand, self.travel_time, self.travel_distance])

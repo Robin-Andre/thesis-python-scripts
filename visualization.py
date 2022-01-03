@@ -99,11 +99,12 @@ def draw_travel_demand(data_frame, color_num=-1):
     plt.plot(data_frame["active_trips"], color=color_modes(color_num))
     plt.show()
 
-def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4]):
 
+def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4]):
     fig, ax = plt.subplots(3, 2)
     for i, element in enumerate(mode_list):
         df = data_frame.get_mode_specific_data(element)
+        ax[i // 2][i % 2].set_ylim([0, 5000])
         ax[i // 2][i % 2].plot(df["active_trips"], color=color_modes(element))
     plt.show()
 

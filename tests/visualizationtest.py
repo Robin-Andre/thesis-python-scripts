@@ -66,14 +66,14 @@ class VisualizationTestCase(unittest.TestCase):
         data.load("resources/example_config_load/results/")
         data2.load("resources/example_config_load2/results/")
 
-        print(plot.draw_travel_distance_per_mode(data.travel_distance.data_frame))
-        plot.draw_travel_distance_per_mode(data2.travel_distance.data_frame)
+        print(plot.draw_travel_distance_per_mode(data.travel_distance._data_frame))
+        plot.draw_travel_distance_per_mode(data2.travel_distance._data_frame)
 
 
     def test_rewritten_function(self):
         data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
-        temp = data.travel_distance.data_frame
+        temp = data.travel_distance._data_frame
         resolution = 1
         for i in [-1, 0, 1, 2, 3, 4]:
 

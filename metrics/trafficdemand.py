@@ -10,20 +10,21 @@ class TrafficDemand(Metric):
         temp = temp.apply(lambda x: evaluation.create_plot_data(x)).reset_index()
         assert temp["level_1"].equals(temp["time"])  # TODO figure out where the "level_1" comes from
         temp = temp.drop(columns=["level_1"])
-        self.data_frame = temp
+        self._data_frame = temp
 
     def draw(self, resolution=1):
-        temp = self.data_frame[self.data_frame["time"] % resolution == 0]
+        temp = self._data_frame[self._data_frame["time"] % resolution == 0]
         visualization.draw(temp, visualization.aggregate_traffic_modal)
 
     def get_mode_specific_data(self, mode_number):
-        temp = self.data_frame.copy()
+        temp = self._data_frame.copy()
         if mode_number == -1:
             temp = temp.groupby(["time"]).sum()
         else:
             temp = temp[temp["tripMode"] == mode_number]
             temp = temp.set_index("time")
         return temp
+
 
 
     @classmethod

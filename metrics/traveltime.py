@@ -6,23 +6,23 @@ from metrics.metric import Metric, get_distribution, get_all_existing_modes, get
 
 class TravelTime(Metric):
     def read_from_raw_data(self, raw_data):
-        self.data_frame = evaluation.create_travel_time_data(raw_data)
+        self._data_frame = evaluation.create_travel_time_data(raw_data)
 
     def draw(self, resolution=1):
-        print(visualization.draw_travel_time(self.data_frame))
+        print(visualization.draw_travel_time(self._data_frame))
 
     def draw_distribution(self, mode=-1):
         distribution, pdf = self.get_distribution_and_pdf(mode)
         visualization.draw_distribution(distribution, mode, pdf)
 
     def get_distribution_and_pdf(self, mode):
-        distribution = get_distribution(self.data_frame, "durationTrip", group=mode)
-        pdf, _, _ = metric.get_fit_and_error_from_dataframe(self.data_frame, "durationTrip", mode)
+        distribution = get_distribution(self._data_frame, "durationTrip", group=mode)
+        pdf, _, _ = metric.get_fit_and_error_from_dataframe(self._data_frame, "durationTrip", mode)
         return distribution, pdf
 
     def draw_all_distributions(self):
         x, y, z = [], [], []
-        for i in get_all_existing_modes(self.data_frame):
+        for i in get_all_existing_modes(self._data_frame):
             distribution, pdf = self.get_distribution_and_pdf(i)
             x.append(distribution)
             y.append(i)
@@ -30,7 +30,7 @@ class TravelTime(Metric):
         visualization.draw_all_distributions(x, y, z)
 
     def approximations(self):
-        return get_approximations(self.data_frame, "durationTrip")
+        return get_approximations(self._data_frame, "durationTrip")
 
 
 

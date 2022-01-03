@@ -20,7 +20,7 @@ class MyTestCase(unittest.TestCase):
     def nontest_traveltime(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         t = metrics.traveltime.TravelTime(raw_data)
-        print(t.data_frame)
+        print(t._data_frame)
         t.draw()
     #TODO make test
     def nontest_traveldistance(self):
@@ -39,7 +39,7 @@ class MyTestCase(unittest.TestCase):
         df = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["tripBegin", "tripEnd", "tripMode"])
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         t = metrics.trafficdemand.TrafficDemand.from_raw_data(df)
-        print(t.data_frame)
+        print(t._data_frame)
         t.draw()
         t.print()
         t.write("dump\\lolfile")
@@ -69,7 +69,7 @@ class MyTestCase(unittest.TestCase):
     def test_for_modal_split(self):
         data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
-        td_modal_split = metric.aggregate(data.travel_distance.data_frame, np.inf, "distanceInKm")
+        td_modal_split = metric.aggregate(data.travel_distance._data_frame, np.inf, "distanceInKm")
         td_modal_split = td_modal_split / td_modal_split.sum()
         tt_modal_split = data.get_modal_split()
         self.assertTrue(np.array_equal(td_modal_split.values, tt_modal_split.values))
@@ -199,11 +199,11 @@ class MyTestCase(unittest.TestCase):
     def test_incomplete_data_set(self):
         data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
-        temp = data.travel_distance.data_frame
+        temp = data.travel_distance.get_data_frame()
         temp = temp[temp["tripMode"] != 1]
 
-        data.travel_distance.data_frame = temp
-        self.assertTrue(numpy.array_equal(metric.get_all_existing_modes(data.travel_distance.data_frame), np.array([-1, 0, 2, 3, 4])))
+        data.travel_distance._data_frame = temp
+        self.assertTrue(numpy.array_equal(metric.get_all_existing_modes(data.travel_distance._data_frame), np.array([-1, 0, 2, 3, 4])))
         data.travel_distance.approximations()
 
     # TODO this is not a test
@@ -285,7 +285,7 @@ class MyTestCase(unittest.TestCase):
         data2 = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data2.load("resources/example_config_load2/results/")
-        temp = data.travel_distance.data_frame
+        temp = data.travel_distance._data_frame
         temp = temp[temp["tripMode"] == 1]
         temp = metric.aggregate(temp, 2, "distanceInKm").reset_index()
         print(temp)
