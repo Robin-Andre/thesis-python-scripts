@@ -95,6 +95,19 @@ def draw_travel_distance(data_frame, bin_size=1, quantile=0.99):
     return ggplot(sane_data, aes(x="distanceInKm", weight="amount", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
 
 
+def draw_travel_demand(data_frame, color_num=-1):
+    plt.plot(data_frame["active_trips"], color=color_modes(color_num))
+    plt.show()
+
+def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4]):
+
+    fig, ax = plt.subplots(3, 2)
+    for i, element in enumerate(mode_list):
+        df = data_frame.get_mode_specific_data(element)
+        ax[i // 2][i % 2].plot(df["active_trips"], color=color_modes(element))
+    plt.show()
+
+
 def draw_distribution(distribution, mode=-1, approximation=None, ax=None):
 
     if ax is None:
@@ -110,6 +123,7 @@ def draw_distribution(distribution, mode=-1, approximation=None, ax=None):
         #ax.title(label_modes(mode))
         ax.tick_params(bottom=None, labelbottom=True)
         return ax
+
 
 def draw_all_distributions(distribution_list, mode_list, approximation_list):
     fig, ax = plt.subplots(3, 2)
@@ -188,6 +202,7 @@ def draw_geographic_locations(data_frame):
     to_df = data_frame[["toX", "toY"]]
     to_df = to_df.rename(columns={"toX": "X", "toY": "Y"})
     return ggplot(pandas.concat[from_df, to_df])
+
 
 
 def draw(dataframe, function, path="", show=True, modulo=1, title=""):

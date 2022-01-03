@@ -16,6 +16,15 @@ class TrafficDemand(Metric):
         temp = self.data_frame[self.data_frame["time"] % resolution == 0]
         visualization.draw(temp, visualization.aggregate_traffic_modal)
 
+    def get_mode_specific_data(self, mode_number):
+        temp = self.data_frame.copy()
+        if mode_number == -1:
+            temp = temp.groupby(["time"]).sum()
+        else:
+            temp = temp[temp["tripMode"] == mode_number]
+            temp = temp.set_index("time")
+        return temp
+
 
     @classmethod
     def difference_t(cls, data1, data2, function, resolution=1, normalize=False):

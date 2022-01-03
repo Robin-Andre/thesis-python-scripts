@@ -27,6 +27,16 @@ class MyTestCase(unittest.TestCase):
 
         print(graph)
 
+    def test_distance_extraction(self):
+        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        data_frame = evaluation.create_travel_distance_data(raw_data)
+        self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "amount"])
+
+    def test_distance_and_activity_extraction(self):
+        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        data_frame = evaluation.create_travel_distance_with_activity_type(raw_data)
+        self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "amount"])
+
     def nontest_travel_distance_data(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         temp_df = evaluation.create_travel_distance_data(raw_data)

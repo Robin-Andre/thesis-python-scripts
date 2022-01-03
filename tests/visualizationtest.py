@@ -104,6 +104,17 @@ class VisualizationTestCase(unittest.TestCase):
 
         print(visualization.draw_modal_split([data.get_modal_split(), data2.get_modal_split()]))
 
+    def test_traffic_demand(self):
+        data = metrics.data.Data()
+        data.load("resources/example_config_load/results/")
+        visualization.draw_travel_demand(data.traffic_demand.get_mode_specific_data(-1))
+        visualization.draw_travel_demand(data.traffic_demand.get_mode_specific_data(1))
+
+
+    def test_traffic_demand_mode(self):
+        data = metrics.data.Data()
+        data.load("resources/example_config_load/results/")
+        visualization.draw_travel_demand_by_mode(data.traffic_demand)
 
     def test_pedestal(self):
         data = metrics.data.Data()
