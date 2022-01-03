@@ -1,12 +1,12 @@
-import inspect
 import shutil
 import unittest
 from pathlib import Path
 
 import pandas
 
+import metrics.data
 from configurations import configloader, SPECS
-import metric
+from metrics import metric
 import mobitopp_execution as simulation
 import yamlloader
 
@@ -56,7 +56,7 @@ class MyTestCase(unittest.TestCase):
         yaml = yamlloader.YAML(Path(cwd + yaml_file))
         yaml.set_configs(yaml.find_calibration_configs(cwd))  # TODO remove and change yaml loading
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        data = metric.Data(raw_data)
+        data = metrics.data.Data(raw_data)
         simulation.save(yaml, data, test_path)
         self.assertTrue(Path(test_path).exists())
         self.assertTrue(Path(test_path + "/configs").exists())
@@ -107,7 +107,7 @@ class MyTestCase(unittest.TestCase):
         yaml, _ = simulation.load("resources/example_config_load/")
         yaml.set_fraction_of_population(0.01)
         simulation.run_experiment(yaml)
-        data = metric.Data(pandas.read_csv(cwd + "output/results/calibration/throwaway/demandsimulationResult.csv", sep=";"))
+        data = metrics.data.Data(pandas.read_csv(cwd + "output/results/calibration/throwaway/demandsimulationResult.csv", sep=";"))
         self.assertFalse(data.empty())
         simulation.save(yaml, data, "resources/temp")
         simulation.restore_experimental_configs()

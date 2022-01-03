@@ -1,11 +1,4 @@
-from pathlib import Path
-
-import pandas
-
-import metric
-
 import mobitopp_execution as simulation
-import yamlloader
 from configurations import SPECS
 
 if __name__ == '__main__':

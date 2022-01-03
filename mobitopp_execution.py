@@ -7,8 +7,9 @@ from pathlib import Path
 
 import pandas
 
+import metrics.data
 from configurations import configloader, SPECS
-import metric
+from metrics import metric
 import yamlloader
 
 
@@ -73,7 +74,7 @@ def load(relative_path_raw):
         configs.append(config)
     yaml.set_configs(configs)
     yaml.set_config_to_calibration()
-    data = metric.Data()
+    data = metrics.data.Data()
     if Path(relative_path + "results/").exists():
         data.load(relative_path + "results/")
     return yaml, data
@@ -94,7 +95,7 @@ def save(yaml, data, relative_path):
 def results(yaml=default_yaml()):
     file = SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv"
     if Path(file).exists():
-        return metric.Data(pandas.read_csv(file, sep=";"))
+        return metrics.data.Data(pandas.read_csv(file, sep=";"))
     return None
 
 

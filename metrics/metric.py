@@ -1,14 +1,7 @@
-import logging
-
 import numpy
 import numpy as np
 import pandas
 import scipy
-from matplotlib import pyplot as plt
-
-import evaluation
-import metric
-import visualization
 
 default_path = "output/calibration/throwaway/"
 
@@ -49,9 +42,6 @@ class Metric:
     def draw(self, resolution=1):
         pass
 
-    def verify(self):
-        return True
-
     def print(self):
         print(self.data_frame)
 
@@ -59,169 +49,12 @@ class Metric:
         self.data_frame.to_csv(path, index=False)
 
 
-class TrafficDemand(Metric):
-
-    def read_from_raw_data(self, raw_data):
-        temp = raw_data[["tripBegin", "tripEnd", "tripMode"]].groupby("tripMode")
-        temp = temp.apply(lambda x: evaluation.create_plot_data(x)).reset_index()
-        assert temp["level_1"].equals(temp["time"])  # TODO figure out where the "level_1" comes from
-        temp = temp.drop(columns=["level_1"])
-        self.data_frame = temp
-
-    def draw(self, resolution=1):
-        temp = self.data_frame[self.data_frame["time"] % resolution == 0]
-        visualization.draw(temp, visualization.aggregate_traffic_modal)
-
-    def verify(self):
-        pass
-
-    @classmethod
-    def difference(cls, data1, data2, function, resolution=1, normalize=False):
-        return difference(data1, data2, function, resolution=resolution, normalize=normalize)
-
-
 def get_approximations(dataframe, string):
     approxis = []
     for i in get_all_existing_modes(dataframe):
-        _, data, error = metric.get_fit_and_error_from_dataframe(dataframe, string, i)
+        _, data, error = get_fit_and_error_from_dataframe(dataframe, string, i)
         approxis.append([i, data, error])
     return approxis
-
-
-class TravelTime(Metric):
-    def read_from_raw_data(self, raw_data):
-        self.data_frame = evaluation.create_travel_time_data(raw_data)
-
-    def draw(self, resolution=1):
-        print(visualization.draw_travel_time(self.data_frame))
-
-    def draw_distribution(self, mode=-1):
-        distribution, pdf = self.get_distribution_and_pdf(mode)
-        visualization.draw_distribution(distribution, mode, pdf)
-
-    def get_distribution_and_pdf(self, mode):
-        distribution = get_distribution(self.data_frame, "durationTrip", group=mode)
-        pdf, _, _ = metric.get_fit_and_error_from_dataframe(self.data_frame, "durationTrip", mode)
-        return distribution, pdf
-
-    def draw_all_distributions(self):
-        x, y, z = [], [], []
-        for i in get_all_existing_modes(self.data_frame):
-            distribution, pdf = self.get_distribution_and_pdf(i)
-            x.append(distribution)
-            y.append(i)
-            z.append(pdf)
-        visualization.draw_all_distributions(x, y, z)
-
-    def difference(self, metric, resolution=1):
-        pass
-
-    def verify(self):
-        pass
-
-    def approximations(self):
-        return get_approximations(self.data_frame, "durationTrip")
-
-
-
-    @classmethod
-    def difference(cls, data1, data2, function, resolution=1, normalize=False):
-        return difference(data1, data2, function, resolution=resolution, aggregate_string="durationTrip",
-                          normalize=normalize)
-
-
-class TravelDistance(Metric):
-    def read_from_raw_data(self, raw_data):
-        self.data_frame = evaluation.create_travel_distance_data(raw_data)
-
-    def draw(self, resolution=1):
-        print(visualization.draw_travel_distance(self.data_frame, bin_size=resolution))
-
-    def verify(self):
-        pass
-
-    def draw_distribution(self, mode=-1):
-        distribution = get_distribution(self.data_frame, "distanceInKm", group=mode)
-        pdf, _, _ = metric.get_fit_and_error_from_dataframe(self.data_frame, "distanceInKm", mode)
-        visualization.draw_distribution(distribution, mode, pdf)
-
-    def draw_all_distributions(self):
-        x, y, z = [], [], []
-        for i in get_all_existing_modes(self.data_frame):
-            distribution = get_distribution(self.data_frame, "distanceInKm", group=i, quantile=0.99)
-            pdf, _, _ = metric.get_fit_and_error_from_dataframe(self.data_frame, "distanceInKm", i, quantile=0.99)
-            x.append(distribution)
-            y.append(i)
-            z.append(pdf)
-        visualization.draw_all_distributions(x, y, z)
-
-    def approximations(self):
-        return get_approximations(self.data_frame, "distanceInKm")
-
-    @classmethod
-    def difference(cls, data1, data2, function, resolution=1, normalize=False):
-        return difference(data1, data2, function, resolution=resolution, aggregate_string="distanceInKm",
-                          normalize=normalize)
-
-
-class Data:
-    def __init__(self, raw_data=None):
-        if raw_data is None:
-            self.traffic_demand = None
-            self.travel_time = None
-            self.travel_distance = None
-            return
-
-        self.traffic_demand = TrafficDemand.from_raw_data(raw_data)
-        self.travel_time = TravelTime.from_raw_data(raw_data)
-        self.travel_distance = TravelDistance.from_raw_data(raw_data)
-
-    def __eq__(self, other):
-        return self.traffic_demand.data_frame.equals(other.traffic_demand.data_frame)\
-               and self.travel_time.data_frame.equals(other.travel_time.data_frame) \
-               and self.travel_distance.data_frame.equals(other.travel_distance.data_frame)
-
-    def empty(self):
-        return all(v is None for v in [self.traffic_demand, self.travel_time, self.travel_distance])
-
-    def write(self, path="dump\\"):
-        self.traffic_demand.write(path + "Demand.csv")
-        self.travel_time.write(path + "Time.csv")
-        self.travel_distance.write(path + "Distance.csv")
-
-    def load(self, path="dump\\"):
-        self.traffic_demand = TrafficDemand.from_file(path + "Demand.csv")
-        self.travel_time = TravelTime.from_file(path + "Time.csv")
-        self.travel_distance = TravelDistance.from_file(path + "Distance.csv")
-
-    def print(self):
-        self.traffic_demand.print()
-        self.travel_time.print()
-        self.travel_distance.print()
-
-    def draw(self, resolution=[1, 1, 1]):
-        self.traffic_demand.draw(resolution=resolution[0])
-        self.travel_time.draw(resolution=resolution[1])
-        self.travel_distance.draw(resolution=resolution[2])
-
-    def get_neural_training_data(self):
-        test = self.get_modal_split()
-        approxis_time = self.travel_time.approximations()
-        approxis_distance = self.travel_distance.approximations()
-        return test["amount"], approxis_time, approxis_distance
-
-    def draw_distributions(self):
-        self.travel_time.draw_all_distributions()
-        self.travel_distance.draw_all_distributions()
-
-    def get_modal_split(self):
-        agg = aggregate(self.travel_time.get_data_frame(), numpy.inf, "durationTrip")
-        agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the
-        # modal split
-        return agg / agg.sum()
-
-    def compare(self, other):
-        pass
 
 
 def get_counts(data_frame, value, group=-1, resolution=1, quantile=1.0):

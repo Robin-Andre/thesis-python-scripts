@@ -1,12 +1,11 @@
-import os
 import unittest
 
 import numpy as np
 import pandas
-import scipy
 from matplotlib import pyplot as plt
 
-import metric
+import metrics.data
+from metrics import metric
 import visualization
 import visualization as plot
 
@@ -51,8 +50,8 @@ class VisualizationTestCase(unittest.TestCase):
 
 
     def test_modal_split_plot(self):
-        data = metric.Data()
-        data2 = metric.Data()
+        data = metrics.data.Data()
+        data2 = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data2.load("resources/example_config_load2/results/")
 
@@ -62,8 +61,8 @@ class VisualizationTestCase(unittest.TestCase):
         print(plot.draw_modal_split([modal_split, modal_split2]))
 
     def test_mode_choice_aggregate_time_plot(self):
-        data = metric.Data()
-        data2 = metric.Data()
+        data = metrics.data.Data()
+        data2 = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data2.load("resources/example_config_load2/results/")
 
@@ -72,7 +71,7 @@ class VisualizationTestCase(unittest.TestCase):
 
 
     def test_rewritten_function(self):
-        data = metric.Data()
+        data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         temp = data.travel_distance.data_frame
         resolution = 1
@@ -82,7 +81,7 @@ class VisualizationTestCase(unittest.TestCase):
 
             savess.plot.bar(width=1.0, alpha=0.5, color=visualization.color_modes(i))
             #savess.plot()
-            pdf, data_points, error = metric.get_fit_and_error_from_dataframe(temp, "distanceInKm", i,  dist_name="gamma", resolution=resolution)
+            pdf, data_points, error = metric.get_fit_and_error_from_dataframe(temp, "distanceInKm", i, dist_name="gamma", resolution=resolution)
             print(data_points)
             print(error)
             plt.plot(np.linspace(0, len(pdf) / 10, len(pdf)), pdf, color=visualization.color_modes(i))
@@ -92,9 +91,9 @@ class VisualizationTestCase(unittest.TestCase):
 
 
     def test_approxis(self):
-        data = metric.Data()
+        data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
-        data2 = metric.Data()
+        data2 = metrics.data.Data()
         data2.load("resources/example_config_load2/results/")
 
         data.travel_time.draw_all_distributions()
@@ -107,7 +106,7 @@ class VisualizationTestCase(unittest.TestCase):
 
 
     def test_pedestal(self):
-        data = metric.Data()
+        data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data.travel_time.draw_distribution(mode=3)
 

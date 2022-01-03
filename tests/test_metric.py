@@ -1,23 +1,16 @@
 import unittest
 
 import numpy
-import pylab
-import scipy.stats
 import sklearn.metrics
 import sklearn.feature_selection
 from fitter import Fitter
-from numpy import linspace
 from pandas.testing import assert_series_equal
-from matplotlib import pyplot as plt
-import matplotlib.mlab as mlab
 import pandas
 import numpy as np
-from scipy.optimize import curve_fit
-from scipy.stats import stats
-from scipy.stats import norm
-import metric
-import visualization
-from metric import TrafficDemand as trd, TravelDistance as td, TravelTime as tt
+
+import metrics.data
+import metrics.traveldistance as td
+import metrics.metric as metric
 import visualization as plot
 
 
@@ -26,13 +19,13 @@ class MyTestCase(unittest.TestCase):
     #TODO make test
     def nontest_traveltime(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        t = metric.TravelTime(raw_data)
+        t = metrics.traveltime.TravelTime(raw_data)
         print(t.data_frame)
         t.draw()
     #TODO make test
     def nontest_traveldistance(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        t = metric.TravelDistance(raw_data)
+        t = metrics.traveldistance.TravelDistance(raw_data)
         print(t.data_frame)
         t.draw()
     #TODO make test
@@ -45,7 +38,7 @@ class MyTestCase(unittest.TestCase):
                                ])
         df = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["tripBegin", "tripEnd", "tripMode"])
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        t = metric.TrafficDemand.from_raw_data(df)
+        t = metrics.trafficdemand.TrafficDemand.from_raw_data(df)
         print(t.data_frame)
         t.draw()
         t.print()
@@ -54,7 +47,7 @@ class MyTestCase(unittest.TestCase):
     # TODO make test
     def nontest_full_write(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        dat = metric.Data(raw_data)
+        dat = metrics.data.Data(raw_data)
         dat.write()
 
     # TODO make test
@@ -65,7 +58,7 @@ class MyTestCase(unittest.TestCase):
                                [2, 7, 1, 5, 1]   # --XXXXX---
                                ])
         df = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["tripBegin", "tripEnd", "tripMode", "durationTrip", "distanceInKm"])
-        data = metric.Data(df)
+        data = metrics.data.Data(df)
 
         data.load()
         data.print()
@@ -74,7 +67,7 @@ class MyTestCase(unittest.TestCase):
         data.print()
 
     def test_for_modal_split(self):
-        data = metric.Data()
+        data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         td_modal_split = metric.aggregate(data.travel_distance.data_frame, np.inf, "distanceInKm")
         td_modal_split = td_modal_split / td_modal_split.sum()
@@ -89,7 +82,7 @@ class MyTestCase(unittest.TestCase):
                                [6, 0, 2]
                                ])
         df1 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["distanceInKm", "tripMode", "amount"])
-        td1 = metric.TravelDistance()
+        td1 = metrics.traveldistance.TravelDistance()
         td1.data_frame = df1
         numpy_data = np.array([[1, 0, 3],
                                [2, 0, 2],
@@ -98,27 +91,28 @@ class MyTestCase(unittest.TestCase):
                                ])
         df2 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]),
                                columns=["distanceInKm", "tripMode", "amount"])
-        td2 = metric.TravelDistance()
+        td2 = metrics.traveldistance.TravelDistance()
         td2.data_frame = df2
         index = pandas.MultiIndex.from_product([[0], [1, 2, 5, 6]], names=["tripMode", "distanceInKm"])
 
         expected_result = pandas.Series([0, 0, 0, 0], index=index, name="diff")
-        result = td.difference(td1, td2, lambda x, y: 0)
+
+        result = td.TravelDistance.difference_t(td1, td2, lambda x, y: 0)
         self.assertIsNone(assert_series_equal(result, expected_result, check_dtype=False))
 
-        result = td.difference(td1, td2, lambda x, y: abs(x - y))
+        result = td.TravelDistance.difference_t(td1, td2, lambda x, y: abs(x - y))
         expected_result = pandas.Series([1, 1, 1, 1], index=index, name="diff")
         self.assertIsNone(assert_series_equal(result, expected_result, check_dtype=False))
 
-        result = td.difference(td1, td2, lambda x, y: x - y)
+        result = td.TravelDistance.difference_t(td1, td2, lambda x, y: x - y)
         expected_result = pandas.Series([1, -1, 1, -1], index=index, name="diff")
         self.assertIsNone(assert_series_equal(result, expected_result, check_dtype=False))
 
-        result = td.difference(td1, td2, lambda x, y: np.sqrt(np.abs(x - y)))
+        result = td.TravelDistance.difference_t(td1, td2, lambda x, y: np.sqrt(np.abs(x - y)))
         expected_result = pandas.Series([1.0, 1.0, 1.0, 1.0], index=index, name="diff")
         self.assertIsNone(assert_series_equal(result, expected_result, check_dtype=False))
-
-        result = td.difference(td1, td2, lambda x, y: np.sqrt(np.abs(x - y)), resolution=5)
+        #TODO fix or delete
+        #result = td.difference(td1, td2, lambda x, y: np.sqrt(np.abs(x - y)), resolution=5)
 
 
 ########################################################################################################################
@@ -203,7 +197,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(result["amount"].sum(), 1)
 
     def test_incomplete_data_set(self):
-        data = metric.Data()
+        data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         temp = data.travel_distance.data_frame
         temp = temp[temp["tripMode"] != 1]
@@ -214,7 +208,7 @@ class MyTestCase(unittest.TestCase):
 
     # TODO this is not a test
     def nontest_broken_data_set(self):
-        data = metric.Data()
+        data = metrics.data.Data()
         data.load("resources/asc_car_d_sig10/results/")
         data.travel_time.draw_distribution(mode=3)
         #data.draw_distributions()
@@ -224,14 +218,14 @@ class MyTestCase(unittest.TestCase):
                                [2, 0, 1],
                                ])
         df1 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["distanceInKm", "tripMode", "amount"])
-        td1 = metric.TravelDistance()
+        td1 = metrics.traveldistance.TravelDistance()
         td1.data_frame = df1
         numpy_data = np.array([[1, 0, 3],
                                [3, 0, 2],
                                ])
         df2 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]),
                                columns=["distanceInKm", "tripMode", "amount"])
-        td2 = metric.TravelDistance()
+        td2 = metrics.traveldistance.TravelDistance()
         td2.data_frame = df2
         result = td.difference(td1, td2, lambda x, y: np.abs(x - y))
         print(result)
@@ -243,14 +237,14 @@ class MyTestCase(unittest.TestCase):
                                [1, 1, 1]
                                ])
         df1 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["distanceInKm", "tripMode", "amount"])
-        td1 = metric.TravelDistance()
+        td1 = metrics.traveldistance.TravelDistance()
         td1.data_frame = df1
         numpy_data = np.array([[1, 0, 3],
                                [3, 0, 2],
                                ])
         df2 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]),
                                columns=["distanceInKm", "tripMode", "amount"])
-        td2 = metric.TravelDistance()
+        td2 = metrics.traveldistance.TravelDistance()
         td2.data_frame = df2
         result = td.difference(td1, td2, lambda x, y: np.abs(x - y), normalize=True)
         print(result.describe())
@@ -268,8 +262,8 @@ class MyTestCase(unittest.TestCase):
 
     #TODO make test or move somewhere else
     def nontest_sklearn_mean_squared_error(self):
-        data = metric.Data()
-        data2 = metric.Data()
+        data = metrics.data.Data()
+        data2 = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data2.load("resources/example_config_load2/results/")
         modal_split = data.get_modal_split()
@@ -287,8 +281,8 @@ class MyTestCase(unittest.TestCase):
 
     # TODO not a test
     def nontest_fitting_of_distribution(self):
-        data = metric.Data()
-        data2 = metric.Data()
+        data = metrics.data.Data()
+        data2 = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data2.load("resources/example_config_load2/results/")
         temp = data.travel_distance.data_frame
@@ -310,7 +304,7 @@ class MyTestCase(unittest.TestCase):
 
     # TODO make a test result from this
     def test_get_neural_data(self):
-        data = metric.Data()
+        data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data.get_neural_training_data()
 

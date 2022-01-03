@@ -1,14 +1,10 @@
 import numpy
 import pandas
-import plotnine
 import scipy
 from matplotlib import pyplot as plt
-from plotnine import ggplot, aes, geom_line, ggsave, ggtitle, scale_linetype_manual, scale_size_manual, \
+from plotnine import ggplot, aes, geom_line, ggsave, ggtitle, scale_size_manual, \
     scale_alpha_manual, scale_color_manual, facet_wrap, scale_x_continuous, geom_histogram, geom_segment, geom_bar, \
-    labs, scale_fill_manual, scale_fill_discrete, theme, ylab, xlab, geom_text, position_stack, facet_grid
-from plotnine.themes import theme_bw
-
-import metric
+    scale_fill_discrete, theme, ylab, xlab, geom_text, position_stack
 
 
 def aggregate_traffic_two_sets(df):

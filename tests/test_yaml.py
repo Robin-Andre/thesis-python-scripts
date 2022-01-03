@@ -1,10 +1,6 @@
-import os
 import unittest
 from pathlib import Path
 
-import pandas
-import mobitopp_execution as simulation
-import metric
 import yamlloader
 from configurations import SPECS
 
