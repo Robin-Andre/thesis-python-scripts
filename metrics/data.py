@@ -56,10 +56,12 @@ class Data:
         self.travel_time.draw_all_distributions()
         self.travel_distance.draw_all_distributions()
 
-    def get_modal_split(self):
+    def get_modal_split(self, mode_list=[0, 1, 2, 3, 4]):
         agg = aggregate(self.travel_time.get_data_frame(), numpy.inf, "durationTrip")
+
         agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the
         # modal split
+        agg = agg.reindex(mode_list, fill_value=0)
         return agg / agg.sum()
 
     def compare(self, other):

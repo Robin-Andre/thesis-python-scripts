@@ -38,8 +38,9 @@ def data_extraction(path, config_number):
         yaml, data = simulation.load(str(file) + "/")
         # print(yaml.configs[-1])
         data_list.append(data)
-        tempdata = data.get_neural_training_data()
-        neural_data_list.append(make_neural_numpy_array(tempdata))
+        temp_data = data.get_neural_training_data()
+        print(temp_data)
+        neural_data_list.append(make_neural_numpy_array(temp_data))
         conf = yaml.configs[4]
         neural_expected_output_list.append(numpy.asarray(
             [conf.entries[key] for key in conf.get_main_parameters()]

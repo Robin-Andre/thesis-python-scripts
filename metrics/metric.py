@@ -1,3 +1,5 @@
+import math
+
 import numpy
 import numpy as np
 import pandas
@@ -49,11 +51,15 @@ class Metric:
         self._data_frame.to_csv(path, index=False)
 
 
-def get_approximations(dataframe, string):
+def get_approximations(dataframe, string, required_modes=[-1, 0, 1, 2, 3, 4]):
     approxis = []
-    for i in get_all_existing_modes(dataframe):
-        _, data, error = get_fit_and_error_from_dataframe(dataframe, string, i)
-        approxis.append([i, data, error])
+    for i in required_modes:
+        if i in get_all_existing_modes(dataframe):
+            _, data, error = get_fit_and_error_from_dataframe(dataframe, string, i)
+            approxis.append([i, data, error])
+        else:
+            approxis.append([i, (0, 0, 0), 0])
+    # If the dataset does not contain a required mode it needs to be artificially added
     return approxis
 
 
@@ -118,21 +124,26 @@ def aggregate(data_frame, resolution, aggregate_string):
 
 # This method returns the values of the fitting to a dataframe it is more reliable to fit to an artificial sample instead
 # of fitting to curve in scipy
-def fit_distribution_to_data_frame(data_frame, rounding=100, distribution_name="gamma"):
+def fit_distribution_to_data_frame(data_frame, distribution_name="gamma"):
     """
     This method returns the parameters of fitting a probability distribution to the underlying data. Since fitting a
     curve in scipy turns out to be significantly more unreliable than fitting a sample to a distribution this method
     creates an artificial sample by repeating the data points based on their occurrences rather than using the
     probability directly
     :param data_frame: a data frame holding the count (amount) of occurrences
-    :param rounding: Reduces the sample size by integer division of the rounding value (large simulations contain
-    unreasonably large sample sizes)
     :param distribution_name: The name of the distribution used for fitting (default: gamma)
     :return: the parameters required to reassemble the best fit of the chosen distribution
     """
     temp = data_frame.copy()
+
+    # TODO this rounding is not really explained and expected
+    # Reduces the sample size by integer division of the rounding value (large simulations contain
+    # unreasonably large sample sizes)
+    rounding = pow(10, max(math.ceil(math.log10(temp["amount"].sum()) - 4), 0))
+
     temp["amount"] = temp["amount"] // rounding
     temp_ys = temp["amount"].values
+    assert any(temp_ys > 0)
     x = np.arange(len(temp.index))
     y = temp_ys
     all_points = numpy.repeat(x, y)
@@ -175,7 +186,7 @@ def get_fit_and_error_from_dataframe(data_frame, aggregation_string, mode_identi
     savess = get_distribution(data_frame, aggregation_string, mode_identifier, resolution=resolution, quantile=quantile)
     counts = get_counts(data_frame, aggregation_string, mode_identifier, resolution=resolution, quantile=quantile)
 
-    result = fit_distribution_to_data_frame(counts, rounding=100, distribution_name=dist_name)
+    result = fit_distribution_to_data_frame(counts, distribution_name=dist_name)
     x = np.arange(len(savess))
     pdf_calc = dist_name_to_pdf(result, x, dist_name=dist_name)
     # TODO fix that an exponential approximation uses arbitrarily high values at 0
