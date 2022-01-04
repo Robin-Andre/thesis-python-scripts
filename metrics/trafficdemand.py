@@ -5,6 +5,13 @@ from metrics.metric import Metric, difference
 
 class TrafficDemand(Metric):
 
+    def __sub__(self, other):
+        temp = self._data_frame.set_index(["tripMode", "time"])
+        temp2 = other._data_frame.set_index(["tripMode", "time"])
+        ret = TrafficDemand()
+        ret._data_frame = temp.sub(temp2, fill_value=0).reset_index()
+        return ret
+
     def read_from_raw_data(self, raw_data):
         temp = raw_data[["tripBegin", "tripEnd", "tripMode"]].groupby("tripMode")
         temp = temp.apply(lambda x: evaluation.create_plot_data(x)).reset_index()

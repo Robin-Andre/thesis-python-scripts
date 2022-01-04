@@ -15,16 +15,11 @@ if __name__ == '__main__':
     dest_config = configs[0]
     data_list = []
 
-    simulation.restore_experimental_configs()
-    simulation.restore_default_yaml()
-    simulation.clean_result_directory()
-
+    simulation.reset()
     _, data = simulation.run_mobitopp(yaml)
     simulation.save(yaml, data, exp_path + "iteration1")
 
-    simulation.restore_experimental_configs()
-    simulation.restore_default_yaml()
-    simulation.clean_result_directory()
+    simulation.reset()
 
     _, data2 = simulation.run_mobitopp(yaml)
 

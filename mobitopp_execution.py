@@ -63,6 +63,12 @@ def __run_mobitopp_windows():
     return ret
 
 
+def reset():
+    restore_experimental_configs()
+    restore_default_yaml()
+    clean_result_directory()
+
+
 def load(relative_path_raw):
     relative_path = str(relative_path_raw) + "/"
     yaml = yamlloader.YAML(Path(relative_path + "launch.yaml"))

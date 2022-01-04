@@ -95,15 +95,23 @@ def draw_travel_distance(data_frame, bin_size=1, quantile=0.99):
     return ggplot(sane_data, aes(x="distanceInKm", weight="amount", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
 
 
-def draw_travel_demand(data_frame, color_num=-1):
-    plt.plot(data_frame["active_trips"], color=color_modes(color_num))
+#TODO cleanup after work
+def draw_travel_demand(data_series, color_num=-1, title=""):
+    #temp = data_series.ewm(span=60).mean()
+    #temp = data_series.ewm(com=1).mean()
+    #plt.plot(temp, color=color_modes(color_num), alpha=0.2)
+    #temp = temp.ewm(com=1).mean()
+    plt.plot(data_series, color=color_modes(color_num))
+    plt.title(title)
+    #plt.plot(temp, color=color_modes(color_num))
     plt.show()
 
 
-def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4]):
+def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], smoothing=1):
     fig, ax = plt.subplots(3, 2)
     for i, element in enumerate(mode_list):
         df = data_frame.get_mode_specific_data(element)
+        df = df.rolling(smoothing).mean()
         #ax[i // 2][i % 2].set_ylim([0, 5000])
         ax[i // 2][i % 2].plot(df, color=color_modes(element))
         ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
