@@ -34,14 +34,14 @@ def data_extraction(path, config_number):
     neural_data_list = []
     neural_expected_output_list = []
     for file in path.iterdir():
-        print(file)
+
         yaml, data = simulation.load(str(file) + "/")
-        # print(yaml.configs[-1])
         data_list.append(data)
         temp_data = data.get_neural_training_data()
-        print(temp_data)
+
         neural_data_list.append(make_neural_numpy_array(temp_data))
-        conf = yaml.configs[4]
+        conf = yaml.configs[config_number]
+        print(conf.get_main_parameters())
         neural_expected_output_list.append(numpy.asarray(
             [conf.entries[key] for key in conf.get_main_parameters()]
         ))
@@ -59,21 +59,33 @@ def data_comparison(path):
 
 
 def main():
-    path = SPECS.EXP_PATH + "neural_network_random_data/"
-    # All the experiments for neural networking
+    create_numpy_data_mode()
+    for file in Path(SPECS.NUMPY).iterdir():
+        print(file)
+        x = numpy.load(file)
+        print(x)
+    return
+
+
+def create_numpy_data_mode():
     ex_list_mode = ['neural_network_mode_choice-b_only_one_zero',
                     'neural_network_only_change_main_params',
                     'neural_network_only_change_main_params_better_beta_params',
                     'neural_network_only_change_main_params_no_sig_better_beta']
-
-    ex_list_dest = ['neural_network_dest_data_version2']
     for ex in ex_list_mode:
-        a, b, c = data_extraction(Path(SPECS.EXP_PATH + ex), 5)  # mode has config number 5
-        numpy.save(Path(SPECS.NUMPY + ex + "_input_data"), b)
-        numpy.save(Path(SPECS.NUMPY + ex + "_expected_data"), c)
-        #a = data_comparison(Path(SPECS.EXP_PATH + ex))
-        #res = [x == y for x in a for y in a]
-    return
+        extract(ex, 5)
+
+
+def create_numpy_data_dest():
+    ex_list_dest = ['neural_network_dest_data_version2']
+    for ex in ex_list_dest:
+        extract(ex, 4)  # destination has config number 4
+
+
+def extract(ex, num):
+    a, b, c = data_extraction(Path(SPECS.EXP_PATH + ex), num)
+    numpy.save(Path(SPECS.NUMPY + ex + "_input_data"), b)
+    numpy.save(Path(SPECS.NUMPY + ex + "_expected_data"), c)
 
 
 if __name__ == "__main__":

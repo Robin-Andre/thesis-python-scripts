@@ -63,6 +63,14 @@ def __run_mobitopp_windows():
     return ret
 
 
+def get_inherited_config_from_path(path):
+    d = {
+        "mode_choice_main_parameters.txt": configloader.ModeChoiceConfig(path),
+        "destination_choice_utility_calculation_parameters.txt": configloader.DestinationChoiceConfig(path)
+    }
+    return d.get(path.name, configloader.Config(path))
+
+
 def load(relative_path_raw):
     relative_path = str(relative_path_raw) + "/"
     yaml = yamlloader.YAML(Path(relative_path + "launch.yaml"))
@@ -70,12 +78,7 @@ def load(relative_path_raw):
     configs = []
     for path in config_dir:
 
-        if path.name.__contains__("mode_choice_main_parameters"):
-            config = configloader.ModeChoiceConfig(path)
-        if path.name.__contains__("destination_choice_utility_calculation_parameters"):
-            config = configloader.DestinationChoiceConfig(path)
-        else:
-            config = configloader.Config(path)
+        config = get_inherited_config_from_path(path)
 
         configs.append(config)
     yaml.set_configs(configs)
