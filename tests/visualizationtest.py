@@ -127,12 +127,19 @@ class VisualizationTestCase(unittest.TestCase):
     def test_traffic_demand_mode(self):
         data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
-        visualization.draw_travel_demand_by_mode(data.traffic_demand, smoothing=15)
+        visualization.draw_travel_demand_by_mode(data.traffic_demand)
 
     def test_pedestal(self):
         data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data.travel_time.draw_distribution(mode=3)
+
+    def test_difference_plot(self):
+        data = metrics.data.Data()
+        data.load("resources/example_config_load/results/")
+        data2 = metrics.data.Data()
+        data2.load("resources/example_config_load2/results/")
+        visualization.draw_travel_demand_by_mode(data.traffic_demand.smoothen(60) - data2.traffic_demand.smoothen(60))
 
 
 if __name__ == '__main__':

@@ -50,6 +50,32 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(all(test.get_data_frame()["active_trips"]) == 0)
         pandas.testing.assert_frame_equal(expected, traffic_demand.get_data_frame())
 
+    def test_smoothen(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        traffic_demand = data.traffic_demand
+        traffic_demand._data_frame[traffic_demand._data_frame.tripMode != 1] = 0
+
+        self.assertEqual(traffic_demand._data_frame.iloc[10208]["active_trips"], 5) # The first entry for cars at time 1
+        x = traffic_demand.smoothen(2)
+        print(x)
+        self.assertTrue((x._data_frame[x._data_frame["tripMode"] != 1]["active_trips"] == 0).all())
+
+        self.assertEqual(x._data_frame.iloc[10207]["active_trips"], 0)
+        self.assertEqual(x._data_frame.iloc[10208]["active_trips"], 2.5)
+        self.assertEqual(x._data_frame.iloc[10209]["active_trips"], 6.5)
+
+        x = traffic_demand.smoothen(3)
+        self.assertEqual(x._data_frame.iloc[10207]["active_trips"], 2.5)
+        self.assertEqual(x._data_frame.iloc[10208]["active_trips"], 13 / 3)
+
+    def test_smoothen_maintains_same_structure(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        traffic_demand = data.traffic_demand
+        x = traffic_demand.smoothen(1)
+        pandas.testing.assert_frame_equal(traffic_demand.get_data_frame(), x.get_data_frame())
+
 
 if __name__ == '__main__':
     unittest.main()

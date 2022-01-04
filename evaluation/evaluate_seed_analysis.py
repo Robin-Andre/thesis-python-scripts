@@ -13,19 +13,15 @@ if __name__ == '__main__':
         yaml, data = simulation.load(file)
         print(yaml.get_seed())
         data_list.append(data)
-        #data.draw_distributions()
-    a, b = data_list[0], data_list[1]
-    x = a.traffic_demand.get_data_frame()
-    y = b.traffic_demand.get_data_frame()
-    print(y)
-    x = x.set_index(["tripMode", "time"])
-    y = y.set_index(["tripMode", "time"])
-    z = x.sub(y, fill_value=0)
-    z = z.reset_index()
-    a.traffic_demand._data_frame = z
-    print(z)
-    visualization.draw_travel_demand_by_mode(a.traffic_demand)
-    print(z)
+    for i, x in enumerate(data_list):
+        for j, y in enumerate(data_list):
+            if x != y:
+                visualization.draw_travel_demand_by_mode(x.traffic_demand.smoothen(60) - y.traffic_demand.smoothen(60), title=str(i) + "->" + str(j))
+    a, b = data_list[0].traffic_demand, data_list[1].traffic_demand
+    c, d = a.smoothen(60), b.smoothen(60)
+    visualization.draw_travel_demand_by_mode(c - d)
+    visualization.draw_travel_demand_by_mode(a - b)
+
 
 
 

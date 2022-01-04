@@ -107,14 +107,17 @@ def draw_travel_demand(data_series, color_num=-1, title=""):
     plt.show()
 
 
-def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], smoothing=1):
+def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=""):
+
     fig, ax = plt.subplots(3, 2)
+    fig.suptitle(title)
     for i, element in enumerate(mode_list):
         df = data_frame.get_mode_specific_data(element)
-        df = df.rolling(smoothing).mean()
+        #df = df.rolling(smoothing).mean() Has been moved to data frame
         #ax[i // 2][i % 2].set_ylim([0, 5000])
         ax[i // 2][i % 2].plot(df, color=color_modes(element))
         ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
+
     plt.show()
 
 
