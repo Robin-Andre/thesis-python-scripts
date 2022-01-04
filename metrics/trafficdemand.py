@@ -17,13 +17,34 @@ class TrafficDemand(Metric):
         visualization.draw(temp, visualization.aggregate_traffic_modal)
 
     def get_mode_specific_data(self, mode_number):
+        """
+        Returns a series of data based on the specific mode
+        :param mode_number:
+        :return:
+        """
         temp = self._data_frame.copy()
         if mode_number == -1:
             temp = temp.groupby(["time"]).sum()
         else:
             temp = temp[temp["tripMode"] == mode_number]
             temp = temp.set_index("time")
-        return temp
+        temp = temp.drop(columns=["tripMode"])  # Trip mode is no longer required and should therefore not be passed
+        return temp.squeeze()
+
+    def get_peak(self, interval, mode=-1):
+        data = self.get_mode_specific_data(mode)
+        data = data[interval[0]:interval[1]]
+        return data.idxmax(), data.max()
+
+    def get_week_peaks(self, mode=-1):
+        begin = [0, 1440, 2880, 4320, 5760, 7200, 8640]
+        end = [1440, 2880, 4320, 5760, 7200, 8640, 10080]
+        return [self.get_peak(x, mode) for x in zip(begin, end)]
+
+
+    def get_activity_specific_data(self, activity_number):
+        # TODO implement
+        pass
 
 
 

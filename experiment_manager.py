@@ -4,7 +4,9 @@ from pathlib import Path
 import mobitopp_execution as simulation
 
 #experiment_path = "C:/Users/Admin/Desktop/master-thesis/neural_network_data"
-experiment_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/"
+from configurations import SPECS
+
+experiment_path = SPECS.EXP_PATH
 
 accepted_files = ["configs", "launch.yaml", "destination_choice_parameters_BUSINESS.txt",
                   "destination_choice_parameters_LEISURE.txt", "destination_choice_parameters_SERVICE.txt",

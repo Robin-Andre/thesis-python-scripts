@@ -4,7 +4,9 @@ import numpy
 from sklearn.neural_network import MLPRegressor
 import sklearn
 
+import experiment_manager
 import mobitopp_execution as simulation
+from configurations import SPECS
 
 
 def make_neural_numpy_array(neural_data):
@@ -19,34 +21,25 @@ def make_neural_numpy_array(neural_data):
             data_list.append(element)
     return numpy.asarray(data_list)
 
+
 def set_config_from_output(config, data):
     for item in enumerate(config.entries):
         config.entries.values[item] = data[item]
     config.write()
     print(config.entries)
 
+
 def main():
-    path = Path("/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_random_data")
-    data_list = []
-    neural_data_list = []
-    neural_expected_output_list = []
-    for file in path.iterdir():
-        print(file)
-        yaml, data = simulation.load(str(file) + "/")
-        #print(yaml.configs[-1])
-        data_list.append(data)
-        tempdata = data.get_neural_training_data()
-        neural_data_list.append(make_neural_numpy_array(tempdata))
-        conf = yaml.configs[-1]
-        neural_expected_output_list.append(numpy.asarray(list(conf.entries.values())))
-        data.draw_distributions()
+    path = Path(SPECS.EXP_PATH + "neural_network_random_data")
+
+    data_list, neural_data_list, neural_expected_output_list = data_extraction(path)
 
     full_data = numpy.vstack(neural_data_list)
     full_expected_data = numpy.vstack(neural_expected_output_list)
     res = [x == y for x in data_list for y in data_list]
 
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(full_data, full_expected_data, random_state=1)
-    regr = MLPRegressor(random_state=1, max_iter=15000, verbose=10).fit(X_train, y_train)
+    regr = MLPRegressor(random_state=1, max_iter=500, verbose=10).fit(X_train, y_train)
 
     for test in X_test:
         result = regr.predict(test)
@@ -62,6 +55,24 @@ def main():
     temp = regr.predict(X_test)
 
     print(regr.score(X_test, y_test))
+
+
+def data_extraction(path):
+    data_list = []
+    neural_data_list = []
+    neural_expected_output_list = []
+    for file in path.iterdir():
+        print(file)
+        yaml, data = simulation.load(str(file) + "/")
+        # print(yaml.configs[-1])
+        data_list.append(data)
+        tempdata = data.get_neural_training_data()
+        neural_data_list.append(make_neural_numpy_array(tempdata))
+        conf = yaml.configs[-1]
+        neural_expected_output_list.append(numpy.asarray(list(conf.entries.values())))
+        data.draw_distributions()
+    return data_list, neural_data_list, neural_expected_output_list
+
 
 if __name__ == "__main__":
     main()

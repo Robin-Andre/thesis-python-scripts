@@ -5,3 +5,4 @@ other specifics
 CWD = "C:/Users/Admin/Desktop/master-thesis/mobitopp-example-rastatt/"
 TEMP = "C:\\Users\\Admin\\Desktop\\master-thesis\\mobitopp-example-rastatt\\"
 EXP_PATH = "C:\\Users\\Admin\\Desktop\\master-thesis\\neural_network_data\\"
+NUMPY = "C:\\Users\\Admin\\Desktop\\master-thesis\\numpy_results\\"

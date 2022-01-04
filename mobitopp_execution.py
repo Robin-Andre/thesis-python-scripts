@@ -69,7 +69,13 @@ def load(relative_path_raw):
     config_dir = Path(relative_path + "configs/").glob('*.txt')
     configs = []
     for path in config_dir:
-        config = configloader.Config(path)
+
+        if path.name.__contains__("mode_choice_main_parameters"):
+            config = configloader.ModeChoiceConfig(path)
+        if path.name.__contains__("destination_choice_utility_calculation_parameters"):
+            config = configloader.DestinationChoiceConfig(path)
+        else:
+            config = configloader.Config(path)
 
         configs.append(config)
     yaml.set_configs(configs)

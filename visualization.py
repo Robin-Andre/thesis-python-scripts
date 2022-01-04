@@ -104,8 +104,9 @@ def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4]):
     fig, ax = plt.subplots(3, 2)
     for i, element in enumerate(mode_list):
         df = data_frame.get_mode_specific_data(element)
-        ax[i // 2][i % 2].set_ylim([0, 5000])
-        ax[i // 2][i % 2].plot(df["active_trips"], color=color_modes(element))
+        #ax[i // 2][i % 2].set_ylim([0, 5000])
+        ax[i // 2][i % 2].plot(df, color=color_modes(element))
+        ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     plt.show()
 
 
@@ -131,6 +132,7 @@ def draw_all_distributions(distribution_list, mode_list, approximation_list):
     for i, (dist, mode, approx) in enumerate(zip(distribution_list, mode_list, approximation_list)):
         draw_distribution(dist, mode, approx, ax[i // 2][i % 2])
     plt.show()
+
 
 def draw_travel_distance_per_mode(data_frame, bin_size=1, quantile=0.99):
     fig = plt.figure()
@@ -197,13 +199,13 @@ def draw_geographic_travels(data_frame):
 
     return ggplot(temp_df, aes(x="fromX", y="fromY", xend="toX", yend="toY")) + geom_segment() + geom_segment(bounding_box)
 
+
 def draw_geographic_locations(data_frame):
     from_df = data_frame[["fromX", "fromY"]]
     from_df = from_df.rename(columns={"fromX": "X", "fromY": "Y"})
     to_df = data_frame[["toX", "toY"]]
     to_df = to_df.rename(columns={"toX": "X", "toY": "Y"})
     return ggplot(pandas.concat[from_df, to_df])
-
 
 
 def draw(dataframe, function, path="", show=True, modulo=1, title=""):
