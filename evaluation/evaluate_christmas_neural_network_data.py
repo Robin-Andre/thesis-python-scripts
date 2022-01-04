@@ -66,12 +66,12 @@ def main():
                     'neural_network_only_change_main_params_no_sig_better_beta']
 
     ex_list_dest = ['neural_network_dest_data_version2']
-    for ex in ex_list_dest:
-        a, b, c = data_extraction(Path(SPECS.EXP_PATH + ex), 4) # destination has config number 4
-        numpy.save(Path(SPECS.NUMPY + ex + "_out"), b)
+    for ex in ex_list_mode:
+        a, b, c = data_extraction(Path(SPECS.EXP_PATH + ex), 5)  # mode has config number 5
+        numpy.save(Path(SPECS.NUMPY + ex + "_input_data"), b)
+        numpy.save(Path(SPECS.NUMPY + ex + "_expected_data"), c)
         #a = data_comparison(Path(SPECS.EXP_PATH + ex))
         #res = [x == y for x in a for y in a]
-        print(res)
     return
 
 
