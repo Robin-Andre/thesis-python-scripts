@@ -36,7 +36,7 @@ class MyTestCase(unittest.TestCase):
         data.travel_distance._data_frame = drop_mode(data.travel_distance._data_frame, 1)
         data.travel_time._data_frame = drop_mode(data.travel_time._data_frame, 1)
         self.assertEqual(len(data.travel_distance.approximations()), 6)
-        self.assertEqual()
+        self.assertEqual(data.travel_distance.approximations()[2], [1, (0, 0, 0), 0])
 
 
 
