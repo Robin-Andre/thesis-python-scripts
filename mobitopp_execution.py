@@ -49,7 +49,7 @@ def __run(command):
 
 
 def __run_mobitopp_linux():
-    ret = __run(".gradlew")
+    ret = __run("./gradlew")
     restore_default_yaml()
     return ret
 

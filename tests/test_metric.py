@@ -3,7 +3,6 @@ import unittest
 import numpy
 import sklearn.metrics
 import sklearn.feature_selection
-from fitter import Fitter
 from pandas.testing import assert_series_equal
 import pandas
 import numpy as np
