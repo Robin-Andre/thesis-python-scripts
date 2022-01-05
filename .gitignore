@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 tests/resources/demandsimulationResult.csv
+configurations/SPECS.py

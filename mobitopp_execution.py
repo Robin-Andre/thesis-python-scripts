@@ -49,7 +49,7 @@ def __run(command):
 
 
 def __run_mobitopp_linux():
-    ret = __run(".gradlew")
+    ret = __run("./gradlew")
     restore_default_yaml()
     return ret
 
@@ -69,6 +69,12 @@ def get_inherited_config_from_path(path):
         "destination_choice_utility_calculation_parameters.txt": configloader.DestinationChoiceConfig(path)
     }
     return d.get(path.name, configloader.Config(path))
+
+
+def reset():
+    restore_experimental_configs()
+    restore_default_yaml()
+    clean_result_directory()
 
 
 def load(relative_path_raw):

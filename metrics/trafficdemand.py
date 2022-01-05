@@ -1,9 +1,29 @@
+import pandas
+
 import evaluation
 import visualization
 from metrics.metric import Metric, difference
 
 
+def roll_trips(df, rolling_minutes):
+    df["active_trips"] = df["active_trips"].rolling(rolling_minutes, center=True, min_periods=1).mean()
+    return df
+
 class TrafficDemand(Metric):
+
+    def __sub__(self, other):
+        temp = self._data_frame.set_index(["tripMode", "time"])
+        temp2 = other._data_frame.set_index(["tripMode", "time"])
+        ret = TrafficDemand()
+        ret._data_frame = temp.sub(temp2, fill_value=0).reset_index()
+        return ret
+
+
+    def smoothen(self, smoothness_in_minutes):
+        ret = TrafficDemand()
+        xx = self._data_frame.groupby(["tripMode"]).apply(lambda x: roll_trips(x, smoothness_in_minutes))
+        ret._data_frame = xx
+        return ret
 
     def read_from_raw_data(self, raw_data):
         temp = raw_data[["tripBegin", "tripEnd", "tripMode"]].groupby("tripMode")

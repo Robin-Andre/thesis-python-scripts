@@ -110,6 +110,19 @@ class VisualizationTestCase(unittest.TestCase):
         visualization.draw_travel_demand(data.traffic_demand.get_mode_specific_data(-1))
         visualization.draw_travel_demand(data.traffic_demand.get_mode_specific_data(1))
 
+    # TODO remove after testing
+    def test_traffic_demand_smoothing(self):
+        data = metrics.data.Data()
+        data.load("resources/example_config_load/results/")
+        temp = data.traffic_demand.get_mode_specific_data(-1)
+        for i in [2, 15, 30, 60, 240, 1440]:
+            tmp = temp.rolling(i).mean()
+            tmp2 = temp.ewm(span=i).mean()
+            #temp = temp.rolling(3).mean()
+            visualization.draw_travel_demand(tmp, title="Simple" + str(i))
+            visualization.draw_travel_demand(tmp2, title="Exponen" + str(i))
+
+
 
     def test_traffic_demand_mode(self):
         data = metrics.data.Data()
@@ -120,6 +133,13 @@ class VisualizationTestCase(unittest.TestCase):
         data = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data.travel_time.draw_distribution(mode=3)
+
+    def test_difference_plot(self):
+        data = metrics.data.Data()
+        data.load("resources/example_config_load/results/")
+        data2 = metrics.data.Data()
+        data2.load("resources/example_config_load2/results/")
+        visualization.draw_travel_demand_by_mode(data.traffic_demand.smoothen(60) - data2.traffic_demand.smoothen(60))
 
 
 if __name__ == '__main__':
