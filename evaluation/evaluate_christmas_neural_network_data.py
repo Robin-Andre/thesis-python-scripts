@@ -3,30 +3,10 @@ from pathlib import Path
 import numpy
 from sklearn.neural_network import MLPRegressor
 import sklearn
-
+import calibration.neural_network_data_generator
 import experiment_manager
 import mobitopp_execution as simulation
 from configurations import SPECS
-
-
-def make_neural_numpy_array(neural_data):
-    data_list = list(neural_data[0].values)
-    assert len(data_list) == 5
-    for item in neural_data[1]:
-        for element in item[1]:
-            data_list.append(element)
-
-    for item in neural_data[2]:
-        for element in item[1]:
-            data_list.append(element)
-    return numpy.asarray(data_list)
-
-
-def set_config_from_output(config, data):
-    for item in enumerate(config.entries):
-        config.entries.values[item] = data[item]
-    config.write()
-    print(config.entries)
 
 
 def data_extraction(path, config_number):
@@ -37,9 +17,9 @@ def data_extraction(path, config_number):
 
         yaml, data = simulation.load(str(file) + "/")
         data_list.append(data)
-        temp_data = data.get_neural_training_data()
+        temp_data = calibration.get_neural_training_data(data)
 
-        neural_data_list.append(make_neural_numpy_array(temp_data))
+        neural_data_list.append(temp_data)
         conf = yaml.configs[config_number]
         neural_expected_output_list.append(numpy.asarray(
             [conf.entries[key] for key in conf.get_main_parameters()]
@@ -102,6 +82,7 @@ def create_numpy_data_dest():
 
 
 def extract(ex, num):
+
     a, b, c = data_extraction(Path(SPECS.EXP_PATH + ex), num)
     numpy.save(Path(SPECS.NUMPY + ex + "_input_data"), b)
     numpy.save(Path(SPECS.NUMPY + ex + "_expected_data"), c)

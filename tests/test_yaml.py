@@ -1,9 +1,10 @@
 import unittest
 from pathlib import Path
 
+import configurations.configloader
 import yamlloader
 from configurations import SPECS
-
+import mobitopp_execution as simulation
 
 class MyTestCase(unittest.TestCase):
 
@@ -42,6 +43,12 @@ class MyTestCase(unittest.TestCase):
         yaml2 = yamlloader.YAML(path)
         self.assertEqual(original_text, yaml2.data)
 
+    def test_get_mode_config(self):
+        yaml = simulation.default_yaml()
+        c = yaml.mode_config()
+        self.assertEqual(type(c), configurations.configloader.ModeChoiceConfig)
+        d = yaml.destination_config()
+        self.assertEqual(type(d), configurations.configloader.DestinationChoiceConfig)
 
 if __name__ == '__main__':
     unittest.main()
