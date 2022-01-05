@@ -41,7 +41,6 @@ def data_extraction(path, config_number):
 
         neural_data_list.append(make_neural_numpy_array(temp_data))
         conf = yaml.configs[config_number]
-        print(conf.get_main_parameters())
         neural_expected_output_list.append(numpy.asarray(
             [conf.entries[key] for key in conf.get_main_parameters()]
         ))
@@ -57,13 +56,33 @@ def data_comparison(path):
         data.draw_distributions()
     return data_list
 
+def neural_start(input, expected):
+    numpy.nan_to_num(input, copy=False)
+    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(input, expected, random_state=1)
+    regr = MLPRegressor(random_state=1, max_iter=5000, verbose=10, activation="logistic", hidden_layer_sizes=(100,)).fit(X_train, y_train)
+
+    temp = regr.predict(X_test[0:1])
+    temp_target = y_test[0:1]
+    print(temp)
+    print(temp_target)
+    print(regr.score(X_test, y_test))
+
 
 def main():
-    create_numpy_data_mode()
+
+    #create_numpy_data_mode()
+    temp = []
     for file in Path(SPECS.NUMPY).iterdir():
-        print(file)
+
         x = numpy.load(file)
-        print(x)
+
+        temp.append((file, x))
+
+    xl = [4, 6]
+    for x in xl:
+        assert x % 2 == 0
+        print(temp[x][0])
+        neural_start(numpy.vstack(temp[x + 1][1]), numpy.vstack(temp[x][1]))
     return
 
 
