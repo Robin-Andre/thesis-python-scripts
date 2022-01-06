@@ -8,8 +8,9 @@ class TravelTime(Metric):
     def read_from_raw_data(self, raw_data):
         self._data_frame = evaluation.create_travel_time_data(raw_data)
 
-    def draw(self, resolution=1):
-        print(visualization.draw_travel_time(self._data_frame))
+    def draw(self):
+        return self.draw_all_distributions()
+        #print(visualization.draw_travel_time(self._data_frame))
 
     def draw_distribution(self, mode=-1):
         distribution, pdf = self.get_distribution_and_pdf(mode)
@@ -27,7 +28,7 @@ class TravelTime(Metric):
             x.append(distribution)
             y.append(i)
             z.append(pdf)
-        visualization.draw_all_distributions(x, y, z)
+        return visualization.draw_all_distributions(x, y, z)
 
     def approximations(self):
         return get_approximations(self._data_frame, "durationTrip")

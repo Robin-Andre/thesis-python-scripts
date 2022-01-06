@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pandas
+from matplotlib import pyplot as plt
 
 import metrics.data
 from configurations import configloader, SPECS
@@ -152,15 +153,28 @@ def clean_directory(path):
     for file in path.iterdir():
         Path.unlink(file)
 
+
 def run_experiment(yaml=default_yaml(), experiment_name=""):
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print(f"Running Experiment: {experiment_name} : starting at {current_time}")
 
-    result = run_mobitopp(yaml)
+    result, data = run_mobitopp(yaml)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print(f"Experiment {experiment_name} finished at {current_time} with return code {result}")
     if result == 0:
-        return results()
+        return data
     return None
+
+
+def plot(pat):
+    path = str(pat)
+    _, data = load(path)
+    f, g, h = data.draw()
+    Path(path + "/plots").mkdir(parents=True, exist_ok=True)
+    f.savefig(path + "/plots/traffic_demand.png")
+    g.savefig(path + "/plots/travel_time.png")
+    h.savefig(path + "/plots/travel_distance.png")
+    plt.close("all")
+

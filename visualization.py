@@ -116,9 +116,9 @@ def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=
         #df = df.rolling(smoothing).mean() Has been moved to data frame
         #ax[i // 2][i % 2].set_ylim([0, 5000])
         ax[i // 2][i % 2].plot(df, color=color_modes(element))
-        ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
-
-    plt.show()
+        #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
+    return fig
+    #plt.show()
 
 
 def draw_distribution(distribution, mode=-1, approximation=None, ax=None):
@@ -142,11 +142,10 @@ def draw_all_distributions(distribution_list, mode_list, approximation_list):
     fig, ax = plt.subplots(3, 2)
     for i, (dist, mode, approx) in enumerate(zip(distribution_list, mode_list, approximation_list)):
         draw_distribution(dist, mode, approx, ax[i // 2][i % 2])
-    plt.show()
+    return fig
 
 
-def draw_travel_distance_per_mode(data_frame, bin_size=1, quantile=0.99):
-    fig = plt.figure()
+def draw_travel_distance_per_mode(data_frame):
     fig, ax = plt.subplots(3, 2)
     for trip_mode in data_frame["tripMode"].unique():
         temp = data_frame[data_frame["tripMode"] == trip_mode]
@@ -154,8 +153,7 @@ def draw_travel_distance_per_mode(data_frame, bin_size=1, quantile=0.99):
     temp = data_frame.groupby("distanceInKm").sum()
     temp = temp.drop(columns=["tripMode"])
     helper(temp, "All", ax[2][1])
-    plt.show()
-    return
+    return fig
 
 
 def helper(data_frame, title_num, ax):

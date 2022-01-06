@@ -41,10 +41,11 @@ class Data:
         self.travel_time.print()
         self.travel_distance.print()
 
-    def draw(self, resolution=[1, 1, 1]):
-        self.traffic_demand.draw(resolution=resolution[0])
-        self.travel_time.draw(resolution=resolution[1])
-        self.travel_distance.draw(resolution=resolution[2])
+    def draw(self):
+        x = self.traffic_demand.draw()
+        y = self.travel_time.draw()
+        z = self.travel_distance.draw()
+        return x, y, z
 
     def draw_distributions(self):
         self.travel_time.draw_all_distributions()

@@ -127,6 +127,15 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(type(yaml.configs[4]), configloader.DestinationChoiceConfig)
         self.assertEqual(type(yaml.configs[5]), configloader.ModeChoiceConfig)
 
+    def test_plot(self):
+        yaml, data = simulation.load("resources/example_config_load")
+        simulation.save(yaml, data, test_path)
+        simulation.plot(test_path)
+        self.assertTrue(Path(test_path + "/plots").exists())
+        self.assertTrue(Path(test_path + "/plots/traffic_demand.png").exists())
+        self.assertTrue(Path(test_path + "/plots/travel_time.png").exists())
+        self.assertTrue(Path(test_path + "/plots/travel_distance.png").exists())
+
 
 if __name__ == '__main__':
     unittest.main()
