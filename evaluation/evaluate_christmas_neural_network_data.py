@@ -9,7 +9,7 @@ import mobitopp_execution as simulation
 from configurations import SPECS
 
 
-def data_extraction(path, config_number):
+def data_extraction(path, dest_config):
     data_list = []
     neural_data_list = []
     neural_expected_output_list = []
@@ -20,7 +20,10 @@ def data_extraction(path, config_number):
         temp_data = calibration.get_neural_training_data(data)
 
         neural_data_list.append(temp_data)
-        conf = yaml.configs[config_number]
+        if dest_config:
+            conf = yaml.destination_config()
+        else:
+            conf = yaml.mode_config()
         neural_expected_output_list.append(numpy.asarray(
             [conf.entries[key] for key in conf.get_main_parameters()]
         ))
@@ -72,13 +75,13 @@ def create_numpy_data_mode():
                     'neural_network_only_change_main_params_better_beta_params',
                     'neural_network_only_change_main_params_no_sig_better_beta']
     for ex in ex_list_mode:
-        extract(ex, 5)
+        extract(ex, False)
 
 
 def create_numpy_data_dest():
     ex_list_dest = ['neural_network_dest_data_version2']
     for ex in ex_list_dest:
-        extract(ex, 4)  # destination has config number 4
+        extract(ex, True)  # destination has config number 4
 
 
 def extract(ex, num):

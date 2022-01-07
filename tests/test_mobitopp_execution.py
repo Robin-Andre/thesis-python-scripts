@@ -120,12 +120,9 @@ class MyTestCase(unittest.TestCase):
 
     def test_get_config_from_path(self):
         yaml, _ = simulation.load("resources/example_config_load/")
-        self.assertEqual(type(yaml.configs[0]), configloader.Config)
-        self.assertEqual(type(yaml.configs[1]), configloader.Config)
-        self.assertEqual(type(yaml.configs[2]), configloader.Config)
-        self.assertEqual(type(yaml.configs[3]), configloader.Config)
-        self.assertEqual(type(yaml.configs[4]), configloader.DestinationChoiceConfig)
-        self.assertEqual(type(yaml.configs[5]), configloader.ModeChoiceConfig)
+        self.assertEqual(type(yaml.mode_config()), configloader.ModeChoiceConfig)
+        self.assertEqual(type(yaml.destination_config()), configloader.DestinationChoiceConfig)
+
 
     def test_plot(self):
         yaml, data = simulation.load("resources/example_config_load")

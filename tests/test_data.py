@@ -40,16 +40,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(data.travel_distance.approximations()), 6)
         self.assertEqual(data.travel_distance.approximations()[2], [1, (0, 0, 0), 0])
 
-    def test_subtraction(self):
-        data = Data()
-        data.load("resources/example_config_load/results/")
-        traffic_demand = data.traffic_demand
-        expected = traffic_demand.get_data_frame()
-        test = traffic_demand - traffic_demand
-        print(test.get_data_frame())
-        self.assertTrue(all(test.get_data_frame()["active_trips"]) == 0)
-        pandas.testing.assert_frame_equal(expected, traffic_demand.get_data_frame())
-
     def test_smoothen(self):
         data = Data()
         data.load("resources/example_config_load/results/")

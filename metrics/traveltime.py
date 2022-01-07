@@ -5,6 +5,18 @@ from metrics.metric import Metric, get_distribution, get_all_existing_modes, get
 
 
 class TravelTime(Metric):
+    def __sub__(self, other):
+        ret = TravelTime()
+        ret._data_frame = super()._sub(other, "durationTrip")
+        return ret
+
+    def smoothen(self, smoothness_in_minutes):
+        ret = TravelTime()
+        ret._data_frame = super().smoothen(smoothness_in_minutes, "amount")
+        return ret
+
+
+
     def read_from_raw_data(self, raw_data):
         self._data_frame = evaluation.create_travel_time_data(raw_data)
 
@@ -33,7 +45,8 @@ class TravelTime(Metric):
     def approximations(self):
         return get_approximations(self._data_frame, "durationTrip")
 
-
+    def get_mode_specific_data(self, mode_number):
+        return super().get_mode_specific_data(mode_number, "durationTrip")
 
     @classmethod
     def difference_t(cls, data1, data2, function, resolution=1, normalize=False):

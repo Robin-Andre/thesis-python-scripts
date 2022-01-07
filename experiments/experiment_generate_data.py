@@ -36,13 +36,12 @@ if __name__ == '__main__':
     yaml = simulation.default_yaml()
     yaml.set_fraction_of_population(0.1)
     yaml.write()
-    configs = yaml.configs
 
     simulation.clean_result_directory()
 
     exp_path = SPECS.EXP_PATH + "/change_only_one_parameter_destination/"
-    mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
-    dest_config = configs[0]
+    mode_config = yaml.mode_config()
+    dest_config = yaml.destination_config()
     data_list = []
     parameter_list_mode = ["asc_car_d_mu",
                            "asc_car_d_sig",

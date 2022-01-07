@@ -6,13 +6,12 @@ if __name__ == '__main__':
     yaml = simulation.default_yaml()
     yaml.set_fraction_of_population(0.1)
     yaml.write()
-    configs = yaml.configs
 
     simulation.clean_result_directory()
 
     exp_path = SPECS.EXP_PATH + "reproducible_example/"
-    mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
-    dest_config = configs[0]
+    mode_config = yaml.mode_config()
+    dest_config = yaml.destination_config()
     data_list = []
 
     simulation.reset()
