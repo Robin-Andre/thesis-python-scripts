@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     simulation.clean_result_directory()
 
-    exp_path = SPECS.EXP_PATH + "/change_only_one_parameter_destination/"
+
     mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     dest_config = configs[0]
     data_list = []
@@ -66,31 +66,35 @@ if __name__ == '__main__':
                                   "b_tt_put",
                                   "b_tt_ped",
                                   "b_tt_bike"]
+
+    exp_path = SPECS.EXP_PATH + "/change_only_one_parameter_destination/"
     for parameter in parameter_list_destination:
-        for i in range(0, 100):
+        for i in range(0, 51):
             simulation.restore_experimental_configs()
             simulation.clean_result_directory()
+            dest_config.reset()
             if parameter.__contains__("b_tt_"):
-                dest_config.entries[parameter] = random.uniform(-1, 0)
+                #dest_config.entries[parameter] = random.uniform(-1, 0)
+                dest_config.entries[parameter] = (i - 50) / 50
             else:
-                dest_config.entries[parameter] = random.uniform(-25, 25)
+                #dest_config.entries[parameter] = random.uniform(-25, 25)
+                dest_config.entries[parameter] = i - 25
             dest_config.write()
             data = simulation.run_experiment(yaml, parameter + ":iteration" + str(i))
-            simulation.save(yaml, data, exp_path + parameter + "/iteration" + str(i) + "/")
+            simulation.save(yaml, data, exp_path + parameter + "/iteration" + str(i).zfill(4) + "/")
 
-
-
-
-    #for parameter in parameter_list_mode:
-    #    for i in range(0, 100):
-    #        simulation.restore_experimental_configs()
-    #        simulation.clean_result_directory()
-    #        mode_config.entries[parameter] = random.uniform(-25, 25)
-    #        mode_config.write()
-    #        # dest_config.randomize_main_parameters()
-    #        # dest_config.write()
-    #        data = simulation.run_experiment(yaml, parameter + ":iteration" + str(i))
-    #        simulation.save(yaml, data, exp_path + parameter + "/iteration" + str(i) + "/")
+    exp_path = SPECS.EXP_PATH + "/change_only_one_parameter_mode/"
+    for parameter in parameter_list_mode:
+        for i in range(0, 51):
+            simulation.restore_experimental_configs()
+            simulation.clean_result_directory()
+            mode_config.reset()
+            mode_config.entries[parameter] = (i - 50) / 50
+            mode_config.write()
+            # dest_config.randomize_main_parameters()
+            # dest_config.write()
+            data = simulation.run_experiment(yaml, parameter + ":iteration" + str(i))
+            simulation.save(yaml, data, exp_path + parameter + "/iteration" + str(i).zfill(4) + "/")
 
 
 

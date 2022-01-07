@@ -11,7 +11,7 @@ import mobitopp_execution as simulation
 class MyTestCase(unittest.TestCase):
 
     #"Excessive Runtime! this test is for refactoring purposes only"
-    def test_something(self):
+    def refactortest_something(self):
         experiment = 'neural_network_mode_choice-b_only_one_zero'
         expected_input_data = numpy.load(SPECS.NUMPY + experiment +"_input_data.npy")
         expected_output_data = numpy.load(SPECS.NUMPY + experiment +"_expected_data.npy")

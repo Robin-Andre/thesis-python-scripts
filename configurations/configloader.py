@@ -64,6 +64,13 @@ class Config:
 
         return parameters
 
+    def reset(self):
+        with open(self.path, "r") as file:
+            self._text = file.read()
+
+        self.initialize_dictionary()
+        self.write()
+
     def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         return []
 
