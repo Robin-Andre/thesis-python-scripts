@@ -40,8 +40,8 @@ def __run(command):
     stdout = process.communicate()[0]
     stderr = process.communicate()[1]
     return_code = process.returncode
-    # print(stdout)
-    # print(stderr)
+    ##print(stdout)
+    #print(stderr)
     # print('STDOUT:{}'.format(stdout))
 
     process.wait()
@@ -154,10 +154,10 @@ def run_experiment(yaml=default_yaml(), experiment_name=""):
     current_time = now.strftime("%H:%M:%S")
     print(f"Running Experiment: {experiment_name} : starting at {current_time}")
 
-    result = run_mobitopp(yaml)
+    result, data = run_mobitopp(yaml)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print(f"Experiment {experiment_name} finished at {current_time} with return code {result}")
     if result == 0:
-        return results()
+        return data
     return None

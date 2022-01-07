@@ -1,3 +1,5 @@
+import random
+
 import mobitopp_execution as simulation
 
 
@@ -37,18 +39,19 @@ if __name__ == '__main__':
 
     simulation.clean_result_directory()
 
-    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_mode_choice-b_only_one_zero/"
+    exp_path = "/home/paincrash/Desktop/master-thesis/experiment_results_permanent/neural_network_asc_car_as_only_change/"
     mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
     dest_config = configs[0]
     data_list = []
-    for i in range(500, 1000):
+    for i in range(0, 100):
         simulation.restore_experimental_configs()
         simulation.clean_result_directory()
-        mode_config.randomize_main_parameters()
-        mode_config.write()
+        #mode_config.randomize_main_parameters()
+        #mode_config.write()
+        mode_config.entries["asc_car_d_mu"] = random.uniform(-25, 25)
         #dest_config.randomize_main_parameters()
         #dest_config.write()
-        data = simulation.run_experiment(str(i))
+        data = simulation.run_experiment(yaml, experiment_name=str(i))
         simulation.save(yaml, data, exp_path + "iteration" + str(i) + "/")
 
 
