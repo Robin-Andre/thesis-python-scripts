@@ -117,16 +117,16 @@ def results(yaml=default_yaml()):
 
 # Restores the configs IF the default experimental yaml is used. TODO make check to test for default experimental yaml
 def restore_experimental_configs():
-    original_configs = "config/shared/parameters/"
-    calibration_configs = "calibration/"
+    saved_configs = "calibration/"
+    experiment_configs = "config/shared/parameters/"
     configs = ["destination_choice_utility_calculation_parameters.txt", "destination_choice_parameters_SHOPPING.txt",
                "destination_choice_parameters_SERVICE.txt", "destination_choice_parameters_LEISURE.txt",
                "destination_choice_parameters_BUSINESS.txt", "mode_choice_main_parameters.txt"]
     for config in configs:
         # TODO open with()
-        input_file = open(SPECS.CWD + original_configs + config, "r")
+        input_file = open(SPECS.CWD + saved_configs + config, "r")
         text = input_file.read()
-        output_file = open(SPECS.CWD + calibration_configs + config, "w")
+        output_file = open(SPECS.CWD + experiment_configs + config, "w")
         output_file.write(text)
         input_file.close()
         output_file.close()
