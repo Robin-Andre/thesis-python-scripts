@@ -52,5 +52,14 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(original_data, data)
         print(original_data)
 
+    def test_make_plots(self):
+        temp = "/change_only_one_parameter/"
+        x_list = experiment_manager.get_experiments("/change_only_one_parameter")
+        for x in x_list:
+            print(experiment_manager.find_failed_data(temp + x))
+            experiment_manager.plot_data(temp + x)
+
+
+
 if __name__ == '__main__':
     unittest.main()

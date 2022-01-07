@@ -139,7 +139,11 @@ def fit_distribution_to_data_frame(data_frame, distribution_name="gamma"):
     # TODO this rounding is not really explained and expected
     # Reduces the sample size by integer division of the rounding value (large simulations contain
     # unreasonably large sample sizes)
-    rounding = pow(10, max(math.ceil(math.log10(temp["amount"].sum()) - 4), 0))
+    # TODO fix and test this 
+    if temp["amount"].sum() > 0:
+        rounding = pow(10, max(math.ceil(math.log10(temp["amount"].sum()) - 4), 0))
+    else:
+        return [0, 0, 0]
 
     temp["amount"] = temp["amount"] // rounding
     temp_ys = temp["amount"].values

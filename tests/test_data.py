@@ -3,7 +3,7 @@ import unittest
 import pandas.testing
 
 from metrics.data import Data
-
+import calibration
 
 def drop_mode(dataframe, mode):
     return dataframe[dataframe["tripMode"] != mode]
@@ -75,6 +75,12 @@ class MyTestCase(unittest.TestCase):
         traffic_demand = data.traffic_demand
         x = traffic_demand.smoothen(1)
         pandas.testing.assert_frame_equal(traffic_demand.get_data_frame(), x.get_data_frame())
+
+    #TODO make this a test or remove
+    def test_get_neural_data(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        calibration.neural_network_data_generator.get_neural_training_data(data)
 
 
 if __name__ == '__main__':

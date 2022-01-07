@@ -14,8 +14,8 @@ accepted_files = ["configs", "launch.yaml", "destination_choice_parameters_BUSIN
                   "mode_choice_main_parameters.txt", "results", "Time.csv", "Demand.csv", "Distance.csv"]
 
 
-def get_experiments():
-    path = Path(experiment_path)
+def get_experiments(sub_folder=""):
+    path = Path(experiment_path + sub_folder)
     return [file.name for file in path.iterdir() if file.name != "FAILED_RUNS"]
 
 
@@ -28,6 +28,12 @@ def find_failed_data(experiment):
             names.append(file)
 
     return names
+
+
+def plot_data(experiment):
+    for file in Path(experiment_path + "/" + experiment).iterdir():
+        print(file)
+        simulation.plot(file)
 
 
 def get_configs_from_failures(paths):
@@ -67,6 +73,12 @@ def verify(experiment_full_path):
     yaml, data = simulation.load(experiment_full_path)
     simulation.run_mobitopp(yaml)
     return data, simulation.results()
+
+
+def add_plots(ex_path):
+    for path in Path(ex_path).iterdir():
+        simulation.plot(path)
+
 
 def rerun(experiment_full_path):
     pass

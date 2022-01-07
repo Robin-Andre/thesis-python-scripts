@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pandas
+from matplotlib import pyplot as plt
 
 import metrics.data
 from configurations import configloader, SPECS
@@ -63,6 +64,14 @@ def __run_mobitopp_windows():
     return ret
 
 
+def get_inherited_config_from_path(path):
+    d = {
+        "mode_choice_main_parameters.txt": configloader.ModeChoiceConfig(path),
+        "destination_choice_utility_calculation_parameters.txt": configloader.DestinationChoiceConfig(path)
+    }
+    return d.get(path.name, configloader.Config(path))
+
+
 def reset():
     restore_experimental_configs()
     restore_default_yaml()
@@ -76,12 +85,7 @@ def load(relative_path_raw):
     configs = []
     for path in config_dir:
 
-        if path.name.__contains__("mode_choice_main_parameters"):
-            config = configloader.ModeChoiceConfig(path)
-        if path.name.__contains__("destination_choice_utility_calculation_parameters"):
-            config = configloader.DestinationChoiceConfig(path)
-        else:
-            config = configloader.Config(path)
+        config = get_inherited_config_from_path(path)
 
         configs.append(config)
     yaml.set_configs(configs)
@@ -149,6 +153,7 @@ def clean_directory(path):
     for file in path.iterdir():
         Path.unlink(file)
 
+
 def run_experiment(yaml=default_yaml(), experiment_name=""):
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
@@ -161,3 +166,15 @@ def run_experiment(yaml=default_yaml(), experiment_name=""):
     if result == 0:
         return data
     return None
+
+
+def plot(pat):
+    path = str(pat)
+    _, data = load(path)
+    f, g, h = data.draw()
+    Path(path + "/plots").mkdir(parents=True, exist_ok=True)
+    f.savefig(path + "/plots/traffic_demand.png")
+    g.savefig(path + "/plots/travel_time.png")
+    h.savefig(path + "/plots/travel_distance.png")
+    plt.close("all")
+

@@ -36,6 +36,18 @@ class YAML:
     def set_configs(self, configs):
         self.configs = configs
 
+    def mode_config(self):
+        for config in self.configs:
+            if config.name == "mode_choice_main_parameters.txt":
+                return config
+        return None
+
+    def destination_config(self):
+        for config in self.configs:
+            if config.name == "destination_choice_utility_calculation_parameters.txt":
+                return config
+        return None
+
     # TODO mobitopp might not be at the same location
     def find_config(self, cwd, dict_entry1, dict_entry2):
         path = Path(cwd + self.data[dict_entry1][dict_entry2])

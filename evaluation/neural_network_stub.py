@@ -3,30 +3,11 @@ from pathlib import Path
 import numpy
 from sklearn.neural_network import MLPRegressor
 import sklearn
-
-import experiment_manager
+import calibration.neural_network_data_generator
 import mobitopp_execution as simulation
 from configurations import SPECS
 
 
-def make_neural_numpy_array(neural_data):
-    data_list = list(neural_data[0].values)
-    assert len(data_list) == 5
-    for item in neural_data[1]:
-        for element in item[1]:
-            data_list.append(element)
-
-    for item in neural_data[2]:
-        for element in item[1]:
-            data_list.append(element)
-    return numpy.asarray(data_list)
-
-
-def set_config_from_output(config, data):
-    for item in enumerate(config.entries):
-        config.entries.values[item] = data[item]
-    config.write()
-    print(config.entries)
 
 
 def main():
@@ -45,7 +26,6 @@ def main():
         result = regr.predict(test)
         simulation.restore_experimental_configs()
         simulation.clean_result_directory()
-        # set_config_from_output(d)
         # TODO plot the simulation data,
         data = simulation.run_experiment()
         data.draw_distributions()
@@ -66,8 +46,8 @@ def data_extraction(path):
         yaml, data = simulation.load(str(file) + "/")
         # print(yaml.configs[-1])
         data_list.append(data)
-        tempdata = data.get_neural_training_data()
-        neural_data_list.append(make_neural_numpy_array(tempdata))
+        tempdata = calibration.get_neural_training_data(data)
+        neural_data_list.append(tempdata)
         conf = yaml.configs[-1]
         neural_expected_output_list.append(numpy.asarray(list(conf.entries.values())))
         data.draw_distributions()
