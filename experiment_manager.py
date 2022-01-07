@@ -40,7 +40,7 @@ def get_configs_from_failures(paths):
     data_list = []
     for path in paths:
         yaml, data = simulation.load(path)
-        data_list.append(yaml.configs[4])
+        data_list.append(yaml.mode_config())
 
     return data_list
 
@@ -49,7 +49,7 @@ def get_dest_configs_from_failures(paths):
     data_list = []
     for path in paths:
         yaml, data = simulation.load(path)
-        data_list.append(yaml.configs[2])
+        data_list.append(yaml.destination_config())
 
     return data_list
 
