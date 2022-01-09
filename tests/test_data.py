@@ -82,6 +82,15 @@ class MyTestCase(unittest.TestCase):
         data.load("resources/example_config_load/results/")
         calibration.neural_network_data_generator.get_neural_training_data(data)
 
+    def test_draw(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        a, b, c = data.draw()
+        a.show()
+        b.show()
+        c.show()
+
+
 
 if __name__ == '__main__':
     unittest.main()

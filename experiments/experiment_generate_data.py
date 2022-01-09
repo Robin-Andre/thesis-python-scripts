@@ -40,9 +40,8 @@ if __name__ == '__main__':
 
     simulation.clean_result_directory()
 
-
-    mode_config = configs[-1]  # 0 for destination choice, -1 for mode choice
-    dest_config = configs[0]
+    mode_config = yaml.mode_config()  # 0 for destination choice, -1 for mode choice
+    dest_config = yaml.destination_config()
     data_list = []
     parameter_list_mode = ["asc_car_d_mu",
                            "asc_car_d_sig",
@@ -67,36 +66,64 @@ if __name__ == '__main__':
                                   "b_tt_ped",
                                   "b_tt_bike"]
 
-    exp_path = SPECS.EXP_PATH + "/change_only_one_parameter_destination/"
-    for parameter in parameter_list_destination:
-        for i in range(0, 51):
-            simulation.restore_experimental_configs()
-            simulation.clean_result_directory()
-            dest_config.reset()
-            if parameter.__contains__("b_tt_"):
-                #dest_config.entries[parameter] = random.uniform(-1, 0)
-                dest_config.entries[parameter] = (i - 50) / 50
-            else:
-                #dest_config.entries[parameter] = random.uniform(-25, 25)
-                dest_config.entries[parameter] = i - 25
-            dest_config.write()
-            data = simulation.run_experiment(yaml, parameter + ":iteration" + str(i))
-            simulation.save(yaml, data, exp_path + parameter + "/iteration" + str(i).zfill(4) + "/")
+    #exp_path = SPECS.EXP_PATH + "/change_only_one_parameter_destination/"
+    # for parameter in parameter_list_destination:
+    #    for i in range(0, 51):
+    #        simulation.restore_experimental_configs()
+    #        simulation.clean_result_directory()
+    #        dest_config.reset()
+    #        if parameter.__contains__("b_tt_"):
+    #            # dest_config.entries[parameter] = random.uniform(-1, 0)
+    #            dest_config.entries[parameter] = (i - 50) / 50
+    #        else:
+    #            # dest_config.entries[parameter] = random.uniform(-25, 25)
+    #            dest_config.entries[parameter] = i - 25
+    #        dest_config.write()
+    #        data = simulation.run_experiment(yaml, parameter + ":iteration" + str(i))
+    #        simulation.save(yaml, data, exp_path + parameter + "/iteration" + str(i).zfill(4) + "/")
 
     exp_path = SPECS.EXP_PATH + "/change_only_one_parameter_mode/"
-    for parameter in parameter_list_mode:
+
+    parameter_list_mode = [("asc_car_d_mu", -10, 10),
+                           ("asc_car_d_sig", -10, 10),
+                           ("asc_car_p_mu", -10, 10),
+                           ("asc_car_p_sig", -10, 10),
+                           ("asc_put_mu", -10, 10),
+                           ("asc_put_sig", -10, 10),
+                           ("asc_ped_mu", -10, 10),
+                           ("asc_ped_sig", -10, 10),
+                           ("asc_bike_mu", -10, 10),
+                           ("asc_bike_sig", -10, 10),
+
+                           ("b_tt_car_p_mu", -5, 0),
+                           ("b_tt_car_p_sig", -1, 1),
+                           ("b_tt_car_d_mu", -5, 0),
+                           ("b_tt_car_d_sig", -1, 1),
+                           ("b_tt_put_mu", -5, 0),
+                           ("b_tt_put_sig", -1, 1),
+                           ("b_tt_bike_mu", -5, 0),
+                           ("b_tt_bike_sig", -1, 1),
+                           ("b_tt_ped", -5, 0),
+                           ("b_cost", -1, 0),
+                           ("b_cost_put", -1, 0),
+                           ("b_u_put", -1, 0),
+                           ("b_logsum_acc_put", -5, 0),
+                           ("elasticity_acc_put", -1, 1),
+                           ("b_park_car_d", -5, 0),
+                           ("elasticity_parken", -1, 1)]
+
+    for parameter, a, b in parameter_list_mode:
         for i in range(0, 51):
             simulation.restore_experimental_configs()
             simulation.clean_result_directory()
             mode_config.reset()
-            mode_config.entries[parameter] = (i - 50) / 50
+            mode_config.entries[parameter] = (i / 50) * (b - a) + a
+            print(f"The current value is: {(i / 50) * (b - a) + a}")
             mode_config.write()
             # dest_config.randomize_main_parameters()
             # dest_config.write()
             data = simulation.run_experiment(yaml, parameter + ":iteration" + str(i))
             simulation.save(yaml, data, exp_path + parameter + "/iteration" + str(i).zfill(4) + "/")
-
-
 
     # test_val = 100
     # test_values = [10, 50, 100]

@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 import experiment_manager
 from configurations import SPECS
@@ -59,6 +60,16 @@ class MyTestCase(unittest.TestCase):
             print(experiment_manager.find_failed_data(temp + x))
             experiment_manager.plot_data(temp + x)
 
+    def test_make_plots(self):
+        #Path("C:/Users\Admin\Desktop\master-thesis\neural_network_data\change_only_one_parameter_mode\asc_bike_mu\iteration0000)
+        for x in Path(SPECS.EXP_PATH + "/change_only_one_parameter_mode").iterdir():
+            for experiment in x.iterdir():
+                if experiment.__contains__("asc_bike_mu"):
+                    print(experiment)
+                #experiment_manager.plot_data()
+                #print(experiment)
+        print(experiment_manager.get_experiments("/change_only_one_parameter_mode"))
+        #experiment_manager.plot_data()
 
 
 if __name__ == '__main__':
