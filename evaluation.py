@@ -39,23 +39,30 @@ def create_travel_time_data(raw_data):
     return temp2_df
 
 
-#TODO fix that there are journeys with distance 0
+# TODO fix that there are journeys with distance 0
 def create_travel_distance_data(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode"]]
-    temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000) # MobiTopp has an incorrect column
+    temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000)  # MobiTopp has an incorrect column
     temp_df = temp_df.groupby(["distanceInKm", "tripMode"]).size()
     temp_df = temp_df.reset_index()
     temp_df.columns = ["distanceInKm", "tripMode", "amount"]
     return temp_df
+
 
 def create_travel_distance_with_activity_type(raw_data):
-    temp_df = raw_data[["distanceInKm", "tripMode", "activityType", "previousActivityType"]]
-    temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000) # MobiTopp has an incorrect column
-    temp_df = temp_df.groupby(["distanceInKm", "tripMode"]).size()
-    temp_df = temp_df.reset_index()
-    temp_df.columns = ["distanceInKm", "tripMode", "amount"]
-    return temp_df
+    temp_df = raw_data[["distanceInKm", "tripMode", "activityType", "previousActivityType"]].copy()
+    temp_df.loc[temp_df["activityType"] == 7, "activityType"] = temp_df[temp_df["activityType"] == 7]["previousActivityType"]
+    temp_df.loc[:, "distanceInKm"] = round(temp_df["distanceInKm"] * 1000)
 
+    print(temp_df[temp_df["activityType"] == 7])
+    temp_df["actual_activity"] = temp_df["activityType"]
+
+
+    temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000)  # MobiTopp has an incorrect column
+    temp_df = temp_df.groupby(["distanceInKm", "tripMode", "activityType"]).size()
+    temp_df = temp_df.reset_index()
+    temp_df.columns = ["distanceInKm", "tripMode", "activityType", "amount"]
+    return temp_df
 
 
 def check_data(raw_data):  # TODO move to experimental??
@@ -80,12 +87,7 @@ def haversine_internal(lon1, lat1, lon2, lat2):
     # haversine formula
     dlon = lon2 - lon1
     dlat = lat2 - lat1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
     c = 2 * asin(sqrt(a))
-    r = 6371 # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
+    r = 6371  # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
     return c * r
-
-
-
-
-
