@@ -2,20 +2,6 @@ import numpy
 import pandas
 import scipy
 from matplotlib import pyplot as plt
-from plotnine import ggplot, aes, geom_line, ggsave, ggtitle, scale_size_manual, \
-    scale_alpha_manual, scale_color_manual, facet_wrap, scale_x_continuous, geom_histogram, geom_segment, geom_bar, \
-    scale_fill_discrete, theme, ylab, xlab, geom_text, position_stack
-
-
-def aggregate_traffic_two_sets(df):
-    # TODO useful name for temp
-    temp = "factor(identifier)"
-    return ggplot(df, aes(x='time', y='active_trips')) \
-           + geom_line(aes(size=temp, alpha=temp, color=temp)) \
-           + scale_size_manual(values=[1, 1]) + scale_alpha_manual(values=[0.2, 1]) \
-           + scale_color_manual(values=["#999999", "#E69F00"]) \
-           + scale_x_continuous(breaks=[0, 1440, 2880, 4320, 5760, 7200, 8640], labels=["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"])
-
 
 def label_modes(s):
     d = {
@@ -43,18 +29,6 @@ def color_modes(s):
         return d[s]
     return "#000000"
 
-def aggregate_traffic_modal_two_sets(df_modal):
-    return ggplot(df_modal, aes(x='time', y='active_trips')) \
-           + geom_line(aes(color="factor(identifier)")) + facet_wrap("tripMode", labeller=label_modes) \
-           + scale_x_continuous(breaks=[0, 1440, 2880, 4320, 5760, 7200, 8640], labels=["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"])
-
-
-def aggregate_traffic(data_frame):
-    return ggplot(data_frame, aes(x='time', y='active_trips')) + geom_line()
-
-
-def aggregate_traffic_modal(data_frame):
-    return ggplot(data_frame, aes(x='time', y='active_trips', color="factor(tripMode)")) + geom_line()
 
 # Gives unnamed Dataframes a name
 def identify_yourself(data_frame_list):
@@ -62,44 +36,12 @@ def identify_yourself(data_frame_list):
         if not "identifier" in frame:
             frame["identifier"] = "Dataframe_" + str(index)
             print(f"Setting index for element {index}")
-
-
-def draw_modal_split(data_frame_list):
-    identify_yourself(data_frame_list)
-    return ggplot(pandas.concat(data_frame_list).reset_index(),
-                  aes(x="factor(identifier)", y="amount", fill="factor(tripMode)", label="amount")) + geom_bar(stat="identity") \
-        + scale_fill_discrete(name="Mode", labels=["Bike", "Car", "Passenger", "Pedestrian", "Public Transport"]) \
-        + theme(subplots_adjust={'right': 0.5}) + ylab("Percentage") + xlab("") \
-        + geom_text(size=8, position=position_stack(vjust=0.5), format_string="%s"%("{:,.2f}"))
-
-
-def draw_travel_time(data_frame, bin_size=1, quantile=0.99):
-    count = data_frame["amount"].sum() * quantile
-    temp_df = data_frame
-    temp_df["cumulative"] = temp_df["amount"].cumsum()
-    temp_df = temp_df[temp_df["cumulative"] < count]
-    return ggplot(temp_df, aes(x="durationTrip", weight="amount", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size) # + geom_bar()
-
-
-def draw_travel_time2(data_frame, bin_size=1, quantile=0.99):
-    df_quantile = data_frame["durationTrip"].quantile(quantile)
-    temp_df = data_frame[["durationTrip", "tripMode"]]
-    sane_data = temp_df[temp_df["durationTrip"] < df_quantile]
-    return ggplot(sane_data, aes(x="durationTrip", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
-
-
-def draw_travel_distance(data_frame, bin_size=1, quantile=0.99):
-    df_quantile = data_frame["distanceInKm"].quantile(quantile)
-    sane_data = data_frame[data_frame["distanceInKm"] < df_quantile]
-    print(sane_data)
-    return ggplot(sane_data, aes(x="distanceInKm", weight="amount", fill="factor(tripMode)")) + geom_histogram(binwidth=bin_size)
+    return pandas.concat(data_frame_list)
 
 
 #TODO cleanup after work
 def draw_travel_demand(data_series, color_num=-1, title=""):
-    #temp = data_series.ewm(span=60).mean()
-    #temp = data_series.ewm(com=1).mean()
-    #plt.plot(temp, color=color_modes(color_num), alpha=0.2)
+
     #temp = temp.ewm(com=1).mean()
     plt.plot(data_series, color=color_modes(color_num))
     plt.title(title)
@@ -107,19 +49,76 @@ def draw_travel_demand(data_series, color_num=-1, title=""):
     plt.show()
 
 
-def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=""):
+def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="", reference_df=None):
 
     fig, ax = plt.subplots(3, 2)
     fig.suptitle(title)
     for i, element in enumerate(mode_list):
         df = data_frame.get_mode_specific_data(element)
-        #df = df.rolling(smoothing).mean() Has been moved to data frame
-        #ax[i // 2][i % 2].set_ylim([0, 5000])
         ax[i // 2][i % 2].plot(df, color=color_modes(element))
+        if reference_df is not None:
+            ref = reference_df.get_mode_specific_data(element)
+            ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2)
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     return fig
     #plt.show()
 
+
+def draw_modal_split(df_list):
+    fig, ax = plt.subplots()
+    if type(df_list) is not list: df_list = [df_list] # Makes single element entry to a list
+    dfl = [x.get_modal_split() for x in df_list]
+    y = identify_yourself(dfl)
+    y['cumsum'] = y.groupby('identifier')['amount'].transform(pandas.Series.cumsum) - y["amount"]
+    y = y.reset_index()
+    box = ax.bar(y["identifier"], y["amount"], color=[color_modes(x) for x in y["tripMode"]], bottom=y["cumsum"])
+    ax.bar_label(box, label_type="center", fmt='%.2f')
+    fig.show()
+    return
+
+
+def draw_travel_time(df, mode=-1, reference=None):
+    temp = df.get_data_frame().groupby("durationTrip").sum()["amount"]
+
+    temp.plot.bar(width=1, color=color_modes(mode))
+    if reference is not None:
+        r = reference.groupby("durationTrip").sum()["amount"]
+        r.plot(color="red", alpha=0.8)
+    plt.title(label_modes(mode))
+    plt.xticks([0, 5, 10, 15, 20], [0, 5, 10, 15, 20])
+    plt.tick_params(bottom=None, labelbottom=True)
+    plt.show()
+
+
+def draw_travel_time_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="", reference_df=None):
+
+    fig, ax = plt.subplots(3, 2)
+    fig.suptitle(title)
+    for i, element in enumerate(mode_list):
+        df = data_frame.get_mode_specific_data(element)
+        ax[i // 2][i % 2].plot(df, color=color_modes(element))
+        if reference_df is not None:
+            ref = reference_df.get_mode_specific_data(element)
+            ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2)
+        #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
+    return fig
+    #plt.show()
+
+def draw_travel_distance(df):
+    pass
+
+def draw_travel_distance_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="", reference_df=None):
+
+    fig, ax = plt.subplots(3, 2)
+    fig.suptitle(title)
+    for i, element in enumerate(mode_list):
+        df = data_frame.get_mode_specific_data(element)
+        ax[i // 2][i % 2].plot(df, color=color_modes(element))
+        if reference_df is not None:
+            ref = reference_df.get_mode_specific_data(element)
+            ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2)
+        #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
+    return fig
 
 def draw_distribution(distribution, mode=-1, approximation=None, ax=None):
 
@@ -145,15 +144,15 @@ def draw_all_distributions(distribution_list, mode_list, approximation_list):
     return fig
 
 
-def draw_travel_distance_per_mode(data_frame):
-    fig, ax = plt.subplots(3, 2)
-    for trip_mode in data_frame["tripMode"].unique():
-        temp = data_frame[data_frame["tripMode"] == trip_mode]
-        helper(temp, str(trip_mode), ax[trip_mode // 2][trip_mode % 2])
-    temp = data_frame.groupby("distanceInKm").sum()
-    temp = temp.drop(columns=["tripMode"])
-    helper(temp, "All", ax[2][1])
-    return fig
+#def draw_travel_distance_per_mode(data_frame):
+#    fig, ax = plt.subplots(3, 2)
+#    for trip_mode in data_frame["tripMode"].unique():
+#        temp = data_frame[data_frame["tripMode"] == trip_mode]
+#        helper(temp, str(trip_mode), ax[trip_mode // 2][trip_mode % 2])
+#    temp = data_frame.groupby("distanceInKm").sum()
+#    temp = temp.drop(columns=["tripMode"])
+#    helper(temp, "All", ax[2][1])
+#    return fig
 
 
 def helper(data_frame, title_num, ax):

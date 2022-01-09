@@ -4,6 +4,7 @@ import numpy
 import numpy as np
 import pandas
 import scipy
+from scipy import stats
 
 default_path = "output/calibration/throwaway/"
 
@@ -18,10 +19,38 @@ def get_all_existing_modes(data_frame):
     return np.insert(data_frame.tripMode.unique(), 0, -1)
 
 
+def roll_trips(df, rolling_minutes, string):
+    df[string] = df[string].rolling(rolling_minutes, center=True, min_periods=1).mean()
+    return df
+
+
 class Metric:
 
     def __init__(self):
         self._data_frame = None
+
+    def smoothen(self, smoothness_in_minutes, string):
+        return self._data_frame.groupby(["tripMode"]).apply(lambda x: roll_trips(x, smoothness_in_minutes, string))
+
+    def _sub(self, other, string):
+        temp = self._data_frame.set_index(["tripMode", string])
+        temp2 = other._data_frame.set_index(["tripMode", string])
+        return temp.sub(temp2, fill_value=0).reset_index()
+
+    def get_mode_specific_data(self, mode_number, string):
+        """
+        Returns a series of data based on the specific mode
+        :param mode_number:
+        :return:
+        """
+        temp = self._data_frame.copy()
+        if mode_number == -1:
+            temp = temp.groupby([string]).sum()
+        else:
+            temp = temp[temp["tripMode"] == mode_number]
+            temp = temp.set_index(string)
+        temp = temp.drop(columns=["tripMode"])  # Trip mode is no longer required and should therefore not be passed
+        return temp.squeeze()
 
     def read_from_raw_data(self, raw_data):
         pass

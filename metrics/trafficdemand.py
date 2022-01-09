@@ -5,24 +5,17 @@ import visualization
 from metrics.metric import Metric, difference
 
 
-def roll_trips(df, rolling_minutes):
-    df["active_trips"] = df["active_trips"].rolling(rolling_minutes, center=True, min_periods=1).mean()
-    return df
 
 class TrafficDemand(Metric):
 
     def __sub__(self, other):
-        temp = self._data_frame.set_index(["tripMode", "time"])
-        temp2 = other._data_frame.set_index(["tripMode", "time"])
         ret = TrafficDemand()
-        ret._data_frame = temp.sub(temp2, fill_value=0).reset_index()
+        ret._data_frame = super()._sub(other, "time")
         return ret
-
 
     def smoothen(self, smoothness_in_minutes):
         ret = TrafficDemand()
-        xx = self._data_frame.groupby(["tripMode"]).apply(lambda x: roll_trips(x, smoothness_in_minutes))
-        ret._data_frame = xx
+        ret._data_frame = super().smoothen(smoothness_in_minutes, "active_trips")
         return ret
 
     def read_from_raw_data(self, raw_data):
@@ -38,19 +31,7 @@ class TrafficDemand(Metric):
         #visualization.draw(temp, visualization.aggregate_traffic_modal)
 
     def get_mode_specific_data(self, mode_number):
-        """
-        Returns a series of data based on the specific mode
-        :param mode_number:
-        :return:
-        """
-        temp = self._data_frame.copy()
-        if mode_number == -1:
-            temp = temp.groupby(["time"]).sum()
-        else:
-            temp = temp[temp["tripMode"] == mode_number]
-            temp = temp.set_index("time")
-        temp = temp.drop(columns=["tripMode"])  # Trip mode is no longer required and should therefore not be passed
-        return temp.squeeze()
+        return super().get_mode_specific_data(mode_number, "time")
 
     def get_peak(self, interval, mode=-1):
         data = self.get_mode_specific_data(mode)

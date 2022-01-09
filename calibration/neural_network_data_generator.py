@@ -12,11 +12,11 @@ def convert_dest(yaml_list, data_list):
 
 
 def get_main_parameter_mode(yaml):
-    return __helper(yaml.configs[5], configurations.configloader.ModeChoiceConfig)
+    return __helper(yaml.mode_config(), configurations.configloader.ModeChoiceConfig)
 
 
 def get_main_parameter_destination(yaml):
-    return __helper(yaml.configs[4], configurations.configloader.DestinationChoiceConfig)
+    return __helper(yaml.destination_config(), configurations.configloader.DestinationChoiceConfig)
 
 
 def __helper(config, expected_class):
