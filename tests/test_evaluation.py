@@ -44,6 +44,8 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(len(raw_data), len(x))
         print(x.columns)
+        evaluation.create_traffic_demand_data(x)
+        return
         y = x[["durationTrip", "distanceInKm", "tripBegin", "tripEnd", "tripMode", "activityType", "age", "employment",
                "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars", "nominalSize"]]
         print(set(y.hasCommuterTicket))

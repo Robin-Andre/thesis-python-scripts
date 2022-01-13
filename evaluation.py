@@ -1,6 +1,7 @@
 from math import radians, cos, sin, asin, sqrt
 from pathlib import Path
 
+import pandas
 import pandas as pd
 import numpy as np
 
@@ -30,6 +31,40 @@ def create_plot_data(raw_data):
     temp = temp.fillna(0)
     temp = temp.reset_index()
     return temp
+
+def temp_apply(df):
+    return df.time
+
+def create_traffic_demand_data(almost_raw_data):
+    temp = almost_raw_data[["tripBegin", "tripMode", "activityType", "age",
+                             "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
+                             "nominalSize"]].copy()
+    temp["counts_begin"] = 1
+    x = temp.groupby(["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
+                  "totalNumberOfCars", "nominalSize", "tripBegin"]).sum()
+    x = x.reset_index(level="tripBegin")
+    x = x.rename(columns={"tripBegin": "time"})
+
+    print(x)
+    temp2 = almost_raw_data[["tripEnd", "tripMode", "activityType", "age",
+                             "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
+                             "nominalSize"]].copy()
+    temp2["counts_end"] = -1
+    y = temp2.groupby(["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
+                  "totalNumberOfCars", "nominalSize", "tripEnd"]).sum()
+    y = y.reset_index(level="tripEnd")
+    y = y.rename(columns={"tripEnd": "time"})
+    z = pandas.concat([x, y])
+    z = z.fillna(0)
+    z["counts"] = z["counts_begin"] + z["counts_end"]
+    z = z.sort_values("time", kind="mergesort").sort_index()
+    z = z.drop(columns=["counts_begin", "counts_end"])
+    q_time = z.copy()
+    q_time = q_time.drop(columns=["counts"])
+    z = z.drop(columns=["time"])
+    q = z.groupby(z.index).cumsum()
+    q["time"] = q_time["time"]
+    print(y)
 
 
 def create_travel_time_data(raw_data):
