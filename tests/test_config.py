@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from configurations.enums import mode, economicalgroup
+import configurations.parameter
 from configurations import configloader
 
 
@@ -127,7 +127,7 @@ class ConfigTestCase(unittest.TestCase):
         #print(dest_config.entries)
 
     def test_mode_enum(self):
-        temp = mode.Mode(1)
+        temp = configurations.parameter.Mode(1)
         print(temp)
 
 

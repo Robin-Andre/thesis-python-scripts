@@ -17,15 +17,10 @@ class MyTestCase(unittest.TestCase):
         plot.draw(temp_df, plot.aggregate_traffic_two_sets)
         print(temp_df)
 
-    def nontest_travel_time_data(self):
+    def test_travel_time_data(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        start = time.time()
-        temp_df = evaluation.create_travel_time_data(raw_data)
-        end = time.time()
-        print(end - start)
-        graph = plot.draw_travel_time(temp_df, bin_size=1)
-
-        print(graph)
+        temp_df = evaluation.create_plot_data(raw_data)
+        print(temp_df)
 
     def test_distance_extraction(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
@@ -38,15 +33,34 @@ class MyTestCase(unittest.TestCase):
         print(data_frame)
         self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "amount"])
 
-    def test_person_extraction(self):
+    def test_full_extraction(self):
         raw_data_person = pandas.read_csv("resources/person.csv", sep=";")
+        raw_data_household = pandas.read_csv("resources/household.csv", sep=";")
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        print(raw_data)
-        x = raw_data.merge(raw_data_person, how="left", left_on="personOid", right_on="personId")
-        y = x[["gender"]]
-        print(x)
-        print(y)
 
+        x = raw_data.merge(raw_data_person, how="left", left_on="personOid", right_on="personId")
+        self.assertEqual(len(raw_data), len(x))
+        x = x.merge(raw_data_household, how="left", left_on="householdOid", right_on="householdId")
+
+        self.assertEqual(len(raw_data), len(x))
+        print(x.columns)
+        y = x[["durationTrip", "distanceInKm", "tripBegin", "tripEnd", "tripMode", "activityType", "age", "employment",
+               "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars", "nominalSize"]]
+        print(set(y.hasCommuterTicket))
+        y = y.set_index(["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket",
+                         "economicalStatus", "totalNumberOfCars", "nominalSize"])
+        print(y)
+        print(y.index[y.index.duplicated()])
+
+        this_Exists = y.loc[(1, 1, 48,          'FULLTIME',   'MALE', False, 3, 2, 2)]
+        print(this_Exists)
+
+    def test_household_extraction(self):
+        raw_data_household = pandas.read_csv("resources/household.csv", sep=";")
+        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        x = raw_data.merge(raw_data_household, how="left", left_on="householdOid", right_on="householdId")
+        print(x)
+        self.assertEqual(len(x), len(raw_data))
 
 
     def nontest_travel_distance_data(self):

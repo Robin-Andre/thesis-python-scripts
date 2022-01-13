@@ -1,14 +1,10 @@
 import unittest
 from pathlib import Path
 
-from configurations.enums.activitygroup import ActivityGroup as Activity
-from configurations.enums.mode import Mode
-from configurations.enums.agegroup import AgeGroup as Age
-from configurations.enums.economicalgroup import EconomicalGroup as Economics
-
 from configurations import configloader
 
-from configurations.parameter import Parameter, Employment
+from configurations.parameter import Parameter, Employment, Mode, EconomicalGroup as Economics, AgeGroup as Age, \
+    ActivityGroup as Activity
 
 
 class MyTestCase(unittest.TestCase):

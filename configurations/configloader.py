@@ -1,7 +1,7 @@
 import re
 import random
 
-from configurations.enums.mode import Mode
+from configurations.parameter import Mode
 from configurations.limits import ModeLimitSimple, DestinationLimitSimple, Limit
 
 
