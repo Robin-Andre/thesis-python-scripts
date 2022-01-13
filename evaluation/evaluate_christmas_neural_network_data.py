@@ -61,7 +61,7 @@ def main():
 
         temp.append((file, x))
 
-    xl = [4, 6]
+    xl = [0, 2, 4, 6, 8]
     for x in xl:
         assert x % 2 == 0
         print(temp[x][0])

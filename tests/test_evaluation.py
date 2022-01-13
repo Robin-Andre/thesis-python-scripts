@@ -38,6 +38,17 @@ class MyTestCase(unittest.TestCase):
         print(data_frame)
         self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "amount"])
 
+    def test_person_extraction(self):
+        raw_data_person = pandas.read_csv("resources/person.csv", sep=";")
+        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        print(raw_data)
+        x = raw_data.merge(raw_data_person, how="left", left_on="personOid", right_on="personId")
+        y = x[["gender"]]
+        print(x)
+        print(y)
+
+
+
     def nontest_travel_distance_data(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         temp_df = evaluation.create_travel_distance_data(raw_data)

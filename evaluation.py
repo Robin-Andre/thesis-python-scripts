@@ -64,6 +64,9 @@ def create_travel_distance_with_activity_type(raw_data):
     temp_df.columns = ["distanceInKm", "tripMode", "activityType", "amount"]
     return temp_df
 
+def extract_person_data(raw_data):
+    raw_data
+
 
 def check_data(raw_data):  # TODO move to experimental??
     temp = raw_data[["fromX", "fromY", "toX", "toY", "distanceInKm"]]

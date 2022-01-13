@@ -5,6 +5,7 @@ import mobitopp_execution as simulation
 
 #experiment_path = "C:/Users/Admin/Desktop/master-thesis/neural_network_data"
 from configurations import SPECS
+from metrics.data import Data
 
 experiment_path = SPECS.EXP_PATH
 
@@ -75,9 +76,10 @@ def verify(experiment_full_path):
     return data, simulation.results()
 
 
-def add_plots(ex_path):
+def add_plots(ex_path, ref=None):
     for path in Path(ex_path).iterdir():
-        simulation.plot(path)
+        print(path)
+        simulation.plot(path, ref)
 
 
 def rerun(experiment_full_path):

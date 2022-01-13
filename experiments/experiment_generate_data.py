@@ -39,6 +39,9 @@ if __name__ == '__main__':
     configs = yaml.configs
 
     simulation.clean_result_directory()
+    data = simulation.run_experiment(yaml, "Baseline")
+    simulation.save(yaml, data, SPECS.EXP_PATH + "/baseline")
+
 
     mode_config = yaml.mode_config()  # 0 for destination choice, -1 for mode choice
     dest_config = yaml.destination_config()

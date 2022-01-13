@@ -97,9 +97,9 @@ class VisualizationTestCase(unittest.TestCase):
         data.load("resources/example_config_load/results/")
         data2 = metrics.data.Data()
         data2.load("resources/example_config_load2/results/")
-        visualization.draw_travel_time(data.travel_time.get_data_frame())
-        visualization.draw_travel_time(data2.travel_time.get_data_frame())
-        visualization.draw_travel_time(data.travel_time.get_data_frame() - data2.travel_time.get_data_frame())
+        visualization.draw_travel_time(data.travel_time)
+        visualization.draw_travel_time(data2.travel_time)
+        visualization.draw_travel_time(data.travel_time - data2.travel_time)
         visualization.draw_travel_time(data.travel_time, reference=data2.travel_time)
 
     def test_travel_time_with_reference(self):

@@ -49,13 +49,15 @@ def draw_travel_demand(data_series, color_num=-1, title=""):
     plt.show()
 
 
-def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="", reference_df=None):
+def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="Active Trips", reference_df=None):
 
-    fig, ax = plt.subplots(3, 2)
+    fig, ax = plt.subplots(3, 2, sharex=True)
     fig.suptitle(title)
     for i, element in enumerate(mode_list):
         df = data_frame.get_mode_specific_data(element)
         ax[i // 2][i % 2].plot(df, color=color_modes(element))
+        ax[i // 2][i % 2].set_xticks([0, 1440, 2880, 4320, 5760, 7200, 8640, 10080])
+        ax[i // 2][i % 2].set_xticklabels(["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So", "Mo"])
         if reference_df is not None:
             ref = reference_df.get_mode_specific_data(element)
             ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2)
@@ -90,12 +92,16 @@ def draw_travel_time(df, mode=-1, reference=None):
     plt.show()
 
 
-def draw_travel_time_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="", reference_df=None):
-
+def draw_travel_time_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="Travel Time (min)", reference_df=None):
     fig, ax = plt.subplots(3, 2)
     fig.suptitle(title)
     for i, element in enumerate(mode_list):
         df = data_frame.get_mode_specific_data(element)
+        if i % 2 == 1:
+            ax[i // 2][i % 2].set_yticklabels([])
+        #ax[i // 2][i % 2].set_yticklabels([])
+        #ax[i // 2][i % 2].set_xticklabels([])
+
         ax[i // 2][i % 2].plot(df, color=color_modes(element))
         if reference_df is not None:
             ref = reference_df.get_mode_specific_data(element)
@@ -107,13 +113,15 @@ def draw_travel_time_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="
 def draw_travel_distance(df):
     pass
 
-def draw_travel_distance_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="", reference_df=None):
+def draw_travel_distance_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="Travel Distance (km)", reference_df=None):
 
     fig, ax = plt.subplots(3, 2)
     fig.suptitle(title)
     for i, element in enumerate(mode_list):
         df = data_frame.get_mode_specific_data(element)
         ax[i // 2][i % 2].plot(df, color=color_modes(element))
+        if i % 2 == 1:
+            ax[i // 2][i % 2].set_yticklabels([])
         if reference_df is not None:
             ref = reference_df.get_mode_specific_data(element)
             ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2)

@@ -20,8 +20,8 @@ class TravelTime(Metric):
     def read_from_raw_data(self, raw_data):
         self._data_frame = evaluation.create_travel_time_data(raw_data)
 
-    def draw(self):
-        return self.draw_all_distributions()
+    def draw(self, reference=None):
+        return visualization.draw_travel_time_per_mode(self, reference_df=reference)
         #print(visualization.draw_travel_time(self._data_frame))
 
     def draw_distribution(self, mode=-1):

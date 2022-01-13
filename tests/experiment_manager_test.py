@@ -3,6 +3,7 @@ from pathlib import Path
 
 import experiment_manager
 from configurations import SPECS
+import mobitopp_execution as simulation
 
 
 class MyTestCase(unittest.TestCase):
@@ -62,13 +63,11 @@ class MyTestCase(unittest.TestCase):
 
     def test_make_plots(self):
         #Path("C:/Users\Admin\Desktop\master-thesis\neural_network_data\change_only_one_parameter_mode\asc_bike_mu\iteration0000)
-        for x in Path(SPECS.EXP_PATH + "/change_only_one_parameter_mode").iterdir():
-            for experiment in x.iterdir():
-                if experiment.__contains__("asc_bike_mu"):
-                    print(experiment)
-                #experiment_manager.plot_data()
-                #print(experiment)
-        print(experiment_manager.get_experiments("/change_only_one_parameter_mode"))
+        _, data = simulation.load(SPECS.EXP_PATH + "/baseline")
+        for x in Path(SPECS.EXP_PATH + "/change_only_one_parameter_destination").iterdir():
+            print(x)
+            experiment_manager.add_plots(x, data)
+
         #experiment_manager.plot_data()
 
 

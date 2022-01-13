@@ -25,9 +25,9 @@ class TrafficDemand(Metric):
         temp = temp.drop(columns=["level_1"])
         self._data_frame = temp
 
-    def draw(self):
+    def draw(self, reference=None):
         #temp = self._data_frame[self._data_frame["time"] % resolution == 0]
-        return visualization.draw_travel_demand_by_mode(self)
+        return visualization.draw_travel_demand_by_mode(self, reference_df=reference)
         #visualization.draw(temp, visualization.aggregate_traffic_modal)
 
     def get_mode_specific_data(self, mode_number):

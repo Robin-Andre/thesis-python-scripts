@@ -168,10 +168,10 @@ def run_experiment(yaml=default_yaml(), experiment_name=""):
     return None
 
 
-def plot(pat):
+def plot(pat, reference=None):
     path = str(pat)
     _, data = load(path)
-    f, g, h = data.draw()
+    f, g, h = data.draw_smooth(reference)
     Path(path + "/plots").mkdir(parents=True, exist_ok=True)
     f.savefig(path + "/plots/traffic_demand.png")
     g.savefig(path + "/plots/travel_time.png")

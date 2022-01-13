@@ -41,11 +41,30 @@ class Data:
         self.travel_time.print()
         self.travel_distance.print()
 
-    def draw(self):
-        x = self.traffic_demand.draw()
-        y = self.travel_time.draw()
-        z = self.travel_distance.draw()
+    def draw(self, reference=None):
+        if reference is not None:
+            x = self.traffic_demand.draw(reference.traffic_demand)
+            y = self.travel_time.draw(reference.travel_time)
+            z = self.travel_distance.draw(reference.travel_distance)
+        else:
+            x = self.traffic_demand.draw()
+            y = self.travel_time.draw()
+            z = self.travel_distance.draw()
         return x, y, z
+
+    def draw_smooth(self, reference=None):
+        if reference is not None:
+            x = self.traffic_demand.smoothen(60).draw(reference.traffic_demand.smoothen(60))
+            y = self.travel_time.smoothen(3).draw(reference.travel_time.smoothen(3))
+            z = self.travel_distance.smoothen(3).draw(reference.travel_distance.smoothen(3))
+        else:
+            x = self.traffic_demand.smoothen(60).draw()
+            y = self.travel_time.smoothen(3).draw()
+            z = self.travel_distance.smoothen(3).draw()
+        return x, y, z
+
+        return x, y, z
+
 
     def draw_distributions(self):
         self.travel_time.draw_all_distributions()
