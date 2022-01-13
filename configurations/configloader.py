@@ -136,8 +136,8 @@ class ModeChoiceConfig(Config):
         active_mode_list = [Mode(x) for x in active_mode_numerical]
         param_list = []
         specialized = ["dienst", "ausb", "eink", "arbeit", "freiz", "beruft", "hhgr", "pkw_1", "pkw_0", "female",
-                       "service", "elasticity", "arbwo", "student", "shift_relief", "ebike", "age", "inc", "zk",
-                       "csmit"]
+                       "service", "arbwo", "student", "shift_relief", "ebike", "age", "inc", "zk",
+                       "csmit", "mode_bef", "_home_"]
         for key in self.entries.keys():
             if not any(x in key for x in specialized) and (Mode.get_mode_from_string(key) in active_mode_list):
                 param_list.append(key)
@@ -154,7 +154,7 @@ class DestinationChoiceConfig(Config):
         active_mode_list = [Mode(x) for x in active_mode_numerical]
         param_list = []
         for key in self.entries.keys():
-            if Mode.get_mode_from_string(key) in active_mode_list and key != "elasticity_acc_put":
+            if Mode.get_mode_from_string(key) in active_mode_list:
                 param_list.append(key)
         return param_list
 

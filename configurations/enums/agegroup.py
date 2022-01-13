@@ -1,5 +1,24 @@
 from enum import Enum
 
+def get_age_group_from_string(param):
+    if param.__contains__("age_0_17") or param.__contains__("age_1_on"):
+        return AgeGroup.FROM_0_TO_17
+    elif param.__contains__("age_18_29"):
+        return AgeGroup.FROM_18_TO_29
+    elif param.__contains__("age_50_59"):
+        return AgeGroup.FROM_50_TO_59
+    elif param.__contains__("age_60_69"):
+        return AgeGroup.FROM_60_TO_69
+    elif param.__contains__("age_70_100"):
+        return AgeGroup.FROM_70_TO_100
+    elif param.__contains__("age_70_120"):
+        return AgeGroup.FROM_70_TO_120
+    elif param.__contains__("age_56_on"):
+        return AgeGroup.FROM_50_TO_69
+    elif param.__contains__("age_78_on"):
+        return AgeGroup.FROM_70_TO_120
+
+
 
 class AgeGroup(Enum):
     """
@@ -17,8 +36,10 @@ class AgeGroup(Enum):
     FROM_50_TO_59 = 2
     FROM_60_TO_69 = 3
     FROM_70_TO_100 = 4
-    FROM_100_TO_120 = 5
-    UNCLASSIFIED = 6
+    FROM_70_TO_120 = 5
+    FROM_50_TO_69 = 6
+
+    UNCLASSIFIED = 9
 
     @classmethod
     def int_to_group(cls, value):

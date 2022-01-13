@@ -15,15 +15,15 @@ class Mode(Enum):
     @classmethod
     def get_mode_from_string(cls, string):
         d = {
-            "ped": 3,
-            "bike": 0,
-            "car_d": 1,
-            "car_p": 2,
-            "put": 4,
-            "taxi": 7,
-            "bs": 9001,
-            "cs": 9002,
-            "rp": 9003,
+            "_ped": 3,
+            "_bike": 0,
+            "_car_d": 1,
+            "_car_p": 2,
+            "_put": 4,
+            "_taxi": 7,
+            "_bs": 9001,
+            "_cs": 9002,
+            "_rp": 9003,
             "b_cost": 1,
             "elasticity_parken": 1
         }
