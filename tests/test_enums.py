@@ -1,8 +1,6 @@
 import unittest
 
-from configurations.enums.agegroup import AgeGroup
-from configurations.enums.mode import Mode
-
+from configurations.parameter import Mode, AgeGroup
 
 
 class MyTestCase(unittest.TestCase):

@@ -1,6 +1,7 @@
 from math import radians, cos, sin, asin, sqrt
 from pathlib import Path
 
+import pandas
 import pandas as pd
 import numpy as np
 
@@ -31,6 +32,56 @@ def create_plot_data(raw_data):
     temp = temp.reset_index()
     return temp
 
+def aggregate_traffic_demand(data, attribute_list):
+    return _cumulate_traffic_demand(_merge_traffic_demand(data, attribute_list))
+
+def _merge_traffic_demand(clean_data, keeper_list):
+    assert "time" not in keeper_list
+    temp = clean_data.copy()
+    temp = temp.reset_index()
+    temp = temp.groupby(keeper_list + ["time"]).sum()
+    temp = temp.reset_index()
+    temp = temp[keeper_list + ["time", "active_trips_delta"]]
+    temp = temp.set_index(keeper_list + ["time"])
+    #temp = temp.sort_values("time", kind="mergesort").sort_index()
+    temp = temp.sort_index()
+    temp = temp.reset_index(level="time")
+    return temp
+
+def _cumulate_traffic_demand(data):
+    temp = data.copy()
+    temp = temp.drop(columns=["active_trips_delta"])
+    data = data.drop(columns="time")
+    data = data.groupby(data.index).cumsum()
+    data["time"] = temp["time"]
+    data = data.rename(columns={"active_trips_delta": "active_trips"})
+    return data
+
+def create_traffic_demand_data(almost_raw_data):
+    temp = almost_raw_data[["tripBegin", "tripMode", "activityType", "age",
+                             "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
+                             "nominalSize"]].copy()
+    temp["counts_begin"] = 1
+    x = temp.groupby(["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
+                  "totalNumberOfCars", "nominalSize", "tripBegin"]).sum()
+    x = x.reset_index(level="tripBegin")
+    x = x.rename(columns={"tripBegin": "time"})
+
+    temp2 = almost_raw_data[["tripEnd", "tripMode", "activityType", "age",
+                             "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
+                             "nominalSize"]].copy()
+    temp2["counts_end"] = -1
+    y = temp2.groupby(["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
+                  "totalNumberOfCars", "nominalSize", "tripEnd"]).sum()
+    y = y.reset_index(level="tripEnd")
+    y = y.rename(columns={"tripEnd": "time"})
+    z = pandas.concat([x, y])
+    z = z.fillna(0)
+    z["active_trips_delta"] = z["counts_begin"] + z["counts_end"]
+    z = z.sort_values("time", kind="mergesort").sort_index()
+    z = z.drop(columns=["counts_begin", "counts_end"])
+
+    return z
 
 def create_travel_time_data(raw_data):
     temp_df = raw_data[["durationTrip", "tripMode"]]

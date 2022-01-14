@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-import configurations.enums.mode
+import configurations.parameter
 from configurations import configloader
 
 
@@ -114,19 +114,20 @@ class ConfigTestCase(unittest.TestCase):
 
     def test_get_main_params(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
+        temp = mc_c.entries.keys()
         self.assertEqual(mc_c.get_main_parameters(active_mode_numerical=[]), [])
-        self.assertEqual(mc_c.get_main_parameters(active_mode_numerical=[0]), ["asc_bike_mu", "asc_bike_sig", "b_tt_bike_mu", "b_tt_bike_sig", "b_mode_bef_bike"])
+        self.assertEqual(mc_c.get_main_parameters(active_mode_numerical=[0]), ["asc_bike_mu", "asc_bike_sig", "b_tt_bike_mu", "b_tt_bike_sig"])
 
 
     def test_get_main_params_dest(self):
         dest_config = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/destination_choice_utility_calculation_parameters.txt"))
 
-        print(dest_config.entries)
-        dest_config.randomize_main_parameters()
-        print(dest_config.entries)
+        #print(dest_config.entries)
+        #dest_config.randomize_main_parameters()
+        #print(dest_config.entries)
 
     def test_mode_enum(self):
-        temp = configurations.enums.mode.Mode(1)
+        temp = configurations.parameter.Mode(1)
         print(temp)
 
 

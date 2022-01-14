@@ -103,8 +103,8 @@ class MyTestCase(unittest.TestCase):
         simulation.restore_experimental_configs()
 
     def test_execution(self):
-
         yaml, _ = simulation.load("resources/example_config_load/")
+        print(yaml.data)
         yaml.set_fraction_of_population(0.01)
         simulation.run_experiment(yaml)
         data = metrics.data.Data(pandas.read_csv(cwd + "output/results/calibration/throwaway/demandsimulationResult.csv", sep=";"))
