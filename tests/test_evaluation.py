@@ -6,6 +6,7 @@ import pandas
 import evaluation
 
 import visualization as plot
+from metrics.trafficdemand import TrafficDemand
 
 
 class MyTestCase(unittest.TestCase):
@@ -43,19 +44,15 @@ class MyTestCase(unittest.TestCase):
         x = x.merge(raw_data_household, how="left", left_on="householdOid", right_on="householdId")
 
         self.assertEqual(len(raw_data), len(x))
-        print(x.columns)
-        evaluation.create_traffic_demand_data(x)
+        q = evaluation.create_traffic_demand_data(x)
+        test = evaluation.aggregate_traffic_demand(q, ["tripMode", "activityType"])
+        print(test)
+        td = TrafficDemand.from_raw_data(raw_data)
+        test = evaluation.aggregate_traffic_demand(q, ["tripMode"])
+        td.draw().show()
+        print(test)
         return
-        y = x[["durationTrip", "distanceInKm", "tripBegin", "tripEnd", "tripMode", "activityType", "age", "employment",
-               "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars", "nominalSize"]]
-        print(set(y.hasCommuterTicket))
-        y = y.set_index(["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket",
-                         "economicalStatus", "totalNumberOfCars", "nominalSize"])
-        print(y)
-        print(y.index[y.index.duplicated()])
 
-        this_Exists = y.loc[(1, 1, 48,          'FULLTIME',   'MALE', False, 3, 2, 2)]
-        print(this_Exists)
 
     def test_household_extraction(self):
         raw_data_household = pandas.read_csv("resources/household.csv", sep=";")

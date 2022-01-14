@@ -86,7 +86,13 @@ class MyTestCase(unittest.TestCase):
         b.show()
         c.show()
 
-
+    def test_raw_data(self):
+        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        data = Data(raw_data)
+        a, b, c = data.draw()
+        a.show()
+        b.show()
+        c.show()
 
 if __name__ == '__main__':
     unittest.main()
