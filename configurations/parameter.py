@@ -196,20 +196,48 @@ def get_parameter_bounds(param):
 
 
 class Employment(Enum):
-    EMPLOYED = 0,
-    STUDENT = 1,
+    EMPLOYED = 0
+    STUDENT = 1
     HOME = 2
+    UNCLASSIFIED = 4
+
+    @classmethod
+    def get_employment_from_int(cls, val):
+        if val in ['STUDENT_PRIMARY',  'STUDENT_SECONDARY', 'STUDENT_TERTIARY', 'EDUCATION']:
+            return Employment.STUDENT.value
+        elif val in ['FULLTIME', 'PARTTIME', "MARGINAL"]:
+            return Employment.EMPLOYED.value
+        elif val in ['UNEMPLOYED', 'HOMEKEEPER']:
+            return Employment.HOME.value
+        return Employment.UNCLASSIFIED.value
 
 
 class HouseholdSize(Enum):
-    SIZE_2 = 0,
-    SIZE_3_OR_BIGGER = 1,
+    SIZE_2 = 0
+    SIZE_3_OR_BIGGER = 1
     UNSPECIFIED = -1
+
+    @classmethod
+    def get_hh_size_from_int(cls, val):
+        if val == 2:
+            return HouseholdSize.SIZE_2.value
+        elif val >= 3:
+            return HouseholdSize.SIZE_3_OR_BIGGER.value
+        return HouseholdSize.UNSPECIFIED.value
 
 
 class NumberOfCars(Enum):
-    NO_CAR = 0,
+    NO_CAR = 0
     ONE_CAR = 1
+    UNSPECIFIED = 2
+
+    @classmethod
+    def get_num_cars_from_int(cls, val):
+        if val == 0:
+            return NumberOfCars.NO_CAR.value
+        elif val == 1:
+            return NumberOfCars.ONE_CAR.value
+        return NumberOfCars.UNSPECIFIED.value
 
 
 class Parameter:
@@ -230,48 +258,42 @@ class EconomicalGroup(Enum):
     @classmethod
     def get_eco_group_from_int(cls, val):
         if 1 <= val <= 2:
-            return EconomicalGroup.POOR
+            return EconomicalGroup.POOR.value
         elif 4 <= val <= 5:
-            return EconomicalGroup.RICH
-        return EconomicalGroup.UNSPECIFIED
+            return EconomicalGroup.RICH.value
+        return EconomicalGroup.UNSPECIFIED.value
 
 
 class AgeGroup(Enum):
     """
     Age is not used by the precise year but rather by a group, so we can aggregate further when using this mode
-    [0 <= AGE <= 17]
-    [18 <= AGE <= 29]
-    [50 <= AGE <= 59]
-    [50 <= AGE <= 69]
-    [60 <= AGE <= 69]
-    [70 <= AGE <= 100]
-    [70 <= AGE <= 120]
     """
     FROM_0_TO_17 = 0
     FROM_18_TO_29 = 1
     FROM_50_TO_59 = 2
     FROM_60_TO_69 = 3
     FROM_70_TO_100 = 4
-    FROM_70_TO_120 = 5
-    FROM_50_TO_69 = 6
+    FROM_100_TO_120 = 5
+    FROM_70_TO_120 = 6
+    FROM_50_TO_69 = 7
 
     UNCLASSIFIED = 9
 
     @classmethod
     def int_to_group(cls, value):
         if 0 <= value <= 17:
-            return AgeGroup.FROM_0_TO_17
+            return AgeGroup.FROM_0_TO_17.value
         elif 18 <= value <= 29:
-            return AgeGroup.FROM_18_TO_29
+            return AgeGroup.FROM_18_TO_29.value
         elif 50 <= value <= 59:
-            return AgeGroup.FROM_50_TO_59
+            return AgeGroup.FROM_50_TO_59.value
         elif 60 <= value <= 69:
-            return AgeGroup.FROM_60_TO_69
+            return AgeGroup.FROM_60_TO_69.value
         elif 70 <= value <= 100:
-            return AgeGroup.FROM_70_TO_100
+            return AgeGroup.FROM_70_TO_100.value
         elif 100 <= value <= 120:
-            return AgeGroup.FROM_100_TO_120
-        return AgeGroup.UNCLASSIFIED
+            return AgeGroup.FROM_100_TO_120.value
+        return AgeGroup.UNCLASSIFIED.value
 
 
 class ActivityGroup(Enum):
@@ -285,22 +307,17 @@ class ActivityGroup(Enum):
 
     @classmethod
     def activity_int_to_mode(cls, val):
-        d = {
-            1: ActivityGroup.WORK,
-            2: ActivityGroup.BUSINESS,
-            3: ActivityGroup.EDUCATION,
-            4: ActivityGroup.SHOPPING,
-            5: ActivityGroup.LEISURE,
-            6: ActivityGroup.SERVICE,
-            31: ActivityGroup.EDUCATION,
-            32: ActivityGroup.EDUCATION,
-            33: ActivityGroup.EDUCATION,
-            34: ActivityGroup.EDUCATION,
-            41: ActivityGroup.SHOPPING,
-            42: ActivityGroup.SHOPPING,
-            11: ActivityGroup.SHOPPING,  # TODO is this accurate?
-        }
-        if val in d.keys():
-            return d[val]
-        else:
-            return ActivityGroup.LEISURE  # DEFAULT case since everything uses this
+
+        if val == 1:
+            return ActivityGroup.WORK.value
+        elif val == 2:
+            return ActivityGroup.BUSINESS.value
+        elif val in [3, 31, 32, 33, 34]:
+            return ActivityGroup.EDUCATION.value
+        elif val in [4, 41, 42, 11]: # TODO verify that activity 11 (Private_visit) maps to shopping
+            return ActivityGroup.SHOPPING.value
+        elif val == 6:
+            return ActivityGroup.SERVICE.value
+        elif val == 7:
+            return ActivityGroup.HOME.value
+        return ActivityGroup.LEISURE.value # LEISURE is the default for all actions

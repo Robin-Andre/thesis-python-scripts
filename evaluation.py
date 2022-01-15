@@ -5,6 +5,8 @@ import pandas
 import pandas as pd
 import numpy as np
 
+from configurations import parameter
+
 
 def __make_unique_df(raw_data, selection_vector):
     assert selection_vector == "tripBegin" or selection_vector == "tripEnd"
@@ -57,6 +59,7 @@ def _cumulate_traffic_demand(data):
     data = data.rename(columns={"active_trips_delta": "active_trips"})
     return data
 
+
 def create_traffic_demand_data(almost_raw_data):
     temp = almost_raw_data[["tripBegin", "tripMode", "activityType", "age",
                              "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
@@ -82,6 +85,43 @@ def create_traffic_demand_data(almost_raw_data):
     z = z.drop(columns=["counts_begin", "counts_end"])
 
     return z
+
+
+def merge_data(yaml):
+    data = pandas.read_csv(yaml.data.resultFolder + "/demandsimulationResult.csv", sep=";")
+    data_household = pandas.read_csv(yaml.data.dataSource.demandDataFolder + "/household.csv", sep=";")
+    data_person = pandas.read_csv(yaml.data.dataSource.demandDataFolder + "/person.csv", sep=";")
+    return merge_data(data, data_household, data_person)
+
+
+def default_test_merge():
+    data_person = pandas.read_csv("resources/person.csv", sep=";")
+    data_household = pandas.read_csv("resources/household.csv", sep=";")
+    data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+    return merge_data(data, data_household, data_person)
+
+def group_data(x):
+    """
+    Some Values such as age or occupation are only accessed as a group by calibration parameters, this method
+    groups the values accordingly
+    :param x:
+    :return:
+    """
+    x.age = x.age.apply(parameter.AgeGroup.int_to_group)
+    x.employment = x.employment.apply(parameter.Employment.get_employment_from_int)
+    x.economicalStatus = x.economicalStatus.apply(parameter.EconomicalGroup.get_eco_group_from_int)
+    x.totalNumberOfCars = x.totalNumberOfCars.apply(parameter.NumberOfCars.get_num_cars_from_int)
+    x.activityType = x.activityType.apply(parameter.ActivityGroup.activity_int_to_mode)
+    x.nominalSize = x.nominalSize.apply(parameter.HouseholdSize.get_hh_size_from_int)
+    return x
+
+
+def merge_data(data, household, person):
+    x = data.merge(person, how="left", left_on="personOid", right_on="personId")
+    x = x.merge(household, how="left", left_on="householdOid", right_on="householdId")
+    x = group_data(x)
+    return x
+
 
 def create_travel_time_data(raw_data):
     temp_df = raw_data[["durationTrip", "tripMode"]]

@@ -1,3 +1,5 @@
+import math
+
 import numpy
 import pandas
 import scipy
@@ -64,6 +66,24 @@ def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     return fig
     #plt.show()
+
+def generic_td_demand(data_frame, agg_list):
+    inputs = list(set(data_frame[agg_list]))
+    square_value = math.ceil(math.sqrt(len(inputs)))
+    rest = math.ceil(len(inputs) / square_value)
+    print(f"{agg_list} {inputs}")
+    print(f"Length{len(inputs)} {square_value} x {rest}")
+    fig, ax = plt.subplots(square_value, rest)
+    if rest > 1:
+        for i, element in enumerate(inputs):
+            temp = data_frame[data_frame[agg_list] == element]
+            ax[i // rest][i % rest].plot(temp.time, temp.active_trips)
+    else:
+        for i, element in enumerate(inputs):
+            temp = data_frame[data_frame[agg_list] == element]
+            ax[i // rest].plot(temp.time, temp.active_trips)
+    fig.suptitle(agg_list)
+    plt.show()
 
 
 def draw_modal_split(df_list):

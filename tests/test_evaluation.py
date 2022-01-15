@@ -4,6 +4,7 @@ import numpy as np
 import pandas
 
 import evaluation
+import visualization
 
 import visualization as plot
 from metrics.trafficdemand import TrafficDemand
@@ -34,22 +35,32 @@ class MyTestCase(unittest.TestCase):
         print(data_frame)
         self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "amount"])
 
+    def helper(self, q, string):
+        test = evaluation.aggregate_traffic_demand(q, [string]).reset_index()
+        visualization.generic_td_demand(test, string)
+
     def test_full_extraction(self):
-        raw_data_person = pandas.read_csv("resources/person.csv", sep=";")
-        raw_data_household = pandas.read_csv("resources/household.csv", sep=";")
-        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-
-        x = raw_data.merge(raw_data_person, how="left", left_on="personOid", right_on="personId")
-        self.assertEqual(len(raw_data), len(x))
-        x = x.merge(raw_data_household, how="left", left_on="householdOid", right_on="householdId")
-
-        self.assertEqual(len(raw_data), len(x))
+        x = evaluation.default_test_merge()
         q = evaluation.create_traffic_demand_data(x)
+        q.to_csv("roflcopter")
+        all_possible_vals = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket",
+                             "economicalStatus", "totalNumberOfCars", "nominalSize"]
+
+        for x in all_possible_vals:
+            self.helper(q, x)
+        #self.helper(q, "activityType")
+        #self.helper(q, "tripMode")
+        return
         test = evaluation.aggregate_traffic_demand(q, ["tripMode", "activityType"])
         print(test)
+        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         td = TrafficDemand.from_raw_data(raw_data)
-        test = evaluation.aggregate_traffic_demand(q, ["tripMode"])
+        test = evaluation.aggregate_traffic_demand(q, ["tripMode"]).reset_index()
+
         td.draw().show()
+        td._data_frame = test
+        td.smoothen(60).draw().show()
+        #td.draw().show()
         print(test)
         return
 
