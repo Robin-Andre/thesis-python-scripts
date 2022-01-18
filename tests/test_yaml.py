@@ -80,8 +80,8 @@ class MyTestCase(unittest.TestCase):
         path_mode2 = Path(SPECS.CWD + "config/choice-models/mode_choice_mixed_logit_mode_preference.gen")
         path_mode3 = Path(SPECS.CWD + "config/choice-models/mode_choice_mixed_logit_time_sensitivity.gen")
         path_dest = Path(SPECS.CWD + "config/choice-models/destination-choice.gen")
-        compare_keys = simulation.default_yaml().mode_config().entries.keys()
-        compare_dest_keys = simulation.default_yaml().configs[3].entries.keys()
+        compare_keys = simulation.default_yaml().mode_config().parameters.keys()
+        compare_dest_keys = simulation.default_yaml().configs[3].parameters.keys()
 
         woohoo = []
         for x in [path_mode1, path_mode2, path_mode3]:

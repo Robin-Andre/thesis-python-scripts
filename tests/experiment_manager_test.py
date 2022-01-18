@@ -24,10 +24,10 @@ class MyTestCase(unittest.TestCase):
 
         lol = experiment_manager.get_configs_from_failures(temp)
         dest_configs = experiment_manager.get_dest_configs_from_failures(temp)
-        all_keys = dest_configs[0].entries.keys()
+        all_keys = dest_configs[0].parameters.keys()
         print(all_keys)
         for key in all_keys:
-            seq = [x.entries[key] for x in dest_configs]
+            seq = [x.parameters[key] for x in dest_configs]
 
             print(f"Bounds for parameter {key}: {min(seq)} -> {max(seq)}")
         #print(lol)

@@ -69,16 +69,16 @@ def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=
 
 
 def generic_td_demand(data_frame, agg_list):
-    generic_plot(data_frame, agg_list, "active_trips")
+    generic_plot(data_frame, agg_list, "active_trips", "time")
 
 
 def generic_travel_time(data_frame, agg_list):
     temp = data_frame.reset_index()
-    temp = temp.groupby(agg_list + ["durationTrip"]).count().reset_index()
-    generic_plot(temp, agg_list, "durationTrip")
+    temp = temp.groupby([agg_list, "durationTrip"]).count().reset_index()
+    generic_plot(temp, agg_list, "count", "durationTrip")
 
 
-def generic_plot(data_frame, agg_list, keyword):
+def generic_plot(data_frame, agg_list, keyword, x):
     inputs = list(set(data_frame[agg_list]))
     inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
@@ -94,7 +94,7 @@ def generic_plot(data_frame, agg_list, keyword):
             cur_ax = ax[i // rest]
 
         temp = data_frame[data_frame[agg_list] == element]
-        cur_ax.plot(temp.time, temp[keyword])
+        cur_ax.plot(temp[x], temp[keyword])
         cur_ax.set_title(element)
 
     fig.suptitle(agg_list)

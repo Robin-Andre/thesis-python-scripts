@@ -49,7 +49,7 @@ def data_extraction(path):
         tempdata = calibration.get_neural_training_data(data)
         neural_data_list.append(tempdata)
         conf = yaml.destination_config()
-        neural_expected_output_list.append(numpy.asarray(list(conf.entries.values())))
+        neural_expected_output_list.append(numpy.asarray(list(conf.parameters.values())))
         data.draw_distributions()
     return data_list, neural_data_list, neural_expected_output_list
 

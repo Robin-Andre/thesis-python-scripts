@@ -90,8 +90,6 @@ def create_travel_time_data_new(almost_raw_data):
     temp = almost_raw_data[["durationTrip", "tripMode", "activityType", "age",
                             "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
                             "nominalSize"]].copy()
-    x = temp.groupby(["tripMode", "durationTrip"]).agg({"durationTrip": "count"})
-    y = temp.groupby(["tripMode", "activityType", "durationTrip"])["durationTrip"].count()
 
     temp = temp.groupby(["tripMode", "activityType", "age",
                          "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",

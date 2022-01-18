@@ -22,7 +22,7 @@ class ConfigTestCase(unittest.TestCase):
         self.invalid_parameter_name_setting("")
 
     def test_equal_amount_of_parameters(self):
-        self.assertEqual(len(self.config.entries), len(self.config.get_parameter_list()))
+        self.assertEqual(len(self.config.parameters), len(self.config.get_parameter_list()))
 
     def test_none_parameter_name(self):
         self.invalid_parameter_name_setting(None)
@@ -64,8 +64,8 @@ class ConfigTestCase(unittest.TestCase):
         original_config = self.config._text
         original_text_without_two_lines = "\n".join(original_config.split("\n")[2:])
         original_text_two_lines = "\n".join(original_config.split("\n")[:2])
-        self.config.entries["asc_car_d_mu"] = 42
-        self.config.entries["asc_car_d_sig"] = 9001
+        self.config.parameters["asc_car_d_mu"].set(42)
+        self.config.parameters["asc_car_d_sig"].set(9001)
         self.config.update_text()
         self.assertEqual(original_text_without_two_lines, "\n".join(self.config._text.split("\n")[2:]))
         self.assertNotEqual(original_text_two_lines, "\n".join(self.config._text.split("\n")[:2]))
@@ -94,19 +94,19 @@ class ConfigTestCase(unittest.TestCase):
 
     def test_subclass_config(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
-        self.assertEqual(len(mc_c.entries), 228)
+        self.assertEqual(len(mc_c.parameters), 228)
         #print(mc_c.group_description_parameter())
         #mc_c.get_corresponding_mode()
         #mc_c.temp_name()
-        print(mc_c.entries)
+        print(mc_c.parameters)
         mc_c.randomize_main_parameters()
-        print(mc_c.entries)
+        print(mc_c.parameters)
 
     def test_base_config_randomization_does_nothing(self):
         config = configloader.Config(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
-        expected_results = config.entries
+        expected_results = config.parameters
         config.randomize_main_parameters()
-        self.assertEqual(expected_results, config.entries)
+        self.assertEqual(expected_results, config.parameters)
 
     def test_mode_config_randomization_respects_bounds(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
@@ -114,9 +114,9 @@ class ConfigTestCase(unittest.TestCase):
 
     def test_get_main_params(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
-        temp = mc_c.entries.keys()
-        self.assertEqual(mc_c.get_main_parameters(active_mode_numerical=[]), [])
-        self.assertEqual(mc_c.get_main_parameters(active_mode_numerical=[0]), ["asc_bike_mu", "asc_bike_sig", "b_tt_bike_mu", "b_tt_bike_sig"])
+        temp = mc_c.parameters.keys()
+        self.assertEqual(mc_c.get_main_parameters(requested_modes=[]), [])
+        self.assertEqual(mc_c.get_main_parameters(requested_modes=[0]), ["asc_bike_mu", "asc_bike_sig", "b_tt_bike_mu", "b_tt_bike_sig"])
 
 
     def test_get_main_params_dest(self):

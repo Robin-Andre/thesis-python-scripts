@@ -93,21 +93,19 @@ def get_economical_group_from_string(param):
 
 def get_age_group_from_string(param):
     if param.__contains__("age_0_17") or param.__contains__("age_1_on"):
-        return AgeGroup.FROM_0_TO_17.value
+        return 0
     elif param.__contains__("age_18_29"):
-        return AgeGroup.FROM_18_TO_29.value
+        return 18
     elif param.__contains__("age_50_59"):
-        return AgeGroup.FROM_50_TO_59.value
+        return 50
     elif param.__contains__("age_60_69"):
-        return AgeGroup.FROM_60_TO_69.value
+        return 60
     elif param.__contains__("age_70_100"):
-        return AgeGroup.FROM_70_TO_100.value
-    elif param.__contains__("age_70_120"):
-        return AgeGroup.FROM_70_TO_120.value
+        return 70
     elif param.__contains__("age_56_on"):
-        return AgeGroup.FROM_50_TO_69.value
+        return [50, 60]
     elif param.__contains__("age_78_on"):
-        return AgeGroup.FROM_70_TO_120.value
+        return [70, 100]
 
 
 def get_activity_from_string(param):
@@ -173,13 +171,11 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
 
 
 def get_all_parameter_limitations(param):
-    temp_list = []
-    ret_list = []
+    ret_dict = {}
     for name, f in mode_and_decipher:
         if f(param) is not None:
-            temp_list.append(name + "=" + str(f(param)))
-            ret_list.append((name, f(param)))
-    return ret_list
+            ret_dict[name] = f(param)
+    return ret_dict
 
 
 def group_employment(df):
@@ -191,10 +187,10 @@ def group_employment(df):
 
 
 class Employment(Enum):
-    EMPLOYED = 0
-    STUDENT = 1
-    HOME = 2
-    UNCLASSIFIED = 4
+    EMPLOYED = "EMPLOYED"
+    STUDENT = "STUDENT"
+    HOME = "HOME"
+    UNCLASSIFIED = "UNSPECIFIED"
 
     @classmethod
     def get_employment_from_int(cls, val):
@@ -249,9 +245,9 @@ def group_economical_status(df):
 
 
 class EconomicalGroup(Enum):
-    POOR = 0
-    RICH = 1
-    UNSPECIFIED = 2
+    POOR = 1
+    RICH = 5
+    UNSPECIFIED = 3
 
     @classmethod
     def get_eco_group_from_int(cls, val):
@@ -313,11 +309,11 @@ class AgeGroup(Enum):
 
 
 def group_activity(df):
-    group(df, "activityType", 31, 34, target=3)
-    group(df, "activityType", 41, 42, target=4)
-    group(df, "activityType", 51, 52, target=5)
-    group(df, "activityType", 12, 12, target=5)
-    group(df, "activityType", 11, 11, target=4)  # Is this correct?
+    group(df, "activityType", 31, 34, target=ActivityGroup.EDUCATION.value)
+    group(df, "activityType", 41, 42, target=ActivityGroup.SHOPPING.value)
+    group(df, "activityType", 51, 52, target=ActivityGroup.LEISURE.value)
+    group(df, "activityType", 12, 12, target=ActivityGroup.LEISURE.value)
+    group(df, "activityType", 11, 11, target=ActivityGroup.SHOPPING.value)  # Is this correct?
 
 
 class ActivityGroup(Enum):
@@ -364,11 +360,15 @@ def get_parameter_bounds(name):
 
 
 class Parameter:
-    def __init__(self, name):
+    def __init__(self, name, value=0):
         self.name = name
+        self.value = value
         self.lower_bound, self.upper_bound = get_parameter_bounds(name)
         self.requirements = get_all_parameter_limitations(name)
 
     def __str__(self):
-        return f"{self.name}, {self.lower_bound}, {self.upper_bound}, {len(self.requirements)} : {self.requirements}"
+        return f"{self.name}, {self.value} [{self.lower_bound}, {self.upper_bound}], {self.requirements}"
+
+    def set(self, value):
+        self.value = value
 

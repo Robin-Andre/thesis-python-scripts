@@ -85,14 +85,14 @@ class MyTestCase(unittest.TestCase):
 
 
         for config in yaml.configs:
-            for key in config.entries.keys():
-                config.entries[key] = 42
+            for key in config.parameters.keys():
+                config.parameters[key].set(42)
         simulation.save(yaml, None, "dump")
         yaml2, _ = simulation.load("dump/")
 
         for config in yaml2.configs:
-            for key, value in config.entries.items():
-                self.assertEqual(value, 42)
+            for key, parameter in config.parameters.items():
+                self.assertEqual(parameter.value, 42)
 
     def test_writing_to_calibration(self):
         yaml, _ = simulation.load("resources/example_config_load2/")

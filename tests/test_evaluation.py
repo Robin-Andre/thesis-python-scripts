@@ -32,8 +32,7 @@ class MyTestCase(unittest.TestCase):
     def test_distance_and_activity_extraction(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         data_frame = evaluation.create_travel_distance_with_activity_type(raw_data)
-        print(data_frame)
-        self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "amount"])
+        self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "activityType", "amount"])
 
     def helper(self, q, string):
         test = evaluation.aggregate_traffic_demand(q, [string]).reset_index()
@@ -41,7 +40,7 @@ class MyTestCase(unittest.TestCase):
 
     def helper2(self, q, string):
         #test = evaluation.aggregate_traffic_demand(q, [string]).reset_index()
-        visualization.generic_travel_time(q, [string])
+        visualization.generic_travel_time(q, string)
 
     def test_full_extraction(self):
         x = evaluation.default_test_merge()

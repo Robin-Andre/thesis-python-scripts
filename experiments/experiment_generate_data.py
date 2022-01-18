@@ -5,10 +5,10 @@ from configurations import SPECS
 
 
 def set_config_to_one(config_internal):
-    for key in config_internal.entries:
+    for key in config_internal.parameters:
 
-        if config_internal.entries[key] < 2000:
-            config_internal.entries[key] = 0
+        if config_internal.parameters[key] < 2000:
+            config_internal.parameters[key] = 0
         else:
             print(f"Not touching: {key} in {config_internal.name}")
 
@@ -18,7 +18,7 @@ def set_config_to_one(config_internal):
 def run_singular_value_experiment(key, value, config):
     print(f"Running Experiment: {key}: {value}")
     set_config_to_one(config)
-    config.entries[key] = value
+    config.parameters[key] = value
     config.write()
     simulation.clean_result_directory()
     data = simulation.run_experiment(key + str(value))
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             simulation.restore_experimental_configs()
             simulation.clean_result_directory()
             mode_config.reset()
-            mode_config.entries[parameter] = (i / 50) * (b - a) + a
+            mode_config.parameters[parameter] = (i / 50) * (b - a) + a
             print(f"The current value is: {(i / 50) * (b - a) + a}")
             mode_config.write()
             # dest_config.randomize_main_parameters()

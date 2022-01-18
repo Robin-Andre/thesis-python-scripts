@@ -31,7 +31,7 @@ class MyTestCase(unittest.TestCase):
         inp, exp = calibration.neural_network_data_generator.convert_dest(yaml_list, data_list)
         dc = yaml_list[0].destination_config()
         expected_params = dc.get_main_parameters()
-        expected_values = [values for key, values in dc.entries.items() if key in expected_params]
+        expected_values = [values for key, values in dc.parameters.items() if key in expected_params]
         self.assertEqual(list(exp[0]), expected_values)
 
 
