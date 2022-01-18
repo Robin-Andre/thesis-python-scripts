@@ -86,6 +86,20 @@ def create_traffic_demand_data(almost_raw_data):
 
     return z
 
+def create_travel_time_data_new(almost_raw_data):
+    temp = almost_raw_data[["durationTrip", "tripMode", "activityType", "age",
+                            "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
+                            "nominalSize"]].copy()
+    x = temp.groupby(["tripMode", "durationTrip"]).agg({"durationTrip": "count"})
+    y = temp.groupby(["tripMode", "activityType", "durationTrip"])["durationTrip"].count()
+
+    temp = temp.groupby(["tripMode", "activityType", "age",
+                         "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
+                         "nominalSize", "durationTrip"]).agg({"durationTrip": "count"})
+    temp = temp.rename(columns={"durationTrip": "count"})
+    temp = temp.reset_index()
+    return temp
+
 
 def merge_data(yaml):
     data = pandas.read_csv(yaml.data.resultFolder + "/demandsimulationResult.csv", sep=";")

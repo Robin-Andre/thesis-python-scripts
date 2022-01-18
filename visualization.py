@@ -67,23 +67,39 @@ def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=
     return fig
     #plt.show()
 
+
 def generic_td_demand(data_frame, agg_list):
+    generic_plot(data_frame, agg_list, "active_trips")
+
+
+def generic_travel_time(data_frame, agg_list):
+    temp = data_frame.reset_index()
+    temp = temp.groupby(agg_list + ["durationTrip"]).count().reset_index()
+    print(temp)
+    generic_plot(temp, agg_list, "durationTrip")
+
+
+def generic_plot(data_frame, agg_list, keyword):
     inputs = list(set(data_frame[agg_list]))
     square_value = math.ceil(math.sqrt(len(inputs)))
     rest = math.ceil(len(inputs) / square_value)
     print(f"{agg_list} {inputs}")
     print(f"Length{len(inputs)} {square_value} x {rest}")
-    fig, ax = plt.subplots(square_value, rest)
-    if rest > 1:
-        for i, element in enumerate(inputs):
-            temp = data_frame[data_frame[agg_list] == element]
-            ax[i // rest][i % rest].plot(temp.time, temp.active_trips)
-    else:
-        for i, element in enumerate(inputs):
-            temp = data_frame[data_frame[agg_list] == element]
-            ax[i // rest].plot(temp.time, temp.active_trips)
+    fig, ax = plt.subplots(square_value, rest, sharex=True)
+
+    for i, element in enumerate(inputs):
+        if rest > 1:
+            cur_ax = ax[i // rest][i % rest]
+        else:
+            cur_ax = ax[i // rest]
+
+        temp = data_frame[data_frame[agg_list] == element]
+        cur_ax.plot(temp.time, temp[keyword])
+        cur_ax.set_title(element)
+
     fig.suptitle(agg_list)
-    plt.show()
+    fig.show()
+
 
 
 def draw_modal_split(df_list):

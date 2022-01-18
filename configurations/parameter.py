@@ -80,36 +80,7 @@ def get_umland_from_string(param):
     return None
 
 
-class Mode(Enum):
-    BIKE = 0
-    DRIVER = 1
-    PASSENGER = 2
-    PEDESTRIAN = 3
-    PUBLIC_TRANSPORT = 4
-    TAXI = 7
-    BIKE_SHARING = 9001  # TODO these modes have multiple representors in mobitopp and are not yet in the simulation
-    CAR_SHARING = 9002
-    RIDE_POOLING = 9003
 
-    @classmethod
-    def get_mode_from_string(cls, string):
-        d = {
-            "_ped": 3,
-            "_bike": 0,
-            "_car_d": 1,
-            "_car_p": 2,
-            "_put": 4,
-            "_taxi": 7,
-            "_bs": 9001,
-            "_cs": 9002,
-            "_rp": 9003,
-            "b_cost": 1,
-            "elasticity_parken": 1
-        }
-        for x in d.keys():
-            if x in string:
-                return Mode(d[x])
-        return None
 
 
 def get_economical_group_from_string(param):
@@ -159,7 +130,27 @@ def get_activity_from_string(param):
     return None
 
 
-mode_and_decipher = [("tripMode", Mode.get_mode_from_string),
+def get_mode_from_string(string):
+    d = {
+        "_ped": 3,
+        "_bike": 0,
+        "_car_d": 1,
+        "_car_p": 2,
+        "_put": 4,
+        "_taxi": 7,
+        "_bs": 9001,
+        "_cs": 9002,
+        "_rp": 9003,
+        "b_cost": 1,
+        "elasticity_parken": 1
+    }
+    for x in d.keys():
+        if x in string:
+            return Mode(d[x])
+    return None
+
+
+mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("activityType", get_activity_from_string),
                      ("age", get_age_group_from_string),
                      ("employment", get_employment_from_string),
@@ -193,6 +184,15 @@ def get_all_parameter_limitations(param):
 
 def get_parameter_bounds(param):
     return -15, 15
+
+
+class Grouping(Enum):
+
+    #def __lt__(self, other):
+    #    return self.value < other.value
+
+    def ret(self):
+        pass
 
 
 class Employment(Enum):
@@ -238,16 +238,6 @@ class NumberOfCars(Enum):
         elif val == 1:
             return NumberOfCars.ONE_CAR.value
         return NumberOfCars.UNSPECIFIED.value
-
-
-class Parameter:
-    def __init__(self, name):
-        self.name = name
-        self.lower_bound, self.upper_bound = get_parameter_bounds(name)
-        self.requirements = get_all_parameter_limitations(name)
-
-    def __str__(self):
-        return f"{self.name}, {self.lower_bound}, {self.upper_bound}, {len(self.requirements)} : {self.requirements}"
 
 
 class EconomicalGroup(Enum):
@@ -314,10 +304,35 @@ class ActivityGroup(Enum):
             return ActivityGroup.BUSINESS.value
         elif val in [3, 31, 32, 33, 34]:
             return ActivityGroup.EDUCATION.value
-        elif val in [4, 41, 42, 11]: # TODO verify that activity 11 (Private_visit) maps to shopping
+        elif val in [4, 41, 42, 11]:  # TODO verify that activity 11 (Private_visit) maps to shopping
             return ActivityGroup.SHOPPING.value
         elif val == 6:
             return ActivityGroup.SERVICE.value
         elif val == 7:
             return ActivityGroup.HOME.value
-        return ActivityGroup.LEISURE.value # LEISURE is the default for all actions
+        return ActivityGroup.LEISURE.value  # LEISURE is the default for all actions
+
+
+class Mode(Enum):
+    BIKE = 0
+    DRIVER = 1
+    PASSENGER = 2
+    PEDESTRIAN = 3
+    PUBLIC_TRANSPORT = 4
+    TAXI = 7
+    BIKE_SHARING = 9001  # TODO these modes have multiple representors in mobitopp and are not yet in the simulation
+    CAR_SHARING = 9002
+    RIDE_POOLING = 9003
+
+
+
+
+class Parameter:
+    def __init__(self, name):
+        self.name = name
+        self.lower_bound, self.upper_bound = get_parameter_bounds(name)
+        self.requirements = get_all_parameter_limitations(name)
+
+    def __str__(self):
+        return f"{self.name}, {self.lower_bound}, {self.upper_bound}, {len(self.requirements)} : {self.requirements}"
+

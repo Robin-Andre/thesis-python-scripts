@@ -39,30 +39,30 @@ class MyTestCase(unittest.TestCase):
         test = evaluation.aggregate_traffic_demand(q, [string]).reset_index()
         visualization.generic_td_demand(test, string)
 
+    def helper2(self, q, string):
+        #test = evaluation.aggregate_traffic_demand(q, [string]).reset_index()
+        visualization.generic_travel_time(q, [string])
+
     def test_full_extraction(self):
         x = evaluation.default_test_merge()
         q = evaluation.create_traffic_demand_data(x)
-        q.to_csv("roflcopter")
         all_possible_vals = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket",
                              "economicalStatus", "totalNumberOfCars", "nominalSize"]
 
         for x in all_possible_vals:
             self.helper(q, x)
-        #self.helper(q, "activityType")
-        #self.helper(q, "tripMode")
         return
-        test = evaluation.aggregate_traffic_demand(q, ["tripMode", "activityType"])
-        print(test)
-        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        td = TrafficDemand.from_raw_data(raw_data)
-        test = evaluation.aggregate_traffic_demand(q, ["tripMode"]).reset_index()
 
-        td.draw().show()
-        td._data_frame = test
-        td.smoothen(60).draw().show()
-        #td.draw().show()
-        print(test)
+    def test_full_time_extraction(self):
+        x = evaluation.default_test_merge()
+        q = evaluation.create_travel_time_data_new(x)
+        all_possible_vals = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket",
+                             "economicalStatus", "totalNumberOfCars", "nominalSize"]
+
+        for x in all_possible_vals:
+            self.helper2(q, x)
         return
+
 
 
     def test_household_extraction(self):
@@ -78,6 +78,7 @@ class MyTestCase(unittest.TestCase):
         temp_df = evaluation.create_travel_distance_data(raw_data)
         graph = plot.draw_travel_distance(temp_df, bin_size=5)
         print(graph)
+
 
     def nontest_geo_plot(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
