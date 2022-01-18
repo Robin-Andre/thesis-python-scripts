@@ -154,7 +154,8 @@ class DestinationChoiceConfig(Config):
         active_mode_list = [Mode(x) for x in active_mode_numerical]
         param_list = []
         for key in self.entries.keys():
-            if Mode.get_mode_from_string(key) in active_mode_list:
+            x = Mode.get_mode_from_string(key)
+            if x is not None and x in active_mode_list:
                 param_list.append(key)
         return param_list
 

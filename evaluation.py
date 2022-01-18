@@ -114,7 +114,7 @@ def default_test_merge():
     data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
     return merge_data(data, data_household, data_person)
 
-def group_data(x):
+def group_data2(x):
     """
     Some Values such as age or occupation are only accessed as a group by calibration parameters, this method
     groups the values accordingly
@@ -130,9 +130,22 @@ def group_data(x):
     return x
 
 
+def group_data(x):
+    parameter.group_age(x)
+    parameter.group_economical_status(x)
+    parameter.group_activity(x)
+    parameter.group_employment(x)
+    parameter.group_household_size(x)
+    parameter.group_number_of_cars(x)
+
+    return x
+
 def merge_data(data, household, person):
     x = data.merge(person, how="left", left_on="personOid", right_on="personId")
     x = x.merge(household, how="left", left_on="householdOid", right_on="householdId")
+    x = x[["tripMode", "activityType", "age",
+          "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
+          "nominalSize", "tripBegin", "tripEnd", "durationTrip", "distanceInKm"]]
     x = group_data(x)
     return x
 

@@ -75,12 +75,12 @@ def generic_td_demand(data_frame, agg_list):
 def generic_travel_time(data_frame, agg_list):
     temp = data_frame.reset_index()
     temp = temp.groupby(agg_list + ["durationTrip"]).count().reset_index()
-    print(temp)
     generic_plot(temp, agg_list, "durationTrip")
 
 
 def generic_plot(data_frame, agg_list, keyword):
     inputs = list(set(data_frame[agg_list]))
+    inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
     rest = math.ceil(len(inputs) / square_value)
     print(f"{agg_list} {inputs}")
