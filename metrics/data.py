@@ -41,6 +41,11 @@ class Data:
         self.travel_time.print()
         self.travel_distance.print()
 
+    def reduce(self, keep_list):
+        self.traffic_demand.reduce(keep_list)
+        self.travel_time.reduce(keep_list)
+        self.travel_distance.reduce(keep_list)
+
     def draw(self, reference=None):
         if reference is not None:
             x = self.traffic_demand.draw(reference.traffic_demand)

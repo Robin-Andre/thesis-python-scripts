@@ -15,14 +15,14 @@ class TravelTime(Metric):
         ret._data_frame = super().smoothen(smoothness_in_minutes, "amount")
         return ret
 
-
-
     def read_from_raw_data(self, raw_data):
-        self._data_frame = evaluation.create_travel_time_data(raw_data)
+        self._data_frame = evaluation.create_travel_time_data_new(raw_data)
 
     def draw(self, reference=None):
         return visualization.draw_travel_time_per_mode(self, reference_df=reference)
-        #print(visualization.draw_travel_time(self._data_frame))
+
+    def reduce(self, keeper_list):
+        self._data_frame = metric.reduce(self._data_frame, keeper_list, "durationTrip", "count")
 
     def draw_distribution(self, mode=-1):
         distribution, pdf = self.get_distribution_and_pdf(mode)

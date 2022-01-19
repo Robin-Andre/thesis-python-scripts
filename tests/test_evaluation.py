@@ -35,16 +35,14 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "activityType", "amount"])
 
     def helper(self, q, string):
-        test = evaluation.aggregate_traffic_demand(q, [string]).reset_index()
-        visualization.generic_td_demand(test, string)
+        visualization.generic_td_demand(q.accumulate([string]), string)
 
     def helper2(self, q, string):
-        #test = evaluation.aggregate_traffic_demand(q, [string]).reset_index()
         visualization.generic_travel_time(q, string)
 
     def test_full_extraction(self):
         x = evaluation.default_test_merge()
-        q = evaluation.create_traffic_demand_data(x)
+        q = TrafficDemand.from_raw_data(x)
         all_possible_vals = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket",
                              "economicalStatus", "totalNumberOfCars", "nominalSize"]
 

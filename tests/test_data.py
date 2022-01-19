@@ -2,6 +2,7 @@ import unittest
 
 import pandas.testing
 
+import evaluation
 from metrics.data import Data
 import calibration
 
@@ -87,12 +88,19 @@ class MyTestCase(unittest.TestCase):
         c.show()
 
     def test_raw_data(self):
-        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        data = Data(raw_data)
+
+        data = Data(evaluation.default_test_merge())
         a, b, c = data.draw()
         a.show()
         b.show()
         c.show()
+
+    def test_new_data_write(self):
+        data = Data(evaluation.default_test_merge())
+        x = data.traffic_demand
+        data.write("temp")
+        data.reduce(["tripMode"])
+        data.write("temp2")
 
 if __name__ == '__main__':
     unittest.main()

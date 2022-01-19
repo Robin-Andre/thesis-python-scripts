@@ -78,6 +78,12 @@ def generic_travel_time(data_frame, agg_list):
     generic_plot(temp, agg_list, "count", "durationTrip")
 
 
+def generic_travel_distance(data_frame, agg_list):
+    temp = data_frame.reset_index()
+    temp = temp.groupby([agg_list, "distanceInKm"]).count().reset_index()
+    generic_plot(temp, agg_list, "count", "distanceInKm")
+
+
 def generic_plot(data_frame, agg_list, keyword, x):
     inputs = list(set(data_frame[agg_list]))
     inputs.sort()
@@ -146,8 +152,10 @@ def draw_travel_time_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="
     return fig
     #plt.show()
 
+
 def draw_travel_distance(df):
     pass
+
 
 def draw_travel_distance_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="Travel Distance (km)", reference_df=None):
 
@@ -163,6 +171,7 @@ def draw_travel_distance_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], tit
             ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2)
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     return fig
+
 
 def draw_distribution(distribution, mode=-1, approximation=None, ax=None):
 

@@ -8,6 +8,7 @@ from pathlib import Path
 import pandas
 from matplotlib import pyplot as plt
 
+import evaluation
 import metrics.data
 from configurations import configloader, SPECS
 from metrics import metric
@@ -109,10 +110,8 @@ def save(yaml, data, relative_path):
 
 
 def results(yaml=default_yaml()):
-    file = SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv"
-    if Path(file).exists():
-        return metrics.data.Data(pandas.read_csv(file, sep=";"))
-    return None
+
+    return metrics.data.Data(evaluation.extract_data(yaml))
 
 
 # Restores the configs IF the default experimental yaml is used. TODO make check to test for default experimental yaml

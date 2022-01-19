@@ -1,9 +1,12 @@
+import time
 import unittest
 
 import pandas
 
+import evaluation
 from metrics import data
 from metrics.data import Data
+from metrics.trafficdemand import TrafficDemand
 
 
 class MyTestCase(unittest.TestCase):
@@ -41,8 +44,20 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(all(test.get_data_frame()["active_trips"]) == 0)
         pandas.testing.assert_frame_equal(expected, traffic_demand.get_data_frame())
 
+    def nontest_new_readin_method(self):
+        a, b, c = TrafficDemand(), TrafficDemand(), TrafficDemand()
+        a.read_from_raw_data_new2(evaluation.default_test_merge())
+        b.read_from_raw_data_new(evaluation.default_test_merge())
 
+        c.read_from_raw_data_new(evaluation.default_test_merge())
+        c.reduce(["tripMode"])
 
+        x = a.aggregate_delta(["tripMode"])
+        y = b.aggregate_delta(["tripMode"])
+        z = c.aggregate_delta(["tripMode"])
+
+        pandas.testing.assert_frame_equal(x, y)
+        pandas.testing.assert_frame_equal(y, z)
 
 if __name__ == '__main__':
     unittest.main()

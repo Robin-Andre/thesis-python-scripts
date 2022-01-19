@@ -24,6 +24,17 @@ def roll_trips(df, rolling_minutes, string):
     return df
 
 
+def reduce(data, keep, string1, string2):
+    assert string1, string2 not in keep
+    temp = data.groupby(keep + [string1]).sum()
+    temp = temp.reset_index()
+    temp = temp[keep + [string1, string2]]
+    temp = temp.set_index(keep + [string1])
+    temp.sort_index()
+    temp = temp.reset_index()
+    return temp
+
+
 class Metric:
 
     def __init__(self):
@@ -78,6 +89,9 @@ class Metric:
 
     def write(self, path):
         self._data_frame.to_csv(path, index=False)
+
+
+
 
 
 def get_approximations(dataframe, string, required_modes=[-1, 0, 1, 2, 3, 4]):

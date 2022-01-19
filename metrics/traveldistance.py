@@ -16,8 +16,14 @@ class TravelDistance(Metric):
         ret._data_frame = super().smoothen(smoothness_in_minutes, "amount")
         return ret
 
-    def read_from_raw_data(self, raw_data):
+    def read_from_raw_data_old(self, raw_data):
         self._data_frame = evaluation.create_travel_distance_data(raw_data)
+
+    def read_from_raw_data(self, raw_data):
+        self._data_frame = evaluation.create_travel_distance_data_new(raw_data)
+
+    def reduce(self, keeper_list):
+        self._data_frame = metric.reduce(self._data_frame, keeper_list, "distanceInKm", "count")
 
     def draw(self, reference=None):
         return visualization.draw_travel_distance_per_mode(self, reference_df=reference)

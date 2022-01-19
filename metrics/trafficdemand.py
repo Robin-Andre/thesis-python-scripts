@@ -2,8 +2,7 @@ import pandas
 
 import evaluation
 import visualization
-from metrics.metric import Metric, difference
-
+from metrics.metric import Metric, difference, reduce
 
 
 class TrafficDemand(Metric):
@@ -18,17 +17,40 @@ class TrafficDemand(Metric):
         ret._data_frame = super().smoothen(smoothness_in_minutes, "active_trips")
         return ret
 
-    def read_from_raw_data(self, raw_data):
+    def read_from_raw_data_old(self, raw_data):
         temp = raw_data[["tripBegin", "tripEnd", "tripMode"]].groupby("tripMode")
         temp = temp.apply(lambda x: evaluation.create_plot_data(x)).reset_index()
         assert temp["level_1"].equals(temp["time"])  # TODO figure out where the "level_1" comes from
         temp = temp.drop(columns=["level_1"])
         self._data_frame = temp
 
+    def read_from_raw_data(self, raw_data):
+        self._data_frame = evaluation.create_traffic_demand_data(raw_data)
+
+    def read_from_raw_data_new2(self, raw_data):
+        self._data_frame = evaluation.create_traffic_demand_data(raw_data, ["tripMode"])
+
+    def aggregate_delta(self, agg_list):
+        return evaluation.aggregate_traffic_demand(self._data_frame, agg_list)
+
+    def aggregate_traffic_demand(self, attribute_list):
+        return self.accumulate(self._data_frame)
+
+    def accumulate(self, acc_list):
+
+        temp = reduce(self._data_frame, acc_list, "time", "active_trips_delta")
+        temp = temp.drop(columns=["active_trips_delta"])
+        data = reduce(self._data_frame, acc_list, "time", "active_trips_delta").drop(columns="time")
+        data["active_trips"] = data.groupby(acc_list).cumsum()
+        data["time"] = temp["time"]
+        data = data.drop(columns=["active_trips_delta"])
+        return data
+
+    def reduce(self, keep_list):
+        self._data_frame = reduce(self._data_frame, keep_list, "time", "active_trips_delta")
+
     def draw(self, reference=None):
-        #temp = self._data_frame[self._data_frame["time"] % resolution == 0]
         return visualization.draw_travel_demand_by_mode(self, reference_df=reference)
-        #visualization.draw(temp, visualization.aggregate_traffic_modal)
 
     def get_mode_specific_data(self, mode_number):
         return super().get_mode_specific_data(mode_number, "time")
@@ -42,11 +64,6 @@ class TrafficDemand(Metric):
         begin = [0, 1440, 2880, 4320, 5760, 7200, 8640]
         end = [1440, 2880, 4320, 5760, 7200, 8640, 10080]
         return [self.get_peak(x, mode) for x in zip(begin, end)]
-
-
-    def get_activity_specific_data(self, activity_number):
-        # TODO implement
-        pass
 
 
 
