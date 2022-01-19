@@ -355,19 +355,20 @@ class Mode(Enum):
     RIDE_POOLING = 9003
 
 
-def get_parameter_bounds(name):
-    return -15, 15
-
-
 class Parameter:
     def __init__(self, name, value=0):
         self.name = name
         self.value = value
-        self.lower_bound, self.upper_bound = get_parameter_bounds(name)
+        self.lower_bound, self.upper_bound = None, None
         self.requirements = get_all_parameter_limitations(name)
 
     def __str__(self):
         return f"{self.name}, {self.value} [{self.lower_bound}, {self.upper_bound}], {self.requirements}"
+
+    def initialize_bounds(self, bounds):
+        if bounds.get(self.name):
+            self.lower_bound, self.upper_bound = bounds.get(self.name)
+
 
     def set(self, value):
         self.value = value

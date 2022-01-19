@@ -10,10 +10,9 @@ from configurations.parameter import Parameter, Employment, Mode, EconomicalGrou
 class MyTestCase(unittest.TestCase):
     def test_something(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
-        temp = mc_c.parameters.keys()
-        for key in temp:
-            p = Parameter(key)
-            print(p)
+        temp = mc_c.parameters.items()
+        for key, param in temp:
+            print(param)
             #print([x[0] for x in p.requirements])
            # if key in mc_c.get_main_parameters(active_mode_numerical=[0, 1, 2, 3, 4, 7, 9001, 9002, 9003]):
            #     self.assertEqual(len(p.requirements), 1)

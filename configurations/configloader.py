@@ -1,8 +1,8 @@
 import re
 import random
 
-from configurations.parameter import Mode, Parameter
-from configurations.limits import ModeLimitSimple, DestinationLimitSimple, Limit
+from configurations import limits
+from configurations.parameter import Parameter
 
 
 class Config:
@@ -14,7 +14,6 @@ class Config:
             self.name = path.name
         self.parameters = {}
         self.initialize_dictionary()
-        self.limit = Limit(self)
 
     def __str__(self):
         return self._text
@@ -55,7 +54,9 @@ class Config:
                 name = line.split("=")[0].strip()
                 # TODO evil eval
                 value = eval(line.split("=")[1])
-                self.parameters[name] = Parameter(name, value)
+                p = Parameter(name, value)
+                p.initialize_bounds(self.limits)
+                self.parameters[name] = p
             else:
                 pass
                 # print(f"Error parsing[{line}] no seperator found", file=sys.stderr)
@@ -129,12 +130,13 @@ class Config:
 
 class ModeChoiceConfig(Config):
     def __init__(self, path):
+        self.limits = limits.MODE_CHOICE_LIMITS
         super().__init__(path)
-        self.limit = ModeLimitSimple(self)
 
     def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []
         for parameter in self.parameters.values():
+            # Mode choice parameters always require a mode so checking for length 1 is sufficient
             if len(parameter.requirements) == 1 and parameter.requirements["tripMode"] in requested_modes:
                 param_list.append(parameter.name)
 
@@ -143,12 +145,13 @@ class ModeChoiceConfig(Config):
 
 class DestinationChoiceConfig(Config):
     def __init__(self, path):
+        self.limits = limits.DESTINATION_CHOICE_LIMITS
         super().__init__(path)
-        self.limit = DestinationLimitSimple(self)
 
     def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []
         for parameter in self.parameters.values():
+
             if len(parameter.requirements) == 1 and parameter.requirements["tripMode"] in requested_modes:
                 param_list.append(parameter.name)
 
