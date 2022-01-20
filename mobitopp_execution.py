@@ -15,7 +15,26 @@ from metrics import metric
 import yamlloader
 
 
+# Restores the configs IF the default experimental yaml is used. TODO make check to test for default experimental yaml
+def restore_experimental_configs():
+    saved_configs = "calibration/"
+    experiment_configs = "config/shared/parameters/"
+    configs = ["destination_choice_utility_calculation_parameters.txt", "destination_choice_parameters_SHOPPING.txt",
+               "destination_choice_parameters_SERVICE.txt", "destination_choice_parameters_LEISURE.txt",
+               "destination_choice_parameters_BUSINESS.txt", "mode_choice_main_parameters.txt"]
+    for config in configs:
+        # TODO open with()
+        input_file = open(SPECS.CWD + saved_configs + config, "r")
+        text = input_file.read()
+        output_file = open(SPECS.CWD + experiment_configs + config, "w")
+        output_file.write(text)
+        input_file.close()
+        output_file.close()
+    return
+
+
 def default_yaml():
+    restore_experimental_configs()
     yaml_file = "config/rastatt/short-term-module-100p.yaml"
     yaml = yamlloader.YAML(Path(SPECS.CWD + yaml_file))
     yaml.set_configs(yaml.find_calibration_configs(SPECS.CWD))
@@ -53,6 +72,7 @@ def __run(command):
 def __run_mobitopp_linux():
     ret = __run("./gradlew")
     restore_default_yaml()
+    restore_experimental_configs()
     return ret
 
 
@@ -62,6 +82,7 @@ def __run_mobitopp_windows():
     ret = __run("gradlew.bat")
     os.chdir(old_dir)
     restore_default_yaml()
+    restore_experimental_configs()
     return ret
 
 
@@ -90,7 +111,6 @@ def load(relative_path_raw):
 
         configs.append(config)
     yaml.set_configs(configs)
-    yaml.set_config_to_calibration()
     data = metrics.data.Data()
     if Path(relative_path + "results/").exists():
         data.load(relative_path + "results/")
@@ -114,22 +134,6 @@ def results(yaml=default_yaml()):
     return metrics.data.Data(evaluation.extract_data(yaml))
 
 
-# Restores the configs IF the default experimental yaml is used. TODO make check to test for default experimental yaml
-def restore_experimental_configs():
-    saved_configs = "calibration/"
-    experiment_configs = "config/shared/parameters/"
-    configs = ["destination_choice_utility_calculation_parameters.txt", "destination_choice_parameters_SHOPPING.txt",
-               "destination_choice_parameters_SERVICE.txt", "destination_choice_parameters_LEISURE.txt",
-               "destination_choice_parameters_BUSINESS.txt", "mode_choice_main_parameters.txt"]
-    for config in configs:
-        # TODO open with()
-        input_file = open(SPECS.CWD + saved_configs + config, "r")
-        text = input_file.read()
-        output_file = open(SPECS.CWD + experiment_configs + config, "w")
-        output_file.write(text)
-        input_file.close()
-        output_file.close()
-    return
 
 
 def restore_default_yaml():

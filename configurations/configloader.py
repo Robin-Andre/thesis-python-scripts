@@ -8,6 +8,8 @@ from configurations.parameter import Parameter
 class Config:
 
     def __init__(self, path):
+
+        self.limits = self.get_dict()
         with open(path, "r") as file:
             self._text = file.read()
             self.path = path
@@ -20,6 +22,9 @@ class Config:
 
     def __repr__(self):
         return f"Data: {self.parameters}\nPath: {self.path}\nName: {self.name}\n"
+
+    def get_dict(self):
+        return limits.DEFAULT_DICT
 
     def get_parameter_list(self):
         parameter_list = []
@@ -130,8 +135,19 @@ class Config:
 
 class ModeChoiceConfig(Config):
     def __init__(self, path):
-        self.limits = limits.MODE_CHOICE_LIMITS
         super().__init__(path)
+
+    def get_dict(self):
+        return limits.MODE_CHOICE_LIMITS
+
+    def randomize_parameters(self, parameter_name_list):
+        for parameter in parameter_name_list:
+            p = self.parameters[parameter]
+            p.randomize()
+            print(p)
+
+    def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
+        pass
 
     def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []
@@ -145,8 +161,10 @@ class ModeChoiceConfig(Config):
 
 class DestinationChoiceConfig(Config):
     def __init__(self, path):
-        self.limits = limits.DESTINATION_CHOICE_LIMITS
         super().__init__(path)
+
+    def get_dict(self):
+        return limits.DESTINATION_CHOICE_LIMITS
 
     def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []

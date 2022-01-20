@@ -57,12 +57,6 @@ class YAML:
             return configloader.DestinationChoiceConfig(path)
         return configloader.Config(path)
 
-    # TODO this has no purpose anymore
-    def set_config_to_calibration(self):
-        for config in self.configs:
-            config.set_path(SPECS.CWD + "calibration/" + config.name)
-            config.write()
-
     def set_fraction_of_population(self, target):
         self.data["fractionOfPopulation"] = target
 
@@ -89,6 +83,7 @@ class YAML:
         output = re.sub("dataSource:", "dataSource: !file", output)
         with open(path, "w+") as file:
             file.write(output)
+        self.update_configs()
 
     def write(self):
         self.write_path(self.path)
@@ -96,6 +91,9 @@ class YAML:
     def reset_configs(self):
         pass
 
+    def update_configs(self):
+        for c in self.configs:
+            c.write()
     # TODO remove deepcopy
     def reset(self):
         print("Restoring Original")

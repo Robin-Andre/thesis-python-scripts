@@ -1,3 +1,4 @@
+import random
 from enum import Enum
 
 
@@ -369,7 +370,8 @@ class Parameter:
         if bounds.get(self.name):
             self.lower_bound, self.upper_bound = bounds.get(self.name)
 
-
     def set(self, value):
         self.value = value
 
+    def randomize(self):
+        self.value = random.uniform(self.lower_bound, self.upper_bound)

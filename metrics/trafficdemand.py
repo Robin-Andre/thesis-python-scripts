@@ -5,12 +5,29 @@ import visualization
 from metrics.metric import Metric, difference, reduce
 
 
+def fill_each_group(split_df, agg_list):
+    tmp = split_df.droplevel(agg_list)
+    x = tmp.reindex(range(0, tmp.index.max()), method="ffill")
+    x = x.fillna(0)
+    return x
+
+
+def pad(df, agg_list):
+    df = df.set_index(agg_list + ["time"])
+    df = df.groupby(agg_list).apply(fill_each_group, agg_list)
+    return df
+
+
+def subtract(trafdemand, trafdemand_other):
+    x = trafdemand.accumulate_padded(["tripMode"])
+    y = trafdemand_other.accumulate_padded(["tripMode"])
+    return x.sub(y, fill_value=0)
+
+
 class TrafficDemand(Metric):
 
     def __sub__(self, other):
-        ret = TrafficDemand()
-        ret._data_frame = super()._sub(other, "time")
-        return ret
+        return subtract(self, other)
 
     def smoothen(self, smoothness_in_minutes):
         ret = TrafficDemand()
@@ -33,11 +50,11 @@ class TrafficDemand(Metric):
     def aggregate_delta(self, agg_list):
         return evaluation.aggregate_traffic_demand(self._data_frame, agg_list)
 
-    def aggregate_traffic_demand(self, attribute_list):
-        return self.accumulate(self._data_frame)
+    def accumulate_padded(self, acc_list):
+        temp = self.accumulate(acc_list)
+        return pad(temp, acc_list)
 
     def accumulate(self, acc_list):
-
         temp = reduce(self._data_frame, acc_list, "time", "active_trips_delta")
         temp = temp.drop(columns=["active_trips_delta"])
         data = reduce(self._data_frame, acc_list, "time", "active_trips_delta").drop(columns="time")
@@ -47,6 +64,7 @@ class TrafficDemand(Metric):
         return data
 
     def reduce(self, keep_list):
+        assert "time", "active_trips_delta" not in keep_list
         self._data_frame = reduce(self._data_frame, keep_list, "time", "active_trips_delta")
 
     def draw(self, reference=None):
