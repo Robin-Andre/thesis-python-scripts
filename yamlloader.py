@@ -92,8 +92,9 @@ class YAML:
         pass
 
     def update_configs(self):
-        for c in self.configs:
-            c.write()
+        if self.configs is not None:
+            for c in self.configs:
+                c.write()
     # TODO remove deepcopy
     def reset(self):
         print("Restoring Original")

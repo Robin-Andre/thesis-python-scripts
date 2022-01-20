@@ -77,11 +77,11 @@ class MyTestCase(unittest.TestCase):
 
     def test_read_write(self):
         yaml, _ = simulation.load("resources/example_config_load/")
-        namelist = [x.path for x in yaml.configs]
+        namelist = [x.name for x in yaml.configs]
         dest_configs = ["base", "business", "leisure", "service", "shopping"]
-        self.assertTrue(SPECS.CWD + yaml.data["modeChoice"]["main"] in namelist)
+        self.assertTrue(Path(yaml.data["modeChoice"]["main"]).name in namelist)
         for x in dest_configs:
-            self.assertTrue(SPECS.CWD + yaml.data["destinationChoice"][x] in namelist)
+            self.assertTrue(Path(yaml.data["destinationChoice"][x]).name in namelist)
 
 
         for config in yaml.configs:
@@ -93,14 +93,6 @@ class MyTestCase(unittest.TestCase):
         for config in yaml2.configs:
             for key, parameter in config.parameters.items():
                 self.assertEqual(parameter.value, 42)
-
-    def test_writing_to_calibration(self):
-        yaml, _ = simulation.load("resources/example_config_load2/")
-        yaml.set_config_to_calibration()
-        for config in yaml.configs:
-            target = configloader.Config(Path(cwd + "calibration/" + config.name))
-            self.assertEqual(config._text, target._text)
-        simulation.restore_experimental_configs()
 
     def test_execution(self):
         yaml, _ = simulation.load("resources/example_config_load/")

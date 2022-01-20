@@ -79,6 +79,12 @@ class Population:
         child.set_fitness(self.target)
         self.replace_worst_element(child)
 
+    def temp_rename2(self):
+        ind1, ind2 = self.double_tournament_selection()
+        child = self.combine(ind1, ind2)
+        child.set_fitness(self.target)
+        self.replace_worst_element(child)
+
 
 class Individual:
     def __init__(self):

@@ -4,7 +4,7 @@ import mobitopp_execution as simulation
 
 class MyTestCase(unittest.TestCase):
 
-    def test_setup(self):
+    def nonttest_setup(self):
         population = Population()
         population.initialize(10)
         population.save("resources/test_population")
@@ -27,7 +27,7 @@ class MyTestCase(unittest.TestCase):
         population.fitness_for_all_individuals()
         print(population)
 
-    def test_tournament_selection(self):
+    def nontest_tournament_selection(self):
         population = Population()
         population.load("resources/test_population")
         _, data = simulation.load("resources/compare_individual")

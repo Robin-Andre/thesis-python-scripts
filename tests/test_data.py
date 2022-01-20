@@ -87,14 +87,6 @@ class MyTestCase(unittest.TestCase):
         b.show()
         c.show()
 
-    def test_raw_data(self):
-
-        data = Data(evaluation.default_test_merge())
-        a, b, c = data.draw()
-        a.show()
-        b.show()
-        c.show()
-
     def test_new_data_write(self):
         data = Data(evaluation.default_test_merge())
         x = data.traffic_demand
