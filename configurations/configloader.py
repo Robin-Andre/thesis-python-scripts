@@ -125,6 +125,7 @@ class Config:
                 self.override_parameter(key, parameter.value)
 
     def write_config_file(self, path):
+        self.set_path(path)
         self.update_text()
         with open(path, "w+") as file:
             file.write(self._text)

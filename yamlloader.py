@@ -83,7 +83,6 @@ class YAML:
         output = re.sub("dataSource:", "dataSource: !file", output)
         with open(path, "w+") as file:
             file.write(output)
-        self.update_configs()
 
     def write(self):
         self.write_path(self.path)

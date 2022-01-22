@@ -71,6 +71,8 @@ def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=
 def generic_td_demand(data_frame, agg_list):
     generic_plot(data_frame, agg_list, "active_trips", "time")
 
+def generic_min_max_best(data_frame, agg_list):
+    generic_plot(data_frame, agg_list, ["min", "max", "best", "target"], "time")
 
 def generic_travel_time(data_frame, agg_list):
     temp = data_frame.reset_index()
@@ -89,8 +91,8 @@ def generic_plot(data_frame, agg_list, keyword, x):
     inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
     rest = math.ceil(len(inputs) / square_value)
-    print(f"{agg_list} {inputs}")
-    print(f"Length{len(inputs)} {square_value} x {rest}")
+    #print(f"{agg_list} {inputs}")
+    #print(f"Length{len(inputs)} {square_value} x {rest}")
     fig, ax = plt.subplots(square_value, rest, sharex=True)
 
     for i, element in enumerate(inputs):

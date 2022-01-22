@@ -31,7 +31,7 @@ MODE_CHOICE_LIMITS = {
     "b_tt_taxi": (-2, 0),
     "b_tt_cs": (-2, 0),
     "b_tt_rp": (-2, 0),
-    "b_tt_ped": (-2, 0),
+    "b_tt_ped": (-0.8, 0),
     "b_cost": (-1, 0),
     "b_cost_put": (-1, 0),
     "b_inc_high_on_b_cost": (-5, 5),

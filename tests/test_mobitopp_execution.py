@@ -83,9 +83,9 @@ class MyTestCase(unittest.TestCase):
         for x in dest_configs:
             self.assertTrue(Path(yaml.data["destinationChoice"][x]).name in namelist)
 
-
         for config in yaml.configs:
             for key in config.parameters.keys():
+                assert config.parameters[key].value != 42
                 config.parameters[key].set(42)
         simulation.save(yaml, None, "dump")
         yaml2, _ = simulation.load("dump/")
