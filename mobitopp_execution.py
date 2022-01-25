@@ -51,6 +51,7 @@ def run_mobitopp(yaml=default_yaml()):
 
     raise EnvironmentError("Platform not supported by calibration tool: " + inspect.currentframe())
 
+
 #TODO eventually pass that windows do not need a change of path
 def __run(command):
     process = subprocess.Popen([command,

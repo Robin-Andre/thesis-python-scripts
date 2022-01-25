@@ -106,6 +106,7 @@ def generic_plot(data_frame, agg_list, keyword, x):
         cur_ax.set_title(element)
 
     fig.suptitle(agg_list)
+    plt.legend(temp[keyword])
     fig.show()
 
 

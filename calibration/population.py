@@ -33,8 +33,32 @@ class Population:
 
     def similarities(self, individual):
         l = [x.similarity(individual) for x in self.population]
-        print(l)
-        return l.index(min(l))
+        print(f"Similis: {l} best: {l.index(max(l))}")
+        return [l.index(x) for x in sorted(l, reverse=True)]
+
+    def random_individual(self):
+        individual = Individual()
+        individual.randomize()
+        individual.run()
+        individual.set_fitness(self.target)
+        self.replace_worst_non_forced(individual)
+
+    def random_individual_with_mutation(self):
+        individual = Individual()
+        individual.randomize()
+        individual.run()
+        mutation = self.mutate(individual)
+        individual.set_fitness(self.target)
+        print(f"Random Individual with fitness: {individual.fitness} mutation : {mutation.fitness}")
+        if mutation.fitness > self.best().fitness or individual.fitness > self.best().fitness:
+
+            if individual.fitness > mutation.fitness:
+                self.replace_worst_element(individual)
+            else:
+                self.replace_worst_element(mutation)
+
+
+
 
     def save(self, path):
         for i, x in enumerate(self.population):
@@ -45,6 +69,12 @@ class Population:
             ind = Individual()
             ind.load(x)
             self.population.append(ind)
+
+    def replace_worst_non_forced(self, individual):
+        worst = min(self.population)
+        worst_index = self.population.index(worst)
+        if individual.fitness > worst.fitness:
+            self.population[worst_index] = individual
 
     def replace_worst_element(self, individual):
         worst = min(self.population)
@@ -93,20 +123,75 @@ class Population:
             x1 = a.value
             y2 = parent2_bounds.iloc[b.requirements['tripMode']]['active_trips']
             x2 = b.value
-            if x1 - x2 < 0.1 or numpy.sign(y1) == numpy.sign(y2):
+            if x1 - x2 < 0.1:# or numpy.sign(y1) == numpy.sign(y2):
+                set_val = a.value if ind1.fitness > ind2.fitness else b.value
+                child.yaml.mode_config().parameters[param].set(set_val)
                 continue
             assert x1 - x2 != 0
             m = (y2 - y1) / (x2 - x1)
             c = y1 - m * x1
-            print(f"{x1} {y1}|{x2} {y2} {-c / m}")
-            child.yaml.mode_config().parameters[param].set(-c / m)
+            target = -c / m
+            target = min(a.upper_bound, max(a.lower_bound, target))
+            print(f"[{a.lower_bound},{a.upper_bound}] {target}")
+            assert a.upper_bound >= target >= a.lower_bound
+            print(f"{param} {x1} {y1}|{x2} {y2} {target} [{a.lower_bound},{a.upper_bound}]")
+            child.yaml.mode_config().parameters[param].set(target)
         child.run()
         child.set_fitness(self.target)
         print(f"Parent fitness: {ind1.fitness} {ind2.fitness} -> {child.fitness}: {child.active_values()}")
         return child
 
+    def mutate(self, individual):
+        mutation = Individual()
+        temp = individual.evaluate_fitness_by_group(self.target)
+        print(temp)
+        temp = -(temp / temp.abs().sum())
+        print(temp)
+        alpha = 0.2
+        for param in ACTIVE_PARAMETERS:
+            a = individual.yaml.mode_config().parameters[param]
+            if a.value > 0:
+                target = a.value * (1 + alpha * temp.at[a.requirements["tripMode"], "active_trips"])
+                target = max(a.value, target)
+            else:
+                target = a.value * (1 - alpha * temp.at[a.requirements["tripMode"], "active_trips"])
+                target = min(a.value, target)
+
+            mutation.yaml.mode_config().parameters[param].set(target)
+            #print(f"{param} : {target} ")
+        mutation.run()
+        mutation.set_fitness(self.target)
+        print(f"Original {individual.fitness} Mutation {mutation.fitness}")
+        return mutation
+
+    def mutate2(self, individual):
+        mutation = Individual()
+        temp = individual.evaluate_fitness_by_group(self.target)
+        print(temp)
+        temp = -(temp / temp.abs().sum())
+        print(temp)
+
+        alpha = 0.2
+        for param in ACTIVE_PARAMETERS:
+
+            a = individual.yaml.mode_config().parameters[param]
+            target = a.value + alpha * temp.at[a.requirements["tripMode"], "active_trips"] * (a.upper_bound - a.lower_bound)
+
+            mutation.yaml.mode_config().parameters[param].set(target)
+            print(f"{param} :{a.value} -> {target} ")
+        mutation.run()
+        mutation.set_fitness(self.target)
+        print(f"Original {individual.fitness} Mutation {mutation.fitness}")
+        return mutation
+
+
+
     def fancy_replace(self, individual):
-        self.population[self.similarities(individual)] = individual
+        for number in self.similarities(individual):
+            if self.population[number].fitness < individual.fitness:
+                self.population[number] = individual
+                return
+        print("Found no worse element, no replacement done")
 
     def draw_best(self):
         best = max(self.population)
@@ -116,7 +201,7 @@ class Population:
         big = self.population[0].data.traffic_demand.accumulate_padded(["tripMode"])
         for i, ind in enumerate(self.population):
             x = ind.data.traffic_demand.accumulate_padded(["tripMode"])
-            x = x.rename(columns={"active_trips" : "active_trips" + str(i)})
+            x = x.rename(columns={"active_trips": "active_trips" + str(i)})
             big = pandas.merge(big, x, left_index=True, right_index=True)
         big["min"] = big.min(axis=1)
         big["max"] = big.max(axis=1)
@@ -136,12 +221,17 @@ class Population:
     def temp_rename(self):
         ind1, ind2 = self.double_tournament_selection()
         child = self.combine(ind1, ind2)
-        self.replace_worst_element(child)
+        self.fancy_replace(child)
 
+    def mutate_best(self):
+        self.replace_worst_non_forced(self.mutate(self.best()))
+
+    def mutate_best2(self):
+        self.replace_worst_non_forced(self.mutate2(self.best()))
 
 ACTIVE_PARAMETERS = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
-                     "b_tt_put_mu", "b_tt_ped"]
-
+                     "b_tt_put_mu", "b_tt_ped", "asc_bike_mu", "b_tt_bike_mu", "b_cost", "b_cost_put",
+                     "asc_car_d_sig", "asc_car_p_sig", "asc_put_sig", "asc_ped_sig", "asc_bike_sig"]
 
 
 class Individual:
@@ -165,7 +255,7 @@ class Individual:
         self.yaml.mode_config().randomize_parameters(ACTIVE_PARAMETERS)
 
     def active_values(self):
-        return [self.yaml.mode_config().parameters[x].value for x in ACTIVE_PARAMETERS]
+        return [(self.yaml.mode_config().parameters[x].name, self.yaml.mode_config().parameters[x].value) for x in ACTIVE_PARAMETERS]
 
     def run(self):
         simulation.clean_result_directory()
@@ -202,7 +292,6 @@ class Individual:
         z = x - y
         z = z.groupby("tripMode").sum()
         return z
-
 
     def similarity(self, compare_individual):
         return self.evaluate_fitness(compare_individual.data)

@@ -70,5 +70,56 @@ class MyTestCase(unittest.TestCase):
             population.draw_boundaries()
 
 
+    def test_random_generation(self):
+        population = Population()
+        population.initialize(1)
+        _, data = simulation.load("resources/compare_individual")
+
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+
+        for i in range(500):
+            print(f"Iteration {i}: {population}")
+            population.random_individual()
+            population.draw_boundaries()
+
+
+    def test_reiterative_mutation(self):
+        population = Population()
+        population.initialize(1)
+        _, data = simulation.load("resources/compare_individual")
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+
+        for i in range(5):
+            print(f"Iteration IP {i}: {population}")
+            population.random_individual()
+            population.draw_boundaries()
+
+        for i in range(45):
+            print(f"Iteration Mutation: {i}: {population}")
+            print(population.best())
+            population.mutate_best()
+            population.draw_boundaries()
+
+    def test_reiterative_mutation2(self):
+        population = Population()
+        population.initialize(1)
+        _, data = simulation.load("resources/compare_individual")
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+
+        for i in range(5):
+            print(f"Iteration IP {i}: {population}")
+            population.random_individual()
+            population.draw_boundaries()
+
+        for i in range(45):
+            print(f"Iteration Mutation: {i}: {population}")
+            print(population.best())
+            population.mutate_best2()
+            population.draw_boundaries()
+
+
 if __name__ == '__main__':
     unittest.main()

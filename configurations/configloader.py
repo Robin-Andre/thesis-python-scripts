@@ -145,7 +145,7 @@ class ModeChoiceConfig(Config):
         for parameter in parameter_name_list:
             p = self.parameters[parameter]
             p.randomize()
-            print(p)
+            #print(p)
 
     def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         pass
