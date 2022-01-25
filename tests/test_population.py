@@ -40,7 +40,6 @@ class MyTestCase(unittest.TestCase):
             population.temp_rename()
             population.draw_boundaries()
 
-
     def test_double_tournament_selection(self):
         population = Population()
         population.load("resources/test_population")
@@ -119,7 +118,6 @@ class MyTestCase(unittest.TestCase):
             print(population.best())
             population.mutate_best2()
             population.draw_boundaries()
-
 
 if __name__ == '__main__':
     unittest.main()

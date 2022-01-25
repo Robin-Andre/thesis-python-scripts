@@ -4,14 +4,10 @@ import platform
 from datetime import datetime
 import subprocess
 from pathlib import Path
-
-import pandas
 from matplotlib import pyplot as plt
-
 import evaluation
 import metrics.data
 from configurations import configloader, SPECS
-from metrics import metric
 import yamlloader
 
 
@@ -23,14 +19,14 @@ def restore_experimental_configs():
                "destination_choice_parameters_SERVICE.txt", "destination_choice_parameters_LEISURE.txt",
                "destination_choice_parameters_BUSINESS.txt", "mode_choice_main_parameters.txt"]
     for config in configs:
-        # TODO open with()
-        input_file = open(SPECS.CWD + saved_configs + config, "r")
-        text = input_file.read()
-        output_file = open(SPECS.CWD + experiment_configs + config, "w")
-        output_file.write(text)
-        input_file.close()
-        output_file.close()
+        with open(SPECS.CWD + saved_configs + config, "r") as input_file, open(SPECS.CWD + experiment_configs + config, "w") as output_file:
+            text = input_file.read()
+            output_file.write(text)
     return
+
+
+def create_safety_config():
+    pass  # TODO create calibration folder if not exists for project setup
 
 
 def default_yaml():
@@ -133,8 +129,6 @@ def save(yaml, data, relative_path):
 def results(yaml=default_yaml()):
 
     return metrics.data.Data(evaluation.extract_data(yaml))
-
-
 
 
 def restore_default_yaml():
