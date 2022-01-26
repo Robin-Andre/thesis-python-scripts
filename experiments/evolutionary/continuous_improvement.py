@@ -23,7 +23,7 @@ def main():
     log(1, end - start, population.best().fitness, population.best().fitness)
     for i in range(100):
         start = time.time()
-        ind = population.random_individual()
+        ind = population.mutate(population.best())
         end = time.time()
         if ind.fitness > population.best().fitness:
             population.draw_boundaries()

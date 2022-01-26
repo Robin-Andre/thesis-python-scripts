@@ -10,8 +10,9 @@ import visualization
 
 
 class Population:
-    def __init__(self, target=None):
+    def __init__(self, target=None, seed=1):
         self.target = target
+        self.seed = seed
         self.population = []
         pass
 
@@ -20,7 +21,7 @@ class Population:
 
     def initialize(self, size):
         for i in range(size):
-            individual = Individual()
+            individual = Individual(self.seed)
             individual.randomize()
             individual.run()
             self.population.append(individual)
@@ -37,14 +38,16 @@ class Population:
         return [l.index(x) for x in sorted(l, reverse=True)]
 
     def random_individual(self):
-        individual = Individual()
+        individual = Individual(self.seed)
+
         individual.randomize()
         individual.run()
         individual.set_fitness(self.target)
         return individual
 
     def random_individual_with_mutation(self):
-        individual = Individual()
+        individual = Individual(self.seed)
+
         individual.randomize()
         individual.run()
         mutation = self.mutate(individual)
@@ -58,15 +61,13 @@ class Population:
                 self.replace_worst_element(mutation)
 
 
-
-
     def save(self, path):
         for i, x in enumerate(self.population):
             x.save(path + "/individual_" + str(i))
 
     def load(self, path):
         for x in Path(path).iterdir():
-            ind = Individual()
+            ind = Individual(self.seed)
             ind.load(x)
             self.population.append(ind)
 
@@ -100,7 +101,8 @@ class Population:
         return x[-2:]
 
     def combine(self, ind1, ind2):
-        child = Individual()
+        child = Individual(self.seed)
+        child.set_seed(self.seed)
         for param in ACTIVE_PARAMETERS:
             a = ind1.yaml.mode_config().parameters[param].value
             b = ind2.yaml.mode_config().parameters[param].value
@@ -113,7 +115,7 @@ class Population:
         return child
 
     def fancy_combine(self, ind1, ind2):
-        child = Individual()
+        child = Individual(self.ssed)
         parent1_bounds = ind1.evaluate_fitness_by_group(self.target)
         parent2_bounds = ind2.evaluate_fitness_by_group(self.target)
         for param in ACTIVE_PARAMETERS:
@@ -142,7 +144,7 @@ class Population:
         return child
 
     def mutate(self, individual):
-        mutation = Individual()
+        mutation = Individual(self.seed)
         temp = individual.evaluate_fitness_by_group(self.target)
         print(temp)
         temp = -(temp / temp.abs().sum())
@@ -165,7 +167,7 @@ class Population:
         return mutation
 
     def mutate2(self, individual):
-        mutation = Individual()
+        mutation = Individual(self.seed)
         temp = individual.evaluate_fitness_by_group(self.target)
         print(temp)
         temp = -(temp / temp.abs().sum())
@@ -233,14 +235,16 @@ class Population:
 ACTIVE_PARAMETERS = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
                      "b_tt_put_mu", "b_tt_ped", "asc_bike_mu", "b_tt_bike_mu", "b_cost", "b_cost_put",
                      "asc_car_d_sig", "asc_car_p_sig", "asc_put_sig", "asc_ped_sig", "asc_bike_sig", "b_tt_car_p_sig",
-                     "b_tt_car_d_sig", "b_tt_put_sig", "b_tt_bike_sig", "b_u_put",  "b_logsum_acc_cs",
+                     "b_tt_car_d_sig", "b_tt_put_sig", "b_tt_bike_sig", "b_u_put",  "b_logsum_acc_put",
                      "elasticity_acc_put", "b_park_car_d", "elasticity_parken"]
 
+
 class Individual:
-    def __init__(self):
+    def __init__(self, seed=1):
         self.yaml = simulation.default_yaml()
 
         self.yaml.set_fraction_of_population(0.02)
+        self.yaml.set_seed(seed)
         self.fitness = None
         self.data = None
 
@@ -252,6 +256,9 @@ class Individual:
 
     def __lt__(self, other):
         return self.fitness < other.fitness
+
+    def set_seed(self, value):
+        self.yaml.set_seed(value)
 
     def randomize(self):
         self.yaml.mode_config().randomize_parameters(ACTIVE_PARAMETERS)
