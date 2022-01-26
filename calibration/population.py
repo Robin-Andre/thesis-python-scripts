@@ -41,7 +41,7 @@ class Population:
         individual.randomize()
         individual.run()
         individual.set_fitness(self.target)
-        self.replace_worst_non_forced(individual)
+        return individual
 
     def random_individual_with_mutation(self):
         individual = Individual()
@@ -229,10 +229,12 @@ class Population:
     def mutate_best2(self):
         self.replace_worst_non_forced(self.mutate2(self.best()))
 
+
 ACTIVE_PARAMETERS = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
                      "b_tt_put_mu", "b_tt_ped", "asc_bike_mu", "b_tt_bike_mu", "b_cost", "b_cost_put",
-                     "asc_car_d_sig", "asc_car_p_sig", "asc_put_sig", "asc_ped_sig", "asc_bike_sig"]
-
+                     "asc_car_d_sig", "asc_car_p_sig", "asc_put_sig", "asc_ped_sig", "asc_bike_sig", "b_tt_car_p_sig",
+                     "b_tt_car_d_sig", "b_tt_put_sig", "b_tt_bike_sig", "b_u_put",  "b_logsum_acc_cs",
+                     "elasticity_acc_put", "b_park_car_d", "elasticity_parken"]
 
 class Individual:
     def __init__(self):
