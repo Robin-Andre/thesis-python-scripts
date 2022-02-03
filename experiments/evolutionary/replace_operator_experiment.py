@@ -6,7 +6,7 @@ a random individual.
 import random
 import time
 
-from calibration.evolutionary import selection, replace, individual, evo_strategies
+from calibration.evolutionary import selection, replace, individual, evo_strategies, combine
 from calibration.evolutionary.population import Population
 import mobitopp_execution as simulation
 from configurations import SPECS
@@ -26,32 +26,33 @@ def run_experiment(seed, population, repetition):
 
 
 def write(result, experiment, seed):
-    with open(SPECS.EXP_PATH + f"MetricExperiment/{experiment}_{seed}.csv", "w+") as file:
+    with open(SPECS.EXP_PATH + f"ReplaceExperiment/{experiment}_{seed}.csv", "w+") as file:
         file.write(result)
+
 
 def main():
     output = []
     repetitions = 50
     for seed in range(42, 47):
         population = Population(select_func=selection.double_tournament_selection, replace_func=replace.fancy_replace,
-                            individual_constructor=individual.TravelTimeIndividual, seed=101)
+                                combine_func=combine.basic_combine, seed=101)
 
         result = run_experiment(seed, population, repetitions)
-        write(result, "traveltime", seed)
+        write(result, "fancy", seed)
         print("---------------------------")
         print(result)
         print("---------------------------")
-        population2 = Population(select_func=selection.double_tournament_selection, replace_func=replace.fancy_replace,
-                                 individual_constructor=individual.Individual, seed=101)
+        population2 = Population(select_func=selection.double_tournament_selection, replace_func=replace.replace_worst_non_forced,
+                                 combine_func=combine.basic_combine, seed=101)
         result2 = run_experiment(seed, population2, repetitions)
-        write(result2, "traveldemand", seed)
+        write(result2, "worst_nonforced", seed)
         print("---------------------------")
         print(result2)
         print("---------------------------")
-        population3 = Population(select_func=selection.double_tournament_selection, replace_func=replace.fancy_replace,
-                                 individual_constructor=individual.ModalSplitIndividual, seed=101)
+        population3 = Population(select_func=selection.double_tournament_selection, replace_func=replace.replace_worst_element,
+                                 combine_func=combine.basic_combine, seed=101)
         result3 = run_experiment(seed, population3, repetitions)
-        write(result3, "modalsplit", seed)
+        write(result3, "worst_forced", seed)
         print("---------------------------")
         print(result3)
         print("---------------------------")
@@ -61,7 +62,7 @@ def main():
 
     csv = "\n".join(output)
     print(csv)
-    with open(SPECS.EXP_PATH + "MetricExperiment.csv", "w+") as file:
+    with open(SPECS.EXP_PATH + "ReplaceExperiment.csv", "w+") as file:
         file.write(csv)
 
 
