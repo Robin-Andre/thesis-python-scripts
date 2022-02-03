@@ -6,7 +6,7 @@ a random individual.
 import random
 import time
 
-from calibration.population import Population
+from calibration.evolutionary.population import Population
 import mobitopp_execution as simulation
 
 

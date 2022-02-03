@@ -147,6 +147,16 @@ class ModeChoiceConfig(Config):
             p.randomize()
             #print(p)
 
+    def randomize_parameters_to_bound(self, parameter_name_list, mode_prevalence_list):
+        for parameter in parameter_name_list:
+            p = self.parameters[parameter]
+            if p.requirements["tripMode"] in mode_prevalence_list:
+                p.randomize_with_limits(p.upper_bound, p.upper_bound)
+                #p.randomize_with_limits((p.upper_bound + p.lower_bound) / 2, p.upper_bound)
+            else:
+                p.randomize_with_limits(p.lower_bound, p.lower_bound)
+                #p.randomize_with_limits(p.lower_bound, (p.upper_bound + p.lower_bound) / 2)
+
     def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         pass
 

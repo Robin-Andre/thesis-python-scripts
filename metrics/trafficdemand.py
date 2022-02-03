@@ -7,7 +7,8 @@ from metrics.metric import Metric, difference, reduce
 
 def fill_each_group(split_df, agg_list):
     tmp = split_df.droplevel(agg_list)
-    x = tmp.reindex(range(0, tmp.index.max()), method="ffill")
+
+    x = tmp.reindex(range(0, max(tmp.index.max(), 10080)), method="ffill")
     x = x.fillna(0)
     return x
 

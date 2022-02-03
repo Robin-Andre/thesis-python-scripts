@@ -83,5 +83,21 @@ class Data:
         agg = agg.reindex(mode_list, fill_value=0)
         return agg / agg.sum()
 
-    def compare(self, other):
-        pass
+
+def sse(original, comparison, string):
+    result = (original - comparison)[string] ** 2
+    return -result.sum()
+
+
+class Comparison:
+
+    def __init__(self, input_data, comparison_data):
+        self.modal_split = sse(input_data.get_modal_split(), comparison_data.get_modal_split(), "count")
+        self.travel_time = sse(input_data.travel_time.get_data_frame(), comparison_data.travel_time.get_data_frame(), "count")
+        self.travel_demand = sse(input_data.traffic_demand, comparison_data.traffic_demand, "active_trips")
+
+    def __str__(self):
+        return ", ".join([str(x) for x in [self.modal_split, self.travel_time, self.travel_demand]])
+
+
+

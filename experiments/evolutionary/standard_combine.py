@@ -11,31 +11,24 @@ import mobitopp_execution as simulation
 
 
 def main():
-
     seed = 101
     random.seed(seed)
-    population = Population(seed=seed)
+    population = Population()
+    population.load("../../tests/resources/test_population")
     _, data = simulation.load("../../tests/resources/compare_individual")
     population.set_target(data)
-    start = time.time()
-    population.initialize(1)
     population.fitness_for_all_individuals()
-    end = time.time()
-    log(1, end - start, population.best().fitness, population.best().fitness)
-    for i in range(100):
+    population.draw_boundaries()
+    for i in range(50):
+        print(f"Iteration {i}: {population}")
         start = time.time()
-        ind = population.mutate(population.best())
+        ind1, ind2 = population.double_tournament_selection()
+        child = population.combine3(ind1, ind2)
         end = time.time()
-
-        log(i + 2, end - start, ind.fitness, population.best().fitness)
-
-        if ind.fitness > population.best().fitness:
+        log(i + 2, end - start, child.fitness, population.best().fitness)
+        population.replace_worst_non_forced(child)
+        if child.fitness > population.best().fitness:
             population.draw_boundaries()
-        else:
-            ind = population.random_individual()
-            log(i + 2.5, end - start, ind.fitness, population.best().fitness)
-        population.replace_worst_non_forced(ind)
-        log(i + 2, end - start, ind.fitness, population.best().fitness)
 
 
 def log(iteration, time_diff, current_element, best_element):

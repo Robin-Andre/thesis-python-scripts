@@ -373,5 +373,8 @@ class Parameter:
     def set(self, value):
         self.value = value
 
+    def randomize_with_limits(self, lower_limit, upper_limit):
+        self.value = random.uniform(max(self.lower_bound, lower_limit), min(self.upper_bound, upper_limit))
+
     def randomize(self):
         self.value = random.uniform(self.lower_bound, self.upper_bound)
