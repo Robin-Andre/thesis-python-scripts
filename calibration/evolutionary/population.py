@@ -28,7 +28,11 @@ class Logger:
 
     def log(self, population, current_individual=None):
         self.new_time = time.time()
-        if current_individual is not None:
+        if len(population.population) == 0 and current_individual is not None:
+            string = f"{Comparison(current_individual.data, population.target).__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, " \
+                     f"{Comparison(current_individual.data, population.target).__str__()}, {current_individual.yaml.get_seed()}"
+
+        elif current_individual is not None:
             string = f"{Comparison(population.best().data, population.target).__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, " \
                   f"{Comparison(current_individual.data, population.target).__str__()}, {current_individual.yaml.get_seed()}"
         else:
@@ -36,7 +40,6 @@ class Logger:
         print(string)
         self.csv.append(string)
         self.old_time = time.time()
-        self.iteration = self.iteration + 1
 
     def append_to_csv(self, string):
         self.csv = [s + string for s in self.csv]
@@ -88,14 +91,15 @@ class Population:
 
     def combine(self, ind1, ind2):
         child = self.combine_func(ind1, ind2, self.individual_constructor(self.seed, self.active_parameters), self.target, self.active_parameters)
-        child.run()
+        self.__run(child)
+        self.logger.iteration += 1
         child.set_fitness(self.target)
         #print(f"Parent fitness: {ind1.fitness} {ind2.fitness} -> {child.fitness}: {child.active_values()}")
         return child
 
     def mutate(self, ind1):
-        mutation = self.mutation_func(ind1, self.individual_constructor(self.seed, self.active_parameters))
-        mutation.run()
+        mutation = self.mutation_func(ind1, self.individual_constructor(self.seed, self.active_parameters), self.target)
+        self.__run(mutation)
         mutation.set_fitness(self.target)
         return mutation
 
@@ -114,6 +118,23 @@ class Population:
             ind = self.individual_constructor(self.seed, self.active_parameters)
             ind.load(x)
             self.population.append(ind)
+
+    def random_individual(self):
+        individual = Individual(self.seed, self.active_parameters)
+
+        individual.randomize()
+        self.__run(individual)
+
+        individual.set_fitness(self.target)
+        return individual
+
+    def __run(self, individual):
+        individual.run()
+        self.logger.log(self, individual)
+        self.logger.iteration += 1
+
+    def append(self, ind):
+        self.population.append(ind)
 
     def fitness_for_all_individuals(self):
         [x.set_fitness(self.target) for x in self.population]
@@ -175,19 +196,14 @@ class OldPopulation:
     def __getitem__(self, item):
         return self.population[item]
 
-    def random_individual(self):
-        individual = Individual(self.seed)
 
-        individual.randomize()
-        individual.run()
-        individual.set_fitness(self.target)
-        return individual
 
     def random_individual_with_mutation(self):
         individual = Individual(self.seed)
 
         individual.randomize()
         individual.run()
+
         mutation = self.mutate(individual)
         individual.set_fitness(self.target)
         print(f"Random Individual with fitness: {individual.fitness} mutation : {mutation.fitness}")

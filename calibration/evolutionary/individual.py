@@ -47,7 +47,7 @@ class BaseIndividual(ABC):
         self.yaml.update_configs()
         return_code, self.data = simulation.run_mobitopp(self.yaml)
         if return_code == 1:
-            with open(SPECS.EXP_PATH + "FAILED_RUNS/" + hash(self.yaml.mode_config()), "w+") as file:
+            with open(SPECS.EXP_PATH + "FAILED_RUNS/" + str(hash(self.yaml.mode_config())), "w+") as file:
                 file.write(self.yaml.mode_config())
             print("FAILED RUN")
             return

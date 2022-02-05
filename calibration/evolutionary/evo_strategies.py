@@ -14,9 +14,23 @@ def simple_combine(population):
         population.draw_boundaries_traveltime()
         population.draw_boundaries_modal_split()
 
-    population.logger.log(population, child)
+
+def simple_repeated_mutation(population):
+
+    ind1 = population.random_individual()
+    population.append(ind1)
+
+
+    mutation = population.mutate(ind1)
+    while mutation.fitness > ind1.fitness:
+        population.insert(mutation)
+        ind1 = mutation
+        mutation = population.mutate(ind1)
+
+
 
 def mutate_best(population):
+
     self.replace_worst_non_forced(self.mutate(self.best()))
 
 def mutate_best2(population):

@@ -5,36 +5,23 @@ a random individual.
 """
 import random
 import time
+from pathlib import Path
 
 from calibration.evolutionary import selection, replace, individual, evo_strategies
 from calibration.evolutionary.population import Population
 import mobitopp_execution as simulation
 from configurations import SPECS
+from experiments.evolutionary.default_experiment import run_experiment, write
 
-
-def run_experiment(seed, population, repetition):
-    random.seed(seed)
-
-    population.load("../../tests/resources/test_population")
-    _, data = simulation.load("../../tests/resources/compare_individual")
-    population.set_target(data)
-    population.fitness_for_all_individuals()
-    for i in range(repetition):
-        evo_strategies.simple_combine(population)
-    population.logger.append_to_csv(", " + str(seed))
-    return population.logger.print_csv()
-
-
-def write(result, experiment, seed):
-    with open(SPECS.EXP_PATH + f"MetricExperiment/{experiment}_{seed}.csv", "w+") as file:
-        file.write(result)
 
 def main():
+    FOLDER = "MetricExperiment"
+    Path(SPECS.EXP_PATH + FOLDER).mkdir(exist_ok=True)
     output = []
     repetitions = 50
     for seed in range(42, 47):
         population = Population(select_func=selection.double_tournament_selection, replace_func=replace.fancy_replace,
-                            individual_constructor=individual.TravelTimeIndividual, seed=101)
+                                individual_constructor=individual.TravelTimeIndividual, seed=101)
 
         result = run_experiment(seed, population, repetitions)
         write(result, "traveltime", seed)

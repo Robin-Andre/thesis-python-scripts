@@ -15,13 +15,9 @@ def basic_combine(ind1, ind2, child, target, parameter_list):
     return child
 
 
-def mathematical_combine(ind1, ind2, child, target, parameter_list):
+def __helper(ind1, ind2, child, target, parameter_list, respect_same_sign=True):
     parent1_bounds = ind1.evaluate_fitness_by_group(target)
     parent2_bounds = ind2.evaluate_fitness_by_group(target)
-    print("----")
-    print(parent1_bounds)
-    print(parent2_bounds)
-    print("----")
     for param in parameter_list:
         a = ind1.yaml.mode_config().parameters[param]
         b = ind2.yaml.mode_config().parameters[param]
@@ -29,7 +25,7 @@ def mathematical_combine(ind1, ind2, child, target, parameter_list):
         x1 = a.value
         y2 = parent2_bounds.iloc[b.requirements['tripMode']]['active_trips']
         x2 = b.value
-        if x1 - x2 < 0.1 or numpy.sign(y1) == numpy.sign(y2):
+        if x1 - x2 < 0.1 or (numpy.sign(y1) == numpy.sign(y2) and respect_same_sign):
             set_val = a.value if ind1.fitness > ind2.fitness else b.value
             child.yaml.mode_config().parameters[param].set(set_val)
             continue
@@ -38,11 +34,19 @@ def mathematical_combine(ind1, ind2, child, target, parameter_list):
         c = y1 - m * x1
         target = -c / m
         target = min(a.upper_bound, max(a.lower_bound, target))
-        print(f"[{a.lower_bound},{a.upper_bound}] {target}")
+        #print(f"[{a.lower_bound},{a.upper_bound}] {target}")
         assert a.upper_bound >= target >= a.lower_bound
-        print(f"{param} {x1} {y1}|{x2} {y2} {target} [{a.lower_bound},{a.upper_bound}]")
+        #print(f"{param} {x1} {y1}|{x2} {y2} {target} [{a.lower_bound},{a.upper_bound}]")
         child.yaml.mode_config().parameters[param].set(target)
     return child
+
+
+def mathematical_combine(ind1, ind2, child, target, parameter_list):
+    return __helper(ind1, ind2, child, target, parameter_list)
+
+
+def mathematical_combine_without_sign_limit(ind1, ind2, child, target, parameter_list):
+    return __helper(ind1, ind2, child, target, parameter_list, respect_same_sign=False)
 
 
 def classic_combine(ind1, ind2, child, target, parameter_list):

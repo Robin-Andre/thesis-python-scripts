@@ -33,7 +33,7 @@ def write(result, experiment, seed):
 def main():
     output = []
     repetitions = 50
-    for seed in range(42, 47):
+    for seed in range(47, 50):
         population = Population(select_func=selection.double_tournament_selection, replace_func=replace.fancy_replace,
                                 combine_func=combine.basic_combine, seed=101)
 
