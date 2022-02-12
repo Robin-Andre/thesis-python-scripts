@@ -1,9 +1,5 @@
 import time
 from pathlib import Path
-
-#import calibration.evolutionary.individual
-import pandas
-
 from calibration.evolutionary import combine, mutate, initialization, replace, selection
 
 import visualization
@@ -74,6 +70,9 @@ class Population:
     def __str__(self):
         return str([x.fitness for x in self.population])
 
+    def __len__(self):
+        return len(self.population)
+
     def configuration(self):
         return ", ".join([x.__name__ for x in [self.combine_func, self.mutation_func, self.initialize_func, self.replace_func, self.selection_func, self.individual_constructor]])
 
@@ -92,15 +91,14 @@ class Population:
     def combine(self, ind1, ind2):
         child = self.combine_func(ind1, ind2, self.individual_constructor(self.seed, self.active_parameters), self.target, self.active_parameters)
         self.__run(child)
-        self.logger.iteration += 1
-        child.set_fitness(self.target)
+
         #print(f"Parent fitness: {ind1.fitness} {ind2.fitness} -> {child.fitness}: {child.active_values()}")
         return child
 
     def mutate(self, ind1):
         mutation = self.mutation_func(ind1, self.individual_constructor(self.seed, self.active_parameters), self.target)
         self.__run(mutation)
-        mutation.set_fitness(self.target)
+
         return mutation
 
     def insert(self, ind1):
@@ -119,19 +117,21 @@ class Population:
             ind.load(x)
             self.population.append(ind)
 
-    def random_individual(self):
+    def random_individual(self, make_basic=False):
         individual = Individual(self.seed, self.active_parameters)
+        if make_basic:
+            individual.make_basic(nullify_exponential_b_tt=True)
 
         individual.randomize()
         self.__run(individual)
 
-        individual.set_fitness(self.target)
         return individual
 
     def __run(self, individual):
         individual.run()
         self.logger.log(self, individual)
         self.logger.iteration += 1
+        individual.set_fitness(self.target)
 
     def append(self, ind):
         self.population.append(ind)
@@ -179,9 +179,33 @@ class Population:
         big = big.reset_index()
         visualization.generic_min_max_best_travel_time(big, "tripMode")
 
-    def draw_boundaries_modal_split(self):
+    def __help_plot_all(self, mode, df_get_method, IDString):
+        big = df_get_method(self.population[0].data)
+        big = big.set_index(["tripMode", IDString])
+        names = ["target"]
+        for i, ind in enumerate(self.population):
+            x = df_get_method(ind.data)
+            name = "count" + str(i)
+            names.append(name)
+            x = x.rename(columns={"count": name})
+            x = x.set_index(["tripMode", IDString])
+            big = big.join(x, how="outer")
+
+        big["target"] = df_get_method(self.target).set_index(["tripMode", IDString])
+        big = big.reset_index()
+        visualization.generic_smol_plot(big, "tripMode", names, IDString, mode)
+        return big
+
+    def draw_all_traveltime(self, mode):
+        return self.__help_plot_all(mode, lambda x: x.travel_time.get_data_frame(), "durationTrip")
+
+    def draw_all_traveldistance(self, mode):
+        return self.__help_plot_all(mode, lambda x: x.travel_distance.get_data_frame(), "distanceInKm")
+
+    def draw_boundaries_modal_split(self, sort=True):
         y = self.population.copy()
-        y.sort()
+        if sort:
+            y.sort()
         temp = [x.data for x in y]
         visualization.draw_modal_split(temp + [self.target])
 
@@ -195,32 +219,6 @@ class OldPopulation:
 
     def __getitem__(self, item):
         return self.population[item]
-
-
-
-    def random_individual_with_mutation(self):
-        individual = Individual(self.seed)
-
-        individual.randomize()
-        individual.run()
-
-        mutation = self.mutate(individual)
-        individual.set_fitness(self.target)
-        print(f"Random Individual with fitness: {individual.fitness} mutation : {mutation.fitness}")
-        if mutation.fitness > self.best().fitness or individual.fitness > self.best().fitness:
-
-            if individual.fitness > mutation.fitness:
-                self.replace_worst_element(individual)
-            else:
-                self.replace_worst_element(mutation)
-
-
-
-    def __repr__(self):
-        return "\n".join([str(x) for x in self.population])
-
-    def __str__(self):
-        return str([x.fitness for x in self.population])
 
     def best(self):
         return max(self.population)

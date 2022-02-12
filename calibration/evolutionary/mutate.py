@@ -2,7 +2,7 @@ def mutate(individual, mutation, target):
     temp = individual.evaluate_fitness_by_group(target)
     temp = -(temp / temp.abs().sum())
     alpha = 0.2
-    for param in individual.parameter_list:
+    for param in individual.parameter_name_list:
         a = individual.yaml.mode_config().parameters[param]
         if a.value > 0:
             target = a.value * (1 + alpha * temp.at[a.requirements["tripMode"], "active_trips"])
@@ -21,7 +21,7 @@ def mutate2(individual, mutation, target):
     temp = -(temp / temp.abs().sum())
 
     alpha = 0.2
-    for param in individual.parameter_list:
+    for param in individual.parameter_name_list:
 
         a = individual.yaml.mode_config().parameters[param]
         target = a.value + alpha * temp.at[a.requirements["tripMode"], "active_trips"] * (a.upper_bound - a.lower_bound)
@@ -36,7 +36,7 @@ def mutate3(individual, mutation, target):
     temp = (temp / temp.abs().sum())
 
     alpha = -0.2
-    for param in individual.parameter_list:
+    for param in individual.parameter_name_list:
 
         a = individual.yaml.mode_config().parameters[param]
         x = temp.at[a.requirements["tripMode"], "active_trips"] > 0

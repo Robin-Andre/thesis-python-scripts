@@ -30,7 +30,7 @@ class MyTestCase(unittest.TestCase):
                                      simulation.load("resources/example_config_load2")])
         inp, exp = calibration.neural_network_data_generator.convert_dest(yaml_list, data_list)
         dc = yaml_list[0].destination_config()
-        expected_params = dc.get_main_parameters()
+        expected_params = dc.get_main_parameters_name_only()
         expected_values = [values for key, values in dc.parameters.items() if key in expected_params]
         self.assertEqual(list(exp[0]), expected_values)
 

@@ -21,7 +21,7 @@ def get_main_parameter_destination(yaml):
 
 def __helper(config, expected_class):
     assert type(config) == expected_class
-    return numpy.asarray([config.parameters[key] for key in config.get_main_parameters()])
+    return numpy.asarray([config.parameters[key] for key in config.get_main_parameters_name_only()])
 
 
 def neural_data_method(yaml_list, data_list, extract_input_data_method, extract_config_data_method):

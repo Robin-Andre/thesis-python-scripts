@@ -71,6 +71,30 @@ class MyTestCase(unittest.TestCase):
         self.assertNotEqual(population, population2)
 
 
+    def test_active_parameters_is_working(self):
+        c = simulation.default_yaml().mode_config().get_main_parameters_name_only()
+        _, data = simulation.load("resources/compare_individual")
+        population = Population(param_vector=["asc_car_d_mu"])
+        population.set_target(data)
+        random_config = population.random_individual().yaml.mode_config()
+        default_config = simulation.default_yaml().mode_config()
+        for param in c:
+            if param == "asc_car_d_mu":
+                continue
+            self.assertAlmostEqual(random_config.parameters[param].value, default_config.parameters[param].value)
+
+    def test_setting_to_value_results(self):
+        p = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
+             "b_tt_put_mu", "b_tt_ped", "asc_bike_mu", "b_tt_bike_mu", "b_cost", "b_cost_put",
+             "asc_car_d_sig", "asc_car_p_sig", "asc_put_sig", "asc_ped_sig", "asc_bike_sig", "b_tt_car_p_sig",
+             "b_tt_car_d_sig", "b_tt_put_sig", "b_tt_bike_sig",
+             "b_u_put",  "b_logsum_acc_put",
+             "elasticity_acc_put", "b_park_car_d", "elasticity_parken"]
+        _, data = simulation.load("resources/compare_individual")
+        population = Population(param_vector=p)
+        population.set_target(data)
+
+
     def test_double_tournament_selection(self):
         population = Population()
         population.load("resources/test_population")

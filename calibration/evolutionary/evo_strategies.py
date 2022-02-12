@@ -28,6 +28,9 @@ def simple_repeated_mutation(population):
         mutation = population.mutate(ind1)
 
 
+def permanent_random_generation(population):
+    ind1 = population.random_individual()
+    population.insert(ind1)
 
 def mutate_best(population):
 

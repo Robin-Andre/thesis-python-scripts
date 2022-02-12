@@ -19,12 +19,13 @@ def helper(seed, repetitions, FOLDER, func):
     result = run_experiment(seed, population, repetitions, strategy=evo_strategies.simple_repeated_mutation, load=False)
     write(result, func.__name__, seed, FOLDER)
 
+
 def main():
     FOLDER = "MutateExperiment"
     Path(SPECS.EXP_PATH + FOLDER).mkdir(exist_ok=True)
     output = []
-    repetitions = 1
-    for seed in range(42, 47):
+    repetitions = 50
+    for seed in range(42, 52):
         helper(seed, repetitions, FOLDER, mutate.mutate)
         helper(seed, repetitions, FOLDER, mutate.mutate2)
         helper(seed, repetitions, FOLDER, mutate.mutate3)

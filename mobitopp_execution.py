@@ -58,7 +58,7 @@ def __run(command):
     stdout = process.communicate()[0]
     stderr = process.communicate()[1]
     return_code = process.returncode
-    ##print(stdout)
+    #print(stdout)
     #print(stderr)
     # print('STDOUT:{}'.format(stdout))
 

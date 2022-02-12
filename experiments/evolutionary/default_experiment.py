@@ -23,5 +23,5 @@ def run_experiment(seed, population, repetition, strategy=evo_strategies.simple_
 
 
 def write(result, experiment, seed, folder):
-    with open(SPECS.EXP_PATH + folder + f"/{experiment}_{seed}_{time.strftime('%d-%m-%Y_%H-%M')}.csv", "w+") as file:
+    with open(SPECS.EXP_PATH + folder + f"/{experiment}_{seed}.csv", "w+") as file:
         file.write(result)

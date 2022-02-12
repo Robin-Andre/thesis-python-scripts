@@ -70,7 +70,6 @@ class TrafficDemand(Metric):
 
     def draw(self, reference=None):
         visualization.generic_td_demand(self.accumulate(["tripMode"]), "tripMode")
-        return None
         return visualization.draw_travel_demand_by_mode(self, reference_df=reference)
 
     def get_mode_specific_data(self, mode_number):

@@ -23,6 +23,9 @@ class Config:
     def __repr__(self):
         return f"Data: {self.parameters}\nPath: {self.path}\nName: {self.name}\n"
 
+    def __getitem__(self, item):
+        return self.parameters[item]
+
     def get_dict(self):
         return limits.DEFAULT_DICT
 
@@ -43,11 +46,11 @@ class Config:
         self.initialize_dictionary()
         self.write()
 
-    def get_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
+    def get_main_parameters_name_only(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         return []
 
     def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
-        params = self.get_main_parameters(active_mode_numerical)
+        params = self.get_main_parameters_name_only(active_mode_numerical)
         for param in params:
             a, b = self.limit.limits[param]
             self.parameters[param].set(random.uniform(a, b))
@@ -147,6 +150,7 @@ class ModeChoiceConfig(Config):
             p.randomize()
             #print(p)
 
+
     def randomize_parameters_to_bound(self, parameter_name_list, mode_prevalence_list):
         for parameter in parameter_name_list:
             p = self.parameters[parameter]
@@ -160,7 +164,8 @@ class ModeChoiceConfig(Config):
     def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
         pass
 
-    def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
+    # TODO rename to "you only get the strings here"
+    def get_main_parameters_name_only(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []
         for parameter in self.parameters.values():
             # Mode choice parameters always require a mode so checking for length 1 is sufficient
@@ -169,6 +174,14 @@ class ModeChoiceConfig(Config):
 
         return param_list
 
+    def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
+        param_list = []
+        for parameter in self.parameters.values():
+            # Mode choice parameters always require a mode so checking for length 1 is sufficient
+            if len(parameter.requirements) == 1 and parameter.requirements["tripMode"] in requested_modes:
+                param_list.append(parameter)
+
+        return param_list
 
 class DestinationChoiceConfig(Config):
     def __init__(self, path):
@@ -177,7 +190,7 @@ class DestinationChoiceConfig(Config):
     def get_dict(self):
         return limits.DESTINATION_CHOICE_LIMITS
 
-    def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
+    def get_main_parameters_name_only(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []
         for parameter in self.parameters.values():
 

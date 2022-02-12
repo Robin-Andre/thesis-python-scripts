@@ -25,7 +25,7 @@ def data_extraction(path, dest_config):
         else:
             conf = yaml.mode_config()
         neural_expected_output_list.append(numpy.asarray(
-            [conf.parameters[key] for key in conf.get_main_parameters()]
+            [conf.parameters[key] for key in conf.get_main_parameters_name_only()]
         ))
         #data.draw_distributions()
     return data_list, neural_data_list, neural_expected_output_list

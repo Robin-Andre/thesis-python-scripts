@@ -89,6 +89,14 @@ def generic_travel_distance(data_frame, agg_list):
     generic_plot(temp, agg_list, "count", "distanceInKm")
 
 
+def generic_smol_plot(data_frame, agg_list, keyword, x, element):
+    fig, ax = plt.subplots()
+    temp = data_frame[data_frame[agg_list] == element]
+    ax.plot(temp[x], temp[keyword])
+    ax.set_title(element)
+    fig.show()
+
+
 def generic_plot(data_frame, agg_list, keyword, x, sharex=True):
     inputs = list(set(data_frame[agg_list]))
     inputs.sort()
