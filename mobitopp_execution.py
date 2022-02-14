@@ -43,7 +43,7 @@ def run_mobitopp(yaml=default_yaml()):
     if platform.system() == "Linux":
         return __run_mobitopp_linux(), results(yaml)
     if platform.system() == "Windows":
-        return __run_mobitopp_windows(), results(yaml)
+         return __run_mobitopp_windows(), results(yaml)
 
     raise EnvironmentError("Platform not supported by calibration tool: " + inspect.currentframe())
 
@@ -58,8 +58,8 @@ def __run(command):
     stdout = process.communicate()[0]
     stderr = process.communicate()[1]
     return_code = process.returncode
-    print(stdout)
-    print(stderr)
+    #print(stdout)
+    #print(stderr)
     # print('STDOUT:{}'.format(stdout))
 
     process.wait()

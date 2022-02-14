@@ -1,5 +1,7 @@
 import numpy
+import pandas
 
+import visualization
 from metrics.metric import aggregate
 from metrics.trafficdemand import TrafficDemand
 from metrics.traveldistance import TravelDistance
@@ -70,19 +72,36 @@ class Data:
 
         return x, y, z
 
+    def draw_modal_split(self, reference=None):
+        if reference is None:
+            visualization.draw_modal_split(self)
+        else:
+            visualization.draw_modal_split([self, reference])
 
     def draw_distributions(self):
         self.travel_time.draw_all_distributions()
         self.travel_distance.draw_all_distributions()
 
-    def get_modal_split(self, mode_list=[0, 1, 2, 3, 4]):
-        agg = aggregate(self.travel_time.get_data_frame(), numpy.inf, "durationTrip")
+    def get_modal_split(self, mode_list=[0, 1, 2, 3, 4], precision=numpy.inf):
+        agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
 
         agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the
         # modal split
         agg = agg.reindex(mode_list, fill_value=0)
         return agg / agg.sum()
 
+    def get_modal_split_based_by_time(self, precision, mode_list=[0, 1, 2, 3, 4]):
+        agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
+        maximum = agg.index.get_level_values(1).max()
+        # modal split
+        idx = pandas.MultiIndex.from_product([mode_list, list(range(1, maximum + 1))], names=['tripMode', 'durationTrip'])
+        agg = agg.reindex(idx, fill_value=0)
+
+        y = agg.groupby(level=1).sum()
+        t = agg.join(y,  lsuffix='', rsuffix='_full')
+        t["modal_split"] = t["amount"] / t ["amount_full"]
+        t = t.fillna(0)
+        return t["modal_split"]
 
 def sse(original, comparison, string):
     result = (original - comparison)[string] ** 2

@@ -18,8 +18,14 @@ def plot(df, name):
 def main():
     data = pandas.read_csv(SPECS.EXP_PATH + "MetricExperiment.csv", sep=";")
     agg = data.groupby(["metric", "iteration"]).mean()
-    print(data)
 
+
+    base = pandas.read_csv(SPECS.EXP_PATH + "BaselineRandom.csv", sep=",")
+    base = base.groupby(["opr", "iteration"]).mean()
+    base.index.set_names(["measure", "iteration"], inplace=True)
+
+    #
+    #agg = pandas.concat([agg,base])
     plot(agg, "best_metric_modal")
     plot(agg, "best_metric_time")
     plot(agg, "best_metric_demand")

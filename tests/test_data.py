@@ -1,6 +1,7 @@
 import unittest
 
 import pandas.testing
+from matplotlib import pyplot as plt
 
 import evaluation
 from metrics.data import Data
@@ -86,6 +87,14 @@ class MyTestCase(unittest.TestCase):
         a.show()
         b.show()
         c.show()
+
+    def test_better_modal_split(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        x = data.get_modal_split_based_by_time(1)
+        y = x.unstack(level=1).T
+        y.plot()
+        plt.show()
 
     def test_new_data_write(self):
         data = Data(evaluation.default_test_merge())
