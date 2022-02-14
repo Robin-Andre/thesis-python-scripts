@@ -258,6 +258,7 @@ def _help_only_one(x_1, y_1, y_target, mode_num):
     print(f"{g(y_1, mode_num)} {x_1} {g(y_target, mode_num)}")
     return g(y_target, mode_num) + x_1 - g(y_1, mode_num)
 
+
 def tune_parameter_without(ind, parameter, target, pair):
     mode_num = parameter.requirements["tripMode"]
     offset = ind[parameter.name].value - put_logit(ind.data.get_modal_split().loc[mode_num, 'count'])
@@ -274,6 +275,10 @@ def visualize(ind, data):
     #a.show()
     #b.show()
     # c.show()
+
+def suggestions(ind1, target, ind2=None):
+    pass
+
 
 def tune_parameter(ind, parameter, data):
     assert ind.data is not None
@@ -392,7 +397,6 @@ def main5():
     c.show()
     ind.data.draw_modal_split(data)
     print(ind['asc_put_mu'].value, ind.data.get_modal_split().loc[4, 'count'])
-
 
 
 if __name__ == "__main__":
