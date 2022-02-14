@@ -1,6 +1,8 @@
 import random
 from enum import Enum
 
+from configurations.observations import TimeModeObservation, Observation, ModalSplitObservation
+
 
 def get_relief_from_string(param):
     if param.__contains__("relief_high"):
@@ -317,6 +319,15 @@ def group_activity(df):
     group(df, "activityType", 11, 11, target=ActivityGroup.SHOPPING.value)  # Is this correct?
 
 
+def get_appropriate_observation_function(p_name):
+    if p_name.__contains__("b_tt") and p_name.__contains__("_mu"):
+        return TimeModeObservation()
+    elif p_name.__contains__("asc_") and p_name.__contains__("_mu"):
+        return ModalSplitObservation()
+    else:
+        return Observation()
+
+
 class ActivityGroup(Enum):
     WORK = 1
     BUSINESS = 2
@@ -362,6 +373,7 @@ class Parameter:
         self.value = value
         self.lower_bound, self.upper_bound = None, None
         self.requirements = get_all_parameter_limitations(name)
+        self.observer = get_appropriate_observation_function(name)
 
     def __str__(self):
         return f"{self.name}, {self.value} [{self.lower_bound}, {self.upper_bound}], {self.requirements}"
@@ -369,6 +381,12 @@ class Parameter:
     def initialize_bounds(self, bounds):
         if bounds.get(self.name):
             self.lower_bound, self.upper_bound = bounds.get(self.name)
+
+    def observe(self, ind_1, data_target):
+        return self.observer.observe(ind_1, data_target, self)
+
+    def observe_detailed(self, ind_1, ind_2, data_target):
+        return self.observer.observe_detailed(ind_1, ind_2, data_target, self)
 
     def set(self, value):
         self.value = value

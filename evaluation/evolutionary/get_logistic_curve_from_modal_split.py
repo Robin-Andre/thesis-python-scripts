@@ -206,7 +206,7 @@ def main3():
         plt.plot(xvals, yvals)
         popt, pcov = scipy.optimize.curve_fit(test_sigmoid, xvals, yvals, bounds=bounds)
         print(popt)
-        plt.plot(range(0,50), test_sigmoid(range(0, 50), *popt))
+        plt.plot(range(0, 50), test_sigmoid(range(0, 50), *popt))
         plt.show()
 
     for i in [35, 45, 50]:
@@ -249,7 +249,7 @@ def _help(x_1, y_1, x_2, y_2, y_target):
     z = g(y_target)
     z_1 = g(y_1)
     z_2 = g(y_2)
-    a = (z - z_1) / (z_2 - z_1) # a is the linear scale factor based on the normalized parameters
+    a = (z - z_1) / (z_2 - z_1)  # a is the linear scale factor based on the normalized parameters
 
     return a * (x_2 - x_1) + x_1
 
@@ -276,7 +276,11 @@ def visualize(ind, data):
     #b.show()
     # c.show()
 
-def suggestions(ind1, target, ind2=None):
+
+def suggestion_small(ind1, target, parameter):
+    y_1 = parameter.observe(ind1.data)  # in case of asc: get modal split
+    y_target = parameter.observe(target)
+    parameter.estimate(parameter.value, y_1, y_target)
     pass
 
 

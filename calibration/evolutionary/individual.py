@@ -1,3 +1,5 @@
+import copy
+
 import mobitopp_execution as simulation
 import random
 from abc import ABC, abstractmethod
@@ -25,6 +27,9 @@ class BaseIndividual(ABC):
 
     def __lt__(self, other):
         return self.fitness < other.fitness
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def set_seed(self, value):
         self.yaml.set_seed(value)

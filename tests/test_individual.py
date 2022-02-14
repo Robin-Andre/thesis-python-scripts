@@ -1,3 +1,4 @@
+import copy
 import math
 import unittest
 
@@ -13,6 +14,38 @@ from configurations.parameter import Parameter
 
 class MyTestCase(unittest.TestCase):
 
+    def test_load(self):
+        x = Individual(0, [])
+        try:
+            x.load("resources/test_population/individual_0")
+        except FileNotFoundError:
+            self.fail("Test did not load the individual!")
+
+        self.assertAlmostEqual(x["asc_car_d_mu"].value, 5.352656054767767)
+        self.assertAlmostEqual(x["asc_put_sig"].value, -1.5723)
+
+    def test_observation(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        z = Individual("number", [])
+        x.load("resources/test_population/individual_0")
+        y.load("resources/compare_individual")
+        z.load("resources/test_population/individual_1")
+        parameter = x["asc_car_d_mu"]
+        print(parameter)
+        print(parameter.observe(x, y.data))
+        print(parameter.observe_detailed(x, z, y.data))
+
+
+
+
+    def test_copy(self):
+        x = Individual(21, [])
+        x["asc_car_d_mu"].set(9)
+        y = x.copy()
+        self.assertEqual(y["asc_car_d_mu"].value, 9)
+        y["asc_car_d_mu"].set(2)
+        self.assertEqual(x["asc_car_d_mu"].value, 9)
 
 
     def test_change_value(self):
