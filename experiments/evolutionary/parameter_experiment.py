@@ -63,7 +63,7 @@ def main():
             population = Population(select_func=selection.double_tournament_selection, replace_func=replace.fancy_replace,
                                  individual_constructor=individual.Individual, seed=101, param_vector=pl_value)
             result = run_experiment(seed, population, repetitions, pl_key)
-            write(result, pl_key)
+            write(result, pl_key, seed)
             output.append(result)
 
     csv = "\n".join(output)
