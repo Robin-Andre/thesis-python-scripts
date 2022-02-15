@@ -105,6 +105,7 @@ def plot_inverse_exponential():
 def __approximator(mode, fullmode, IDString):
     data = __next_helper(mode, fullmode, IDString)
     popt_list = []
+    fig_main, ax_main = plt.subplots()
     for i in data.columns.values:
         #fig, ax = plt.subplots()
         if i == 0:
@@ -118,10 +119,11 @@ def __approximator(mode, fullmode, IDString):
         #ax.plot(ind, expected_b_tt_func(ind, *popt))
         #ax.plot(ind, vals)
         #fig.show()
+        #plt.close(fig)
     print(popt_list)
     print(list(range(len(popt_list))))
-    plt.plot(list(range(len(popt_list))), popt_list)
-    plt.show()
+    ax_main.plot(list(range(len(popt_list))), popt_list)
+    fig_main.show()
 
 def approximate_one_data():
 
@@ -137,8 +139,9 @@ def approx_weirdness():
 
 def approx_full():
     IDString = "durationTrip"
-
-    __approximator("b_tt_car_d_mu", "b_tt_car_d_mutime.csv", IDString)
+    values = ["b_tt_bike_mu", "b_tt_car_d_mu", "b_tt_car_p_mu", "b_tt_put_mu"]
+    for val in values:
+        __approximator(val, val + "time.csv", IDString)
 
 
 if __name__ == "__main__":

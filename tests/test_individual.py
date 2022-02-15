@@ -5,10 +5,12 @@ import unittest
 from matplotlib import pyplot as plt
 
 import visualization
+from calibration import tuning
 from calibration.evolutionary.individual import Individual
 import mobitopp_execution as simulation
 from calibration.evolutionary.population import Population
 from configurations import SPECS
+from configurations.observations import ModalSplitObservation, TimeModeObservation
 from configurations.parameter import Parameter
 
 
@@ -23,6 +25,7 @@ class MyTestCase(unittest.TestCase):
 
         self.assertAlmostEqual(x["asc_car_d_mu"].value, 5.352656054767767)
         self.assertAlmostEqual(x["asc_put_sig"].value, -1.5723)
+        self.assertAlmostEqual(x["b_tt_car_d_mu"].value, -0.8685707430564293)
 
     def test_observation(self):
         x = Individual(21, [])
@@ -32,12 +35,183 @@ class MyTestCase(unittest.TestCase):
         y.load("resources/compare_individual")
         z.load("resources/test_population/individual_1")
         parameter = x["asc_car_d_mu"]
+        self.assertEqual(type(parameter.observer), ModalSplitObservation)
         print(parameter)
         print(parameter.observe(x, y.data))
         print(parameter.observe_detailed(x, z, y.data))
 
 
+    def test_time_observation(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        z = Individual("number", [])
+        x.load("resources/test_population/individual_0")
+        y.load("resources/compare_individual")
+        z.load("resources/test_population/individual_1")
+        parameter = x["b_tt_car_d_mu"]
+        self.assertEqual(type(parameter.observer), TimeModeObservation)
+        print(f"x: {parameter}")
+        print(f"y: {y['b_tt_car_d_mu']}")
 
+        print(parameter.observe(x, y.data))
+        print(parameter.observe(z, y.data))
+        print(parameter.observe(y, x.data))
+        print(parameter.observe_detailed(x, z, y.data))
+
+    def test_b_tt_ped_gets_different_treatment(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        z = Individual("number", [])
+        x.load("resources/test_population/individual_0")
+        y.load("resources/compare_individual")
+        parameter = x["b_tt_ped"]
+
+        print(parameter.value)
+        print(y["b_tt_ped"].value)
+
+        self.assertGreater(parameter.observe(x, y.data), parameter.value)
+
+    def test_observation_function_guess(self):
+        o = TimeModeObservation()
+        print(o.guess(-1, -0.5, 1, -1.5))
+        print(o.guess(-1, -0.368, 1, -2.718))
+
+
+    def test_tuning_b_tt(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        z = Individual("number", [])
+        x.load("resources/test_population/individual_0")
+        y.load("resources/compare_individual")
+        parameter = x["b_tt_car_d_mu"]
+        z = x.copy()
+        z[parameter].set(parameter.observe(x, y.data))
+        print(z[parameter])
+        z.run()
+
+        new_val = parameter.observe_detailed(x, z, y.data)
+        z_new = z.copy()
+        z_new[parameter].set(new_val)
+        z_new.run()
+        #parameter.observe(z_new, y.data)
+
+        new_val = parameter.observe_detailed(z_new, z, y.data)
+
+        z[parameter].set(new_val)
+        z.run()
+        new_val = parameter.observe_detailed(z_new, z, y.data)
+        z_new[parameter].set(new_val)
+        z_new.run()
+        parameter.observe(z_new, y.data)
+
+
+    def test_tuning(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        z = Individual("number", [])
+        x.load("resources/test_population/individual_0")
+
+        y.load("resources/compare_individual")
+        parameter = x["asc_car_d_mu"]
+        improved_ind = tuning.tune(x, y.data, parameter)
+        improved_ind.data.draw_modal_split(y.data)
+
+    def test_tuning_strategy1(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        x.load("resources/test_population/individual_0")
+
+        y.load("resources/compare_individual")
+        improved_ind = tuning.tune_strategy1(x, y.data)
+        improved_ind.data.draw_modal_split(y.data)
+
+
+    def test_tuning_strategy2(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        x.load("resources/test_population/individual_0")
+
+        y.load("resources/compare_individual")
+        improved_ind, best = tuning.tune_strategy2(x, y.data)
+        improved_ind.data.draw_modal_split(y.data)
+
+    def test_tuning_combination(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        x.load("resources/test_population/individual_0")
+
+        y.load("resources/compare_individual")
+        improved_ind, best = tuning.tune_strategy2(x, y.data)
+
+        a, b, c = best.data.draw(reference=y.data)
+        a.show()
+        b.show()
+        c.show()
+
+        a, b, c = improved_ind.data.draw(reference=y.data)
+        a.show()
+        b.show()
+        c.show()
+
+
+        improved_ind.data.draw_modal_split(y.data)
+        improved_ind = tuning.tune_strategy1(improved_ind, y.data)
+
+        a, b, c = improved_ind.data.draw(reference=y.data)
+        a.show()
+        b.show()
+        c.show()
+
+
+    def test_tuning_asc(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        z = Individual("number", [])
+        x.load("resources/test_population/individual_0")
+
+        y.load("resources/compare_individual")
+        parameter = x["asc_car_d_mu"]
+        z = x.copy()
+        x.data.draw_modal_split(y.data)
+        z[parameter].set(parameter.observe(x, y.data))
+        print(z[parameter])
+        z.run()
+        z.data.draw_modal_split(y.data)
+        new_val = parameter.observe_detailed(x, z, y.data)
+        z_new = z.copy()
+        z_new[parameter].set(new_val)
+        z_new.run()
+        z_new.data.draw_modal_split(y.data)
+        #parameter.observe(z_new, y.data)
+
+        new_val = parameter.observe_detailed(z_new, z, y.data)
+
+        z[parameter].set(new_val)
+        z.run()
+        z.data.draw_modal_split(y.data)
+        new_val = parameter.observe_detailed(z_new, z, y.data)
+        z_new[parameter].set(new_val)
+        z_new.run()
+        z_new.data.draw_modal_split(y.data)
+        parameter.observe(z_new, y.data)
+
+
+    def test_bad_observation_function_is_caught(self):
+        self.assertRaises(AssertionError, TimeModeObservation, lambda x: x / 2, lambda x: 3 * x)
+
+
+    def test_access_dict_by_name_or_parameter_object(self):
+        x = Individual(21, [])
+        y = Individual(13, [])
+        x.load("resources/test_population/individual_0")
+        y.load("resources/compare_individual")
+        p = x["asc_car_d_mu"]
+
+        p2 = y[p]
+        self.assertNotEqual(p2.value, p.value)
+        p.set(13)
+        self.assertEqual(p.value, 13)
+        self.assertNotEqual(p2.value, 13)
 
     def test_copy(self):
         x = Individual(21, [])
@@ -46,7 +220,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(y["asc_car_d_mu"].value, 9)
         y["asc_car_d_mu"].set(2)
         self.assertEqual(x["asc_car_d_mu"].value, 9)
-
 
     def test_change_value(self):
         x = Individual(9001, [])

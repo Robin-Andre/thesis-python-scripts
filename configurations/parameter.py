@@ -324,6 +324,8 @@ def get_appropriate_observation_function(p_name):
         return TimeModeObservation()
     elif p_name.__contains__("asc_") and p_name.__contains__("_mu"):
         return ModalSplitObservation()
+    elif p_name == "b_tt_ped":
+        return TimeModeObservation(lambda x: x, lambda x: x)
     else:
         return Observation()
 
@@ -387,6 +389,9 @@ class Parameter:
 
     def observe_detailed(self, ind_1, ind_2, data_target):
         return self.observer.observe_detailed(ind_1, ind_2, data_target, self)
+
+    def error(self, ind_1, data_target):
+        return self.observer.error(ind_1, data_target, self)
 
     def set(self, value):
         self.value = value

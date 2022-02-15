@@ -24,7 +24,10 @@ class Config:
         return f"Data: {self.parameters}\nPath: {self.path}\nName: {self.name}\n"
 
     def __getitem__(self, item):
-        return self.parameters[item]
+        if type(item) == Parameter:
+            return self.parameters[item.name]
+        else:
+            return self.parameters[item]
 
     def get_dict(self):
         return limits.DEFAULT_DICT

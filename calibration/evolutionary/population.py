@@ -90,14 +90,14 @@ class Population:
 
     def combine(self, ind1, ind2):
         child = self.combine_func(ind1, ind2, self.individual_constructor(self.seed, self.active_parameters), self.target, self.active_parameters)
-        self.__run(child)
+        self._run(child)
 
         #print(f"Parent fitness: {ind1.fitness} {ind2.fitness} -> {child.fitness}: {child.active_values()}")
         return child
 
     def mutate(self, ind1):
         mutation = self.mutation_func(ind1, self.individual_constructor(self.seed, self.active_parameters), self.target)
-        self.__run(mutation)
+        self._run(mutation)
 
         return mutation
 
@@ -123,11 +123,11 @@ class Population:
             individual.make_basic(nullify_exponential_b_tt=True)
 
         individual.randomize()
-        self.__run(individual)
+        self._run(individual)
 
         return individual
 
-    def __run(self, individual):
+    def _run(self, individual):
         individual.run()
         self.logger.log(self, individual)
         self.logger.iteration += 1

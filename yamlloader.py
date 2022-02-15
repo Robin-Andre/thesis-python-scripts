@@ -15,6 +15,7 @@ V2Loader.add_constructor(
     u'!file',
     V2Loader.let_v2_through)
 
+
 #TODO make one liner class method for reading in yaml
 class YAML:
 
@@ -34,6 +35,10 @@ class YAML:
         return [item.name for item in self.configs]
 
     def set_configs(self, configs):
+        # TODO find better solution to reload configs
+        cur_dir = "/".join(self.data["modeChoice"]["main"].split("/")[:-1]) + "/"
+        for config in configs:
+            config.path = SPECS.CWD + cur_dir + config.name
         self.configs = configs
 
     def mode_config(self):
