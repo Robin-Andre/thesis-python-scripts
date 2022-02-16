@@ -127,6 +127,13 @@ class Population:
 
         return individual
 
+    def set_random_individual_as_target(self):
+        individual = Individual(self.seed, self.active_parameters)
+        individual.randomize()
+        individual.run()
+        self.set_target(individual.data)
+        return individual
+
     def _run(self, individual):
         individual.run()
         self.logger.log(self, individual)

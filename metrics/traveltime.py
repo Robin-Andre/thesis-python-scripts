@@ -12,7 +12,7 @@ class TravelTime(Metric):
 
     def smoothen(self, smoothness_in_minutes):
         ret = TravelTime()
-        ret._data_frame = super().smoothen(smoothness_in_minutes, "amount")
+        ret._data_frame = super().smoothen(smoothness_in_minutes, "count")
         return ret
 
     def read_from_raw_data(self, raw_data):

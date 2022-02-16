@@ -55,14 +55,15 @@ def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=
 
     fig, ax = plt.subplots(3, 2, sharex=True)
     fig.suptitle(title)
-    for i, element in enumerate(mode_list):
-        df = data_frame.get_mode_specific_data(element)
-        ax[i // 2][i % 2].plot(df, color=color_modes(element))
+    trip_mode_list = list(set(data_frame["tripMode"]))
+    for i, element in enumerate(trip_mode_list):
+        df = data_frame[data_frame["tripMode"] == element]
+        ax[i // 2][i % 2].plot(df["time"], df["active_trips"], color=color_modes(element))
         ax[i // 2][i % 2].set_xticks([0, 1440, 2880, 4320, 5760, 7200, 8640, 10080])
         ax[i // 2][i % 2].set_xticklabels(["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So", "Mo"])
         if reference_df is not None:
-            ref = reference_df.get_mode_specific_data(element)
-            ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2)
+            ref = reference_df[reference_df["tripMode"] == element]
+            ax[i // 2][i % 2].plot(ref["time"], ref["active_trips"], color="black", alpha=0.2)
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     return fig
     #plt.show()

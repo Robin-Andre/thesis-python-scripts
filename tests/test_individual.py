@@ -122,8 +122,35 @@ class MyTestCase(unittest.TestCase):
         x.load("resources/test_population/individual_0")
 
         y.load("resources/compare_individual")
-        improved_ind = tuning.tune_strategy1(x, y.data)
+        improved_ind, best = tuning.tune_strategy1(x, y.data, epsilon=0.02)
         improved_ind.data.draw_modal_split(y.data)
+        best.data.draw_modal_split(y.data)
+
+
+    def test_tuning_with_new(self):
+        p = Population()
+        y = p.set_random_individual_as_target()
+        a, b, c = y.draw()
+        a.show()
+        b.show()
+        c.show()
+        print(y.yaml.mode_config())
+        x = p.random_individual()
+
+        x, best = tuning.tune_strategy1(x, y.data, epsilon=0.001)
+        a_1, b_1, c_1 = x.data.draw(reference=y.data)
+        a_2, b_2, c_2 = best.data.draw(reference=y.data)
+
+        a_1.show()
+        a_2.show()
+
+        b_1.show()
+        b_2.show()
+
+        c_1.show()
+        c_2.show()
+
+
 
 
     def test_tuning_strategy2(self):

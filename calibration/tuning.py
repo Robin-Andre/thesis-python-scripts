@@ -8,15 +8,18 @@ def __do_population_shenanigans(copy_ind_1, population, draw, mode):
         if draw:
             population.draw_all_traveltime(mode)
         else:
-            population.draw_boundaries_modal_split()
+            population.draw_boundaries_modal_split(sort=False)
     else:
         copy_ind_1.run()
 
-def tune(individual, data_target, parameter, epsilon=0.05, population=None, draw=False):
 
+def tune(individual, data_target, parameter, epsilon=0.05, population=None, draw=False):
 
     print(f"Original Value {individual[parameter].value}")
     error = parameter.error(individual, data_target)
+    if error < epsilon:
+        print("Error too small. No optimization will be done")
+        return individual
     print(f"Error{error}")
     copy_ind_1 = individual.copy()
     copy_ind_2 = individual.copy()
@@ -42,7 +45,7 @@ def tune(individual, data_target, parameter, epsilon=0.05, population=None, draw
     return copy_ind_1
 
 
-def tune_strategy1(individual, data_target):
+def tune_strategy1(individual, data_target, epsilon):
     p = Population()
     p.set_target(data_target)
     p.append(individual)
@@ -52,22 +55,22 @@ def tune_strategy1(individual, data_target):
     flag = True
     for i in range(10):
         diff = individual.data.get_modal_split() - data_target.get_modal_split()
-        print(diff)
-        print(diff.idxmin())
-        print(diff.idxmax())
-        maxe = diff.idxmax()
+        #print(diff)
+        #print(diff.idxmin())
+        #print(diff.idxmax())
 
         if flag:
-            print(param_name_list[diff.idxmin()["count"]])
-            individual = tune(individual, data_target, individual[param_name_list[diff.idxmin()["count"]]], population=p)
+            #print(param_name_list[diff.idxmin()["count"]])
+            individual = tune(individual, data_target, individual[param_name_list[diff.idxmin()["count"]]], population=p, epsilon=epsilon)
 
         else:
-            print(param_name_list[diff.idxmax()["count"]])
-            individual = tune(individual, data_target, individual[param_name_list[diff.idxmax()["count"]]], population=p)
+            #print(param_name_list[diff.idxmax()["count"]])
+            individual = tune(individual, data_target, individual[param_name_list[diff.idxmax()["count"]]], population=p, epsilon=epsilon)
         flag = not flag
-        #individual.data.draw_modal_split(data_target)
-    p.draw_boundaries_modal_split()
-    return individual
+
+    p.draw_boundaries_modal_split(sort=False)
+    print(p.logger.print_csv())
+    return individual, p.best()
 
 
 def tune_strategy2(individual, data_target):

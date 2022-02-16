@@ -32,7 +32,7 @@ class TrafficDemand(Metric):
 
     def smoothen(self, smoothness_in_minutes):
         ret = TrafficDemand()
-        ret._data_frame = super().smoothen(smoothness_in_minutes, "active_trips")
+        ret._data_frame = super().smoothen(smoothness_in_minutes, "active_trips_delta")
         return ret
 
     def read_from_raw_data_old(self, raw_data):
@@ -69,8 +69,12 @@ class TrafficDemand(Metric):
         self._data_frame = reduce(self._data_frame, keep_list, "time", "active_trips_delta")
 
     def draw(self, reference=None):
-        visualization.generic_td_demand(self.accumulate(["tripMode"]), "tripMode")
-        return visualization.draw_travel_demand_by_mode(self, reference_df=reference)
+        #return visualization.generic_td_demand(self.accumulate(["tripMode"]), "tripMode")
+        if reference is None:
+
+            return visualization.draw_travel_demand_by_mode(self.accumulate(["tripMode"]))
+        else:
+            return visualization.draw_travel_demand_by_mode(self.accumulate(["tripMode"]), reference_df=reference.accumulate(["tripMode"]))
 
     def get_mode_specific_data(self, mode_number):
         return super().get_mode_specific_data(mode_number, "time")
