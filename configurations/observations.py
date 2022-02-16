@@ -6,13 +6,17 @@ from matplotlib import pyplot as plt
 
 
 class Observation(ABC):
-    def __init__(self):
-        pass
+    def __init__(self, function=lambda x: x, function_inverse=lambda x: x):
+        self.f = function
+        self.f_inverse = function_inverse
 
     def observe(self, ind_1, target_data, parameter):
         return 0
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
+        return 0
+
+    def error(self, ind_1, target_data, parameter):
         return 0
 
 
@@ -43,7 +47,6 @@ class TimeModeObservation(Observation):
 
         for x in [-20, -10, -1, -0.01, 0, 0.01, 10, 20]:
             assert abs(self.f_inverse(self.f(x)) - x) < epsilon
-
 
     def __helper(self, ind_1, target_data, parameter):
         time_df = ind_1.data.travel_time.get_data_frame()

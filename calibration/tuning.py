@@ -26,7 +26,6 @@ def tune(individual, data_target, parameter, epsilon=0.05, population=None, draw
     estimate_value = parameter.observe(individual, data_target)
     copy_ind_1[parameter].set(estimate_value)
     __do_population_shenanigans(copy_ind_1, population, draw, mode=parameter.requirements["tripMode"])
-    #copy_ind_1.run()
 
     error = parameter.error(copy_ind_1, data_target)
     print(f"Error{error}")
@@ -45,7 +44,7 @@ def tune(individual, data_target, parameter, epsilon=0.05, population=None, draw
     return copy_ind_1
 
 
-def tune_strategy1(individual, data_target, epsilon):
+def tune_strategy1(individual, data_target, epsilon, rounds=10):
     p = Population()
     p.set_target(data_target)
     p.append(individual)
@@ -53,18 +52,12 @@ def tune_strategy1(individual, data_target, epsilon):
 
     param_name_list = ["asc_bike_mu", "asc_car_d_mu", "asc_car_p_mu", "asc_ped_mu", "asc_put_mu"]
     flag = True
-    for i in range(10):
+    for i in range(rounds):
         diff = individual.data.get_modal_split() - data_target.get_modal_split()
-        #print(diff)
-        #print(diff.idxmin())
-        #print(diff.idxmax())
-
         if flag:
-            #print(param_name_list[diff.idxmin()["count"]])
             individual = tune(individual, data_target, individual[param_name_list[diff.idxmin()["count"]]], population=p, epsilon=epsilon)
 
         else:
-            #print(param_name_list[diff.idxmax()["count"]])
             individual = tune(individual, data_target, individual[param_name_list[diff.idxmax()["count"]]], population=p, epsilon=epsilon)
         flag = not flag
 
@@ -86,6 +79,5 @@ def tune_strategy2(individual, data_target):
         individual = tune(individual, data_target, parameter, population=p, draw=True)
 
         p.draw_all_traveltime(parameter.requirements["tripMode"])
-
 
     return individual, p.best()
