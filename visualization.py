@@ -126,7 +126,7 @@ def generic_plot(data_frame, agg_list, keyword, x, sharex=True):
 def draw_modal_split(df_list):
     fig, ax = plt.subplots()
     if type(df_list) is not list: df_list = [df_list] # Makes single element entry to a list
-    dfl = [x.get_modal_split() for x in df_list]
+    dfl = [x._get_modal_split() for x in df_list]
     y = identify_yourself(dfl)
     y['cumsum'] = y.groupby('identifier')['count'].transform(pandas.Series.cumsum) - y["count"]
     y = y.reset_index()

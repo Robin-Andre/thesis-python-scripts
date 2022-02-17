@@ -1,17 +1,15 @@
-import copy
-import math
+
 import unittest
 
 from matplotlib import pyplot as plt
 
-import visualization
+
 from calibration import tuning
 from calibration.evolutionary.individual import Individual
-import mobitopp_execution as simulation
+
 from calibration.evolutionary.population import Population
-from configurations import SPECS
+
 from configurations.observations import ModalSplitObservation, TimeModeObservation
-from configurations.parameter import Parameter
 
 
 class MyTestCase(unittest.TestCase):
@@ -26,55 +24,15 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(x["asc_car_d_mu"].value, 5.352656054767767)
         self.assertAlmostEqual(x["asc_put_sig"].value, -1.5723)
         self.assertAlmostEqual(x["b_tt_car_d_mu"].value, -0.8685707430564293)
+        self.assertEqual(x.yaml.get_fraction_of_population(), 1)
 
-    def test_observation(self):
+
+
+    def test_run(self):
         x = Individual(21, [])
-        y = Individual(13, [])
-        z = Individual("number", [])
-        x.load("resources/test_population/individual_0")
-        y.load("resources/compare_individual")
-        z.load("resources/test_population/individual_1")
-        parameter = x["asc_car_d_mu"]
-        self.assertEqual(type(parameter.observer), ModalSplitObservation)
-        print(parameter)
-        print(parameter.observe(x, y.data))
-        print(parameter.observe_detailed(x, z, y.data))
-
-
-    def test_time_observation(self):
-        x = Individual(21, [])
-        y = Individual(13, [])
-        z = Individual("number", [])
-        x.load("resources/test_population/individual_0")
-        y.load("resources/compare_individual")
-        z.load("resources/test_population/individual_1")
-        parameter = x["b_tt_car_d_mu"]
-        self.assertEqual(type(parameter.observer), TimeModeObservation)
-        print(f"x: {parameter}")
-        print(f"y: {y['b_tt_car_d_mu']}")
-
-        print(parameter.observe(x, y.data))
-        print(parameter.observe(z, y.data))
-        print(parameter.observe(y, x.data))
-        print(parameter.observe_detailed(x, z, y.data))
-
-    def test_b_tt_ped_gets_different_treatment(self):
-        x = Individual(21, [])
-        y = Individual(13, [])
-        z = Individual("number", [])
-        x.load("resources/test_population/individual_0")
-        y.load("resources/compare_individual")
-        parameter = x["b_tt_ped"]
-
-        print(parameter.value)
-        print(y["b_tt_ped"].value)
-
-        self.assertGreater(parameter.observe(x, y.data), parameter.value)
-
-    def test_observation_function_guess(self):
-        o = TimeModeObservation()
-        print(o.guess(-1, -0.5, 1, -1.5))
-        print(o.guess(-1, -0.368, 1, -2.718))
+        x.load("resources/example_config_load2")
+        x.run()
+        x.save("resources/example_config_load2")
 
 
     def test_tuning_b_tt(self):

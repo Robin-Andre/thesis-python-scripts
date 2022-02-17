@@ -70,7 +70,7 @@ class MyTestCase(unittest.TestCase):
         data.load("resources/example_config_load/results/")
         td_modal_split = metric.aggregate(data.travel_distance._data_frame, np.inf, "distanceInKm")
         td_modal_split = td_modal_split / td_modal_split.sum()
-        tt_modal_split = data.get_modal_split()
+        tt_modal_split = data._get_modal_split()
         self.assertTrue(np.array_equal(td_modal_split.values, tt_modal_split.values))
         self.assertEqual(tt_modal_split["amount"].sum(), 1)
 
@@ -265,14 +265,14 @@ class MyTestCase(unittest.TestCase):
         data2 = metrics.data.Data()
         data.load("resources/example_config_load/results/")
         data2.load("resources/example_config_load2/results/")
-        modal_split = data.get_modal_split()
-        modal_split2 = data2.get_modal_split()
+        modal_split = data._get_modal_split()
+        modal_split2 = data2._get_modal_split()
         modal_split = modal_split / modal_split.sum()
         modal_split2 = modal_split2 / modal_split2.sum()
         print(sklearn.metrics.mean_squared_error(modal_split, modal_split2))
 
-        modal_split = data.get_modal_split()
-        modal_split2 = data2.get_modal_split()
+        modal_split = data._get_modal_split()
+        modal_split2 = data2._get_modal_split()
         modal_split = modal_split * 1000
         modal_split = modal_split / modal_split.sum()
         modal_split2 = modal_split2 / modal_split2.sum()

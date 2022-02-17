@@ -160,31 +160,31 @@ def bike_logit(x):
 
 class ModalSplitObservation(Observation):
 
-    def __helper(self, ind_1, target_data, parameter):
+    def _helper(self, ind_1, target_data, parameter):
         assert parameter.requirements.keys().__contains__("tripMode")
         mode_num = parameter.requirements["tripMode"]
 
-        y_1 = ind_1.data.get_modal_split().loc[mode_num, "count"]
-        y_target = target_data.get_modal_split().loc[mode_num, "count"]
+        y_1 = ind_1.data.get_modal_spliteeee(mode_num)
+        y_target = target_data.get_modal_spliteeee(mode_num)
         x_1 = ind_1[parameter.name].value
 
         return x_1, y_1, y_target, mode_num
 
     # This function suggests, for a lack of information, the estimated value from the sigmoid transformation as a new
     def observe(self, ind_1, target_data, parameter):
-        x_1, y_1, y_target, mode_num = self.__helper(ind_1, target_data, parameter)
+        x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         x_new = g(y_target, mode_num) + x_1 - g(y_1, mode_num)
         print(f"Suggested Value: {x_new}")
         return x_new
 
     def error(self, ind_1, target_data, parameter):
-        x_1, y_1, y_target, mode_num = self.__helper(ind_1, target_data, parameter)
+        x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         return abs(y_1 - y_target)
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
-        x_1, y_1, y_target, mode_num = self.__helper(ind_1, target_data, parameter)
+        x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         x_2 = ind_2[parameter.name].value
-        y_2 = ind_2.data.get_modal_split().loc[mode_num, "count"]
+        y_2 = ind_2.data.get_modal_spliteeee(mode_num)
 
         z = g(y_target)
         z_1 = g(y_1)

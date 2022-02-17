@@ -82,12 +82,9 @@ class Config:
 
     def set_parameter(self, parameter_name, new_value, absolute=False):
         assert isinstance(new_value, int) or isinstance(new_value, float)
-        if parameter_name is None:
-            print("Called with empty parameter: exiting")
+        if parameter_name is None or parameter_name.strip() == "":
             return
-        if parameter_name.strip() == "":
-            print("Danger: Called Parameter with whitespace only.")
-            return
+
         regex = "(" + parameter_name + "\\s+=)(.*)(\n*)"
         search = re.search(regex, self._text)
         if search:
@@ -108,12 +105,9 @@ class Config:
 
     def override_parameter(self, parameter_name, parameter_value_absolute):
         assert isinstance(parameter_value_absolute, int) or isinstance(parameter_value_absolute, float)
-        if parameter_name is None:
-            print("Called with empty parameter: exiting")
+        if parameter_name is None or parameter_name.strip() == "":
             return
-        if parameter_name.strip() == "":
-            print("Danger: Called Parameter with whitespace only.")
-            return
+
         regex = "(" + parameter_name + "\\s*=)(.*)(\n*)"
         search = re.search(regex, self._text)
         if search:
@@ -153,7 +147,6 @@ class ModeChoiceConfig(Config):
             p.randomize()
             #print(p)
 
-
     def randomize_parameters_to_bound(self, parameter_name_list, mode_prevalence_list):
         for parameter in parameter_name_list:
             p = self.parameters[parameter]
@@ -163,9 +156,6 @@ class ModeChoiceConfig(Config):
             else:
                 p.randomize_with_limits(p.lower_bound, p.lower_bound)
                 #p.randomize_with_limits(p.lower_bound, (p.upper_bound + p.lower_bound) / 2)
-
-    def randomize_main_parameters(self, active_mode_numerical=[0, 1, 2, 3, 4]):
-        pass
 
     # TODO rename to "you only get the strings here"
     def get_main_parameters_name_only(self, requested_modes=[0, 1, 2, 3, 4]):

@@ -123,10 +123,10 @@ def main2():
     #a.show()
     b.show()
     c.show()
-    print(f"Current x : {ind['asc_put_mu']} current y : {ind.data.get_modal_split().loc[4, 'count']}")
+    print(f"Current x : {ind['asc_put_mu']} current y : {ind.data._get_modal_split().loc[4, 'count']}")
     print("----------")
-    print(f"Ideal x : {put_logit(ind.data.get_modal_split().loc[4, 'count'])}")
-    offset = ind['asc_put_mu'].value - put_logit(ind.data.get_modal_split().loc[4, 'count'])
+    print(f"Ideal x : {put_logit(ind.data._get_modal_split().loc[4, 'count'])}")
+    offset = ind['asc_put_mu'].value - put_logit(ind.data._get_modal_split().loc[4, 'count'])
     print(f"Target x: {put_logit(0.2)}")
     print(f"Offset : {offset}")
     print("----------")
@@ -139,7 +139,7 @@ def main2():
     b.show()
     c.show()
     print(ind["asc_put_mu"])
-    print(ind.data.get_modal_split().loc[4, "count"])
+    print(ind.data._get_modal_split().loc[4, "count"])
     print("------------")
     ind["asc_put_mu"].set(ind["asc_put_mu"].value + put_logit(0.2) - put_logit(0.2104805715133657))
     ind.run()
@@ -149,7 +149,7 @@ def main2():
     b.show()
     c.show()
     print(ind["asc_put_mu"])
-    print(ind.data.get_modal_split().loc[4, "count"])
+    print(ind.data._get_modal_split().loc[4, "count"])
     print("------------")
     print(put_logit(0.2) - put_logit(0.2104805715133657))
 
@@ -160,9 +160,9 @@ def __helper(ind, data):
         #print(f"Current x : {ind[param_name].value} current y : {ind.data.get_modal_split().loc[i, 'count']}")
         #print(f"Target y : {data.get_modal_split().loc[i, 'count']}")
         #print(mode_logit(ind.data.get_modal_split().loc[i, 'count'], i))
-        offset = ind[param_name].value - put_logit(ind.data.get_modal_split().loc[i, 'count'])
-        diff = ind.data.get_modal_split().loc[i, 'count'] - data.get_modal_split().loc[i, 'count']
-        new_val = mode_logit(data.get_modal_split().loc[i, 'count'], i) + offset
+        offset = ind[param_name].value - put_logit(ind.data._get_modal_split().loc[i, 'count'])
+        diff = ind.data._get_modal_split().loc[i, 'count'] - data._get_modal_split().loc[i, 'count']
+        new_val = mode_logit(data._get_modal_split().loc[i, 'count'], i) + offset
         val = ind[param_name].value
         if diff > 0:
             # In this case the simulation is bigger than the value previously determined
@@ -173,8 +173,8 @@ def __helper(ind, data):
         #print(ind[param_name].value)
         print(f"{param_name} {ind[param_name].value - cur_x}")
 
-    print(ind.data.get_modal_split())
-    print(data.get_modal_split())
+    print(ind.data._get_modal_split())
+    print(data._get_modal_split())
     ind.run()
     ind.data.draw_modal_split(data)
     a,b,c = ind.draw(data)
@@ -191,18 +191,18 @@ def main3():
     ind = p.random_individual(make_basic=True)
     ind.data.draw_modal_split(data)
 
-    print((ind["asc_put_mu"].value, ind.data.get_modal_split().loc[4, 'count']))
+    print((ind["asc_put_mu"].value, ind.data._get_modal_split().loc[4, 'count']))
     xvals = [ind["asc_put_mu"].value]
-    yvals = [ind.data.get_modal_split().loc[4, 'count']]
-    offset = ind['asc_put_mu'].value - put_logit(ind.data.get_modal_split().loc[4, 'count'])
+    yvals = [ind.data._get_modal_split().loc[4, 'count']]
+    offset = ind['asc_put_mu'].value - put_logit(ind.data._get_modal_split().loc[4, 'count'])
     bounds = [(0, 0), (10, 50)]
     popt = None
     for i in [0.25, 0.5, 0.75]:
         ind["asc_put_mu"].set(put_logit(i) + offset)
         ind.run()
-        print((ind["asc_put_mu"].value, ind.data.get_modal_split().loc[4, 'count']))
+        print((ind["asc_put_mu"].value, ind.data._get_modal_split().loc[4, 'count']))
         xvals.append(ind["asc_put_mu"].value)
-        yvals.append(ind.data.get_modal_split().loc[4, 'count'])
+        yvals.append(ind.data._get_modal_split().loc[4, 'count'])
         plt.plot(xvals, yvals)
         popt, pcov = scipy.optimize.curve_fit(test_sigmoid, xvals, yvals, bounds=bounds)
         print(popt)
@@ -212,9 +212,9 @@ def main3():
     for i in [35, 45, 50]:
         ind["asc_put_mu"].set(i)
         ind.run()
-        print((ind["asc_put_mu"].value, ind.data.get_modal_split().loc[4, 'count']))
+        print((ind["asc_put_mu"].value, ind.data._get_modal_split().loc[4, 'count']))
         xvals.append(ind["asc_put_mu"].value)
-        yvals.append(ind.data.get_modal_split().loc[4, 'count'])
+        yvals.append(ind.data._get_modal_split().loc[4, 'count'])
         plt.plot(xvals, yvals)
         popt, pcov = scipy.optimize.curve_fit(test_sigmoid, xvals, yvals, bounds=bounds)
         print(popt)
@@ -261,12 +261,12 @@ def _help_only_one(x_1, y_1, y_target, mode_num):
 
 def tune_parameter_without(ind, parameter, target, pair):
     mode_num = parameter.requirements["tripMode"]
-    offset = ind[parameter.name].value - put_logit(ind.data.get_modal_split().loc[mode_num, 'count'])
+    offset = ind[parameter.name].value - put_logit(ind.data._get_modal_split().loc[mode_num, 'count'])
     ind[parameter.name].set(mode_logit(target, mode_num) + offset)
 
 
 def extract_x_y(individual, parameter):
-    return individual[parameter.name].value, individual.data.get_modal_split().loc[parameter.requirements["tripMode"], "count"]
+    return individual[parameter.name].value, individual.data._get_modal_split().loc[parameter.requirements["tripMode"], "count"]
 
 
 def visualize(ind, data):
@@ -290,7 +290,7 @@ def tune_parameter(ind, parameter, data):
     x_1, y_1 = extract_x_y(ind, parameter)
     mode_num = parameter.requirements["tripMode"]
 
-    target_y = data.get_modal_split().loc[mode_num, "count"]
+    target_y = data._get_modal_split().loc[mode_num, "count"]
     new_val = _help_only_one(x_1, y_1, target_y, mode_num)
     ind[parameter.name].set(new_val)
     ind.run()
@@ -333,7 +333,7 @@ def main5():
     param_name_list = ["asc_bike_mu", "asc_car_d_mu", "asc_car_p_mu", "asc_ped_mu", "asc_put_mu"]
     flag = True
     for i in range(10):
-        diff = ind.data.get_modal_split() - data.get_modal_split()
+        diff = ind.data._get_modal_split() - data._get_modal_split()
         print(diff)
         print(diff.idxmin())
         print(diff.idxmax())
@@ -375,13 +375,13 @@ def main5():
     b.show()
     c.show()
     exit()
-    offset = ind['asc_put_mu'].value - put_logit(ind.data.get_modal_split().loc[4, 'count'])
-    x_1, y_1 = ind['asc_put_mu'].value, ind.data.get_modal_split().loc[4, 'count']
+    offset = ind['asc_put_mu'].value - put_logit(ind.data._get_modal_split().loc[4, 'count'])
+    x_1, y_1 = ind['asc_put_mu'].value, ind.data._get_modal_split().loc[4, 'count']
     print(f"{x_1} {y_1}")
     ind["asc_put_mu"].set(put_logit(0.2) + offset)
     ind.run()
-    x_2, y_2 = ind['asc_put_mu'].value, ind.data.get_modal_split().loc[4, 'count']
-    y_target = data.get_modal_split().loc[4, 'count']
+    x_2, y_2 = ind['asc_put_mu'].value, ind.data._get_modal_split().loc[4, 'count']
+    y_target = data._get_modal_split().loc[4, 'count']
     a, b, c = ind.draw(data)
     b.show()
     c.show()
@@ -392,7 +392,7 @@ def main5():
     b.show()
     c.show()
     ind.data.draw_modal_split(data)
-    x_3, y_3 = ind['asc_put_mu'].value, ind.data.get_modal_split().loc[4, 'count']
+    x_3, y_3 = ind['asc_put_mu'].value, ind.data._get_modal_split().loc[4, 'count']
 
     ind["asc_put_mu"].set(_help(x_2, y_2, x_3, y_3))
     ind.run()
@@ -400,7 +400,7 @@ def main5():
     b.show()
     c.show()
     ind.data.draw_modal_split(data)
-    print(ind['asc_put_mu'].value, ind.data.get_modal_split().loc[4, 'count'])
+    print(ind['asc_put_mu'].value, ind.data._get_modal_split().loc[4, 'count'])
 
 
 if __name__ == "__main__":

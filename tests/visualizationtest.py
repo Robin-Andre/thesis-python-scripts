@@ -18,8 +18,8 @@ class VisualizationTestCase(unittest.TestCase):
         data.load("resources/example_config_load/results/")
         data2.load("resources/example_config_load2/results/")
 
-        modal_split = data.get_modal_split()
-        modal_split2 = data2.get_modal_split()
+        modal_split = data._get_modal_split()
+        modal_split2 = data2._get_modal_split()
 
         print(plot.draw_modal_split([modal_split, modal_split2]))
 
@@ -44,7 +44,7 @@ class VisualizationTestCase(unittest.TestCase):
         data.travel_distance.draw_all_distributions()
         data2.travel_distance.draw_all_distributions()
 
-        print(visualization.draw_modal_split([data.get_modal_split(), data2.get_modal_split()]))
+        print(visualization.draw_modal_split([data._get_modal_split(), data2._get_modal_split()]))
 
     def test_traffic_demand(self):
         data = metrics.data.Data()

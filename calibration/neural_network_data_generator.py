@@ -34,7 +34,7 @@ def neural_data_method(yaml_list, data_list, extract_input_data_method, extract_
 
 
 def get_neural_training_data(data):
-    test = data.get_modal_split()
+    test = data._get_modal_split()
     approxis_time = data.travel_time.approximations()
     approxis_distance = data.travel_distance.approximations()
     return __make_neural_numpy_array([test["amount"], approxis_time, approxis_distance])

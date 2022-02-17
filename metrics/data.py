@@ -2,6 +2,7 @@ import numpy
 import pandas
 
 import visualization
+from configurations.parameter import Parameter
 from metrics.metric import aggregate
 from metrics.trafficdemand import TrafficDemand
 from metrics.traveldistance import TravelDistance
@@ -82,13 +83,24 @@ class Data:
         self.travel_time.draw_all_distributions()
         self.travel_distance.draw_all_distributions()
 
-    def get_modal_split(self, mode_list=[0, 1, 2, 3, 4], precision=numpy.inf):
+    def get_modal_spliteeee(self, p):
+        if type(p) is Parameter:
+            assert len(p.requirements) == 1
+            return self._get_modal_split(specific_mode_num=p.requirements["tripMode"])
+        elif type(p) is int:
+            return self._get_modal_split(specific_mode_num=p)
+
+    def _get_modal_split(self, specific_mode_num=None, mode_list=[0, 1, 2, 3, 4], precision=numpy.inf):
         agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
 
         agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the
         # modal split
         agg = agg.reindex(mode_list, fill_value=0)
-        return agg / agg.sum()
+        ret = agg / agg.sum()
+        if specific_mode_num is not None:
+            assert specific_mode_num in mode_list
+            return ret.loc[specific_mode_num, "count"]
+        return ret
 
     def get_modal_split_based_by_time(self, precision, mode_list=[0, 1, 2, 3, 4]):
         agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
@@ -103,6 +115,7 @@ class Data:
         t = t.fillna(0)
         return t["modal_split"]
 
+
 def sse(original, comparison, string):
     result = (original - comparison)[string] ** 2
     return -result.sum()
@@ -111,7 +124,7 @@ def sse(original, comparison, string):
 class Comparison:
 
     def __init__(self, input_data, comparison_data):
-        self.modal_split = sse(input_data.get_modal_split(), comparison_data.get_modal_split(), "count")
+        self.modal_split = sse(input_data._get_modal_split(), comparison_data._get_modal_split(), "count")
         self.travel_time = sse(input_data.travel_time.get_data_frame(), comparison_data.travel_time.get_data_frame(), "count")
         self.travel_demand = sse(input_data.traffic_demand, comparison_data.traffic_demand, "active_trips")
 

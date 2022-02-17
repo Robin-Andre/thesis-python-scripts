@@ -4,6 +4,7 @@ import pandas.testing
 from matplotlib import pyplot as plt
 
 import evaluation
+from configurations.parameter import Parameter
 from metrics.data import Data
 import calibration
 
@@ -23,14 +24,14 @@ class MyTestCase(unittest.TestCase):
         data.travel_time._data_frame = drop_mode(data.travel_time._data_frame, 1)
         self.assertEqual(data.travel_distance._data_frame["tripMode"].unique().tolist(), [0, 2, 3, 4])
         self.assertEqual(data.travel_time._data_frame["tripMode"].unique().tolist(), [0, 2, 3, 4])
-        self.assertEqual(data.get_modal_split().iloc[1]["amount"], 0)
-        self.assertEqual(data.get_modal_split()["amount"].sum(), 1)
-        self.assertEqual(data.get_modal_split().index.values.tolist(), [0, 1, 2, 3, 4])
+        self.assertEqual(data._get_modal_split().iloc[1]["count"], 0)
+        self.assertEqual(data._get_modal_split()["count"].sum(), 1)
+        self.assertEqual(data._get_modal_split().index.values.tolist(), [0, 1, 2, 3, 4])
 
     def test_modal_split_works_with_incomplete_list(self):
         data = Data()
         data.load("resources/example_config_load/results/")
-        modal_split = data.get_modal_split([0, 2, 3, 4])
+        modal_split = data._get_modal_split([0, 2, 3, 4])
         self.assertEqual(modal_split["amount"].sum(), 1)
         self.assertEqual(modal_split.index.values.tolist(), [0, 2, 3, 4])
 
@@ -41,6 +42,14 @@ class MyTestCase(unittest.TestCase):
         data.travel_time._data_frame = drop_mode(data.travel_time._data_frame, 1)
         self.assertEqual(len(data.travel_distance.approximations()), 6)
         self.assertEqual(data.travel_distance.approximations()[2], [1, (0, 0, 0), 0])
+
+    def test_specific_modal_split_extraction(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        parameter = Parameter("asc_car_d_mu")
+        print(parameter)
+        print(data._get_modal_split(1))
+
 
     def test_smoothen(self):
         data = Data()
