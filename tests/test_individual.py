@@ -3,7 +3,7 @@ import unittest
 
 from matplotlib import pyplot as plt
 
-
+import visualization
 from calibration import tuning
 from calibration.evolutionary.individual import Individual
 
@@ -27,12 +27,72 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(x.yaml.get_fraction_of_population(), 1)
 
 
-
     def test_run(self):
         x = Individual(21, [])
-        x.load("resources/example_config_load2")
-        x.run()
-        x.save("resources/example_config_load2")
+        x.load("resources/example_config_load")
+        x.yaml.set_fraction_of_population(0.02)
+        x.run(["tripMode", "gender", "age"])
+        x.save("resources/even_more_detailed_individual")
+
+    def test_detailed_ind(self):
+        x = Individual(21, [])
+        x_d = Individual(22, [])
+        x.load("resources/detailed_individual")
+        x_d.load("resources/even_more_detailed_individual")
+        #y = x.data.travel_time.get_data_frame()
+        #visualization.two_level_travel_time(y, "gender")
+        d = x_d.data.get_grouped_modal_split(["age", "gender"])
+        visualization.draw_grouped_modal_split(d)
+        return
+        y = x_d.data.travel_time.get_data_frame()
+        visualization.generic_plot(y, "age", "count", "durationTrip", color_seperator="tripMode")
+
+        y = x_d.data.traffic_demand.accumulate(["age", "tripMode"])
+        visualization.generic_plot(y, "age", "active_trips", "time", color_seperator="tripMode")
+        return
+        visualization.two_level_travel_time(y, "gender")
+        return
+        x.data.reduce(["gender"])
+        z = x.data.travel_time.get_data_frame()
+
+        visualization.generic_travel_time(z, "gender")
+
+    def test_tuning_effect_subset_parameter(self):
+        x_d = Individual(22, [])
+        x_d.load("resources/even_more_detailed_individual")
+        d = x_d.data.get_grouped_modal_split(["age", "gender"])
+
+
+        visualization.draw_grouped_modal_split(d)
+        x_d["age_60_69_on_asc_car_d"].set(-10)
+        x_d.run(["tripMode", "gender", "age"])
+
+        d = x_d.data.get_grouped_modal_split(["age", "gender"])
+
+        visualization.draw_grouped_modal_split(d)
+        return
+
+
+
+    def test_column_specification(self):
+        x = Individual(21, [])
+        x_d = Individual(22, [])
+        x.load("resources/detailed_individual")
+        x_d.load("resources/even_more_detailed_individual")
+
+        self.assertEqual(x.data.columns().sort(), ["gender", "tripMode"].sort())
+        self.assertEqual(x_d.data.columns().sort(), ["gender", "age", "tripMode"].sort())
+
+    def test_subset_selection(self):
+        x_d = Individual(22, [])
+        x_d.load("resources/even_more_detailed_individual")
+        self.assertAlmostEqual(x_d.data.get_modal_split_by_param(x_d["age_0_17_on_asc_bike"]), 0.395593489479)
+
+    def test_subset_selection_invalid(self):
+        x_d = Individual(22, [])
+        x_d.load("resources/detailed_individual")
+        self.assertRaises(AssertionError, x_d.data.get_modal_split_by_param, x_d["age_0_17_on_asc_bike"])
+
 
 
     def test_tuning_b_tt(self):

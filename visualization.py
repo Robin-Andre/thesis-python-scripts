@@ -32,6 +32,23 @@ def color_modes(s):
     return "#000000"
 
 
+def color_age(s):
+    d = {
+        0: "#888888",
+        18: "#e41a1c",
+        30: "#377eb8",
+        50: "#4daf4a",
+        60: "#984ea3",
+        70: "#ff7f00",
+        100: "#11efff"
+    }
+    if s in d.keys():
+        return d[s]
+    return "#000000"
+
+
+
+
 # Gives unnamed Dataframes a name
 def identify_yourself(data_frame_list):
     for index, frame in enumerate(data_frame_list):
@@ -71,16 +88,26 @@ def draw_travel_demand_by_mode(data_frame, title="Active Trips", reference_df=No
 def generic_td_demand(data_frame, agg_list):
     generic_plot(data_frame, agg_list, "active_trips", "time")
 
+
 def generic_min_max_best(data_frame, agg_list):
     generic_plot(data_frame, agg_list, ["min", "max", "best", "target"], "time")
+
 
 def generic_min_max_best_travel_time(data_frame, agg_list):
     generic_plot(data_frame, agg_list, ["min", "max", "best", "target"], "durationTrip", sharex=False)
 
+
+def two_level_travel_time(data_frame, p1, p2="tripMode"):
+    p1list = list(set(data_frame[p1]))
+    for val in p1list:
+        generic_travel_time(data_frame[data_frame[p1] == val], p2)
+    print(p1list)
+
+
 def generic_travel_time(data_frame, agg_list):
-    temp = data_frame.reset_index()
-    temp = temp.groupby([agg_list, "durationTrip"]).count().reset_index()
-    generic_plot(temp, agg_list, "count", "durationTrip")
+    #temp = data_frame.reset_index()
+    #temp = data_frame.groupby([agg_list, "durationTrip"]).count().reset_index()
+    generic_plot(data_frame, agg_list, "count", "durationTrip")
 
 
 def generic_travel_distance(data_frame, agg_list):
@@ -97,13 +124,11 @@ def generic_smol_plot(data_frame, agg_list, keyword, x, element):
     fig.show()
 
 
-def generic_plot(data_frame, agg_list, keyword, x, sharex=True):
-    inputs = list(set(data_frame[agg_list]))
+def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True):
+    inputs = list(set(data_frame[split_element_name]))
     inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
     rest = math.ceil(len(inputs) / square_value)
-    #print(f"{agg_list} {inputs}")
-    #print(f"Length{len(inputs)} {square_value} x {rest}")
     fig, ax = plt.subplots(square_value, rest, sharex=sharex)
 
     for i, element in enumerate(inputs):
@@ -112,14 +137,20 @@ def generic_plot(data_frame, agg_list, keyword, x, sharex=True):
         else:
             cur_ax = ax[i // rest]
 
-        temp = data_frame[data_frame[agg_list] == element]
-        cur_ax.plot(temp[x], temp[keyword])
+        temp = data_frame[data_frame[split_element_name] == element]
+        if color_seperator is not None:
+            tmp = temp.groupby(color_seperator)
+            for key, group in tmp:
+                print(key)
+                print(group)
+                cur_ax.plot(group[x], group[keyword], color=color_modes(key), alpha=0.4)
+        else:
+            cur_ax.plot(temp[x], temp[keyword])
         cur_ax.set_title(element)
 
-    fig.suptitle(agg_list)
+    fig.suptitle(split_element_name)
     plt.legend(temp[keyword])
     fig.show()
-
 
 
 def draw_modal_split(df_list):
@@ -132,6 +163,20 @@ def draw_modal_split(df_list):
     box = ax.bar(y["identifier"], y["count"], color=[color_modes(x) for x in y["tripMode"]], bottom=y["cumsum"])
     #ax.bar_label(box, label_type="center", fmt='%.2f')
     fig.show()
+    return
+
+def draw_grouped_modal_split(df):
+    x = df.T
+    df.plot(kind="bar", title=[""] * 13, stacked=True, rot=1, subplots=True, layout=(5, 3), legend=False)
+    ax = x.plot(kind="bar", title="", stacked=True, rot=1, legend=True)
+    #plt.show()
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
+
+    # Put a legend to the right of the current axis
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.get_figure().show()
+    #fig.show()
     return
 
 
@@ -253,41 +298,3 @@ def helper(data_frame, title_num, ax):
     h = ax.hist(all_points, bins=all_points.max(), color=color_modes(str(title_num)))
     return ax
 
-def draw_geographic_travels(data_frame):
-
-    lowerleft = [48.81589706887127, 8.113229703230964]
-    upperright = [48.917977211186084, 8.280771208296814]
-
-    # lowerleft = [48, 8.0]
-    # upperright = [49, 8.5]
-    temp_df = data_frame.loc[(data_frame["fromX"] > upperright[1]) | (data_frame["fromX"] < lowerleft[1])]
-    temp_df = temp_df.loc[(temp_df["toX"] > upperright[1]) | (temp_df["toX"] < lowerleft[1])]
-    temp_df = temp_df.loc[(temp_df["fromY"] > upperright[0]) | (temp_df["fromY"] < lowerleft[0])]
-    temp_df = temp_df.loc[(temp_df["toY"] > upperright[0]) | (temp_df["toY"] < lowerleft[0])]
-
-    x1 = [lowerleft[1], upperright[1], upperright[1], lowerleft[1]]
-    x2 = [upperright[1], upperright[1], lowerleft[1], lowerleft[1]]
-    y1 = [upperright[0], upperright[0], lowerleft[0], lowerleft[0]]
-    y2 = [upperright[0], lowerleft[0], lowerleft[0], upperright[0]]
-    d = {"fromX": x1, "fromY": y1, "toX": x2, "toY": y2}
-    bounding_box = pandas.DataFrame(data=d)
-
-    return ggplot(temp_df, aes(x="fromX", y="fromY", xend="toX", yend="toY")) + geom_segment() + geom_segment(bounding_box)
-
-
-def draw_geographic_locations(data_frame):
-    from_df = data_frame[["fromX", "fromY"]]
-    from_df = from_df.rename(columns={"fromX": "X", "fromY": "Y"})
-    to_df = data_frame[["toX", "toY"]]
-    to_df = to_df.rename(columns={"toX": "X", "toY": "Y"})
-    return ggplot(pandas.concat[from_df, to_df])
-
-
-def draw(dataframe, function, path="", show=True, modulo=1, title=""):
-    assert modulo >= 1 and type(modulo) is int
-    df = dataframe[dataframe["time"] % modulo == 0]
-    plot_data = function(df) + ggtitle(title)
-    if show:
-        print(plot_data)
-    if path != "":
-        ggsave(plot_data, path=path, filename=title)

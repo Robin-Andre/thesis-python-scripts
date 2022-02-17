@@ -327,7 +327,7 @@ def get_appropriate_observation_function(p_name):
     elif p_name == "b_tt_ped":
         return TimeModeObservation(lambda x: x, lambda x: x)
     else:
-        return Observation()
+        return ModalSplitObservation()
 
 
 class ActivityGroup(Enum):

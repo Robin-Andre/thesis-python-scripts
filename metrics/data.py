@@ -1,3 +1,5 @@
+import copy
+
 import numpy
 import pandas
 
@@ -43,6 +45,12 @@ class Data:
         self.traffic_demand.print()
         self.travel_time.print()
         self.travel_distance.print()
+
+    def columns(self):
+        cols = list(self.travel_time.get_data_frame().columns.values)
+        cols.remove("durationTrip")
+        cols.remove("count")
+        return cols
 
     def reduce(self, keep_list):
         self.traffic_demand.reduce(keep_list)
@@ -90,6 +98,19 @@ class Data:
         elif type(p) is int:
             return self._get_modal_split(specific_mode_num=p)
 
+    def get_modal_split_by_param(self, param, mode_list=[0, 1, 2, 3, 4]):
+        df = self.travel_time.get_data_frame()
+        requirements_without_trip_mode = copy.deepcopy(param.requirements)
+        assert set(param.requirements.keys()).issubset(set(self.columns())), "Underlying data lacks columns required for the parameter"
+        del requirements_without_trip_mode["tripMode"]
+        df = df.loc[(df[list(requirements_without_trip_mode)] == pandas.Series(requirements_without_trip_mode)).all(axis=1)]
+        df = aggregate(df, numpy.inf, "durationTrip")
+        df = df.droplevel(1)
+        df = df.reindex(mode_list, fill_value=0)
+        ret = df / df.sum()
+        return ret.loc[param.requirements["tripMode"], "count"]
+
+
     def _get_modal_split(self, specific_mode_num=None, mode_list=[0, 1, 2, 3, 4], precision=numpy.inf):
         agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
 
@@ -101,6 +122,20 @@ class Data:
             assert specific_mode_num in mode_list
             return ret.loc[specific_mode_num, "count"]
         return ret
+
+    def get_grouped_modal_split(self, column_names, mode_list=[0, 1, 2, 3, 4]):
+        df = self.travel_time.get_data_frame()
+        temp = df.groupby(column_names)
+        s_list = []
+        for key, group in temp:
+            agg = aggregate(group, numpy.inf, "durationTrip")
+            agg = agg.droplevel(1)
+            agg = agg.reindex(mode_list, fill_value=0)
+            ret = agg["count"] / agg["count"].sum()
+            ret.name = str(key[0]) + "," + str(key[1][:1])
+            s_list.append(ret)
+        df = pandas.concat(s_list, axis=1, keys=[s.name for s in s_list])
+        return df
 
     def get_modal_split_based_by_time(self, precision, mode_list=[0, 1, 2, 3, 4]):
         agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")

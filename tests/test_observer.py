@@ -37,6 +37,16 @@ class MyTestCase(unittest.TestCase):
         print(parameter.observe(self.y, self.x.data))
         print(parameter.observe_detailed(self.x, self.z, self.y.data))
 
+    def test_multirequiring_parameter(self):
+        parameter = self.x["female_on_asc_car_d"]
+        print(parameter.requirements)
+
+        parameter = self.x["age_0_17_on_asc_ped"]
+        print(list(parameter.requirements.keys()))
+        print(parameter.observe(self.x, self.y.data))
+
+
+
     def test_b_tt_ped_gets_different_treatment(self):
         parameter = self.x["b_tt_ped"]
 

@@ -43,13 +43,14 @@ class BaseIndividual(ABC):
         pass
 
     def draw(self, reference=None):
+
         return self.data.draw(reference)
 
     @abstractmethod
     def active_values(self):
         pass
 
-    def run(self):
+    def run(self, relevant_list=["tripMode"]):
         simulation.clean_result_directory()
         self.yaml.write()
         self.yaml.update_configs()
@@ -60,7 +61,7 @@ class BaseIndividual(ABC):
             print("FAILED RUN")
             return
 
-        self.data.reduce(["tripMode"])
+        self.data.reduce(relevant_list)
 
     def save(self, path):
         simulation.save(self.yaml, self.data, path)
