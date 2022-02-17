@@ -4,6 +4,7 @@ import unittest
 import pandas
 
 import evaluation
+import visualization
 from metrics import data
 from metrics.data import Data
 from metrics.trafficdemand import TrafficDemand
@@ -27,6 +28,17 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(traffic_demand.get_peak((0, 1400))[1], 11372)
         self.assertLess(traffic_demand.get_peak((0, 449))[1], 11372)
         self.assertLess(traffic_demand.get_peak((451, 1400))[1], 11372)
+
+
+    def test_smoothen(self):
+        dat = data.Data()
+        dat.load("resources/example_config_load/results/")
+        traffic_demand = dat.traffic_demand
+        x = traffic_demand.accumulate(["tripMode"])
+        y = traffic_demand.accumulate_padded(["tripMode"])
+        traffic_demand.draw().show()
+        visualization.draw_travel_demand_by_mode(y)
+        pass
 
     def test_get_peaks(self):
         dat = data.Data()

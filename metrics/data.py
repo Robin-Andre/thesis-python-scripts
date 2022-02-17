@@ -62,11 +62,11 @@ class Data:
 
     def draw_smooth(self, reference=None):
         if reference is not None:
-            x = self.traffic_demand.smoothen(60).draw(reference.traffic_demand.smoothen(60))
+            x = self.traffic_demand.draw_smooth(reference.traffic_demand)
             y = self.travel_time.smoothen(3).draw(reference.travel_time.smoothen(3))
             z = self.travel_distance.smoothen(3).draw(reference.travel_distance.smoothen(3))
         else:
-            x = self.traffic_demand.smoothen(60).draw()
+            x = self.traffic_demand.draw_smooth()
             y = self.travel_time.smoothen(3).draw()
             z = self.travel_distance.smoothen(3).draw()
         return x, y, z
@@ -111,7 +111,7 @@ class Data:
 
         y = agg.groupby(level=1).sum()
         t = agg.join(y,  lsuffix='', rsuffix='_full')
-        t["modal_split"] = t["amount"] / t ["amount_full"]
+        t["modal_split"] = t["count"] / t ["amount_full"]
         t = t.fillna(0)
         return t["modal_split"]
 

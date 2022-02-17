@@ -51,7 +51,7 @@ def draw_travel_demand(data_series, color_num=-1, title=""):
     plt.show()
 
 
-def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="Active Trips", reference_df=None):
+def draw_travel_demand_by_mode(data_frame, title="Active Trips", reference_df=None):
 
     fig, ax = plt.subplots(3, 2, sharex=True)
     fig.suptitle(title)
@@ -66,7 +66,6 @@ def draw_travel_demand_by_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title=
             ax[i // 2][i % 2].plot(ref["time"], ref["active_trips"], color="black", alpha=0.2)
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     return fig
-    #plt.show()
 
 
 def generic_td_demand(data_frame, agg_list):
