@@ -56,7 +56,7 @@ class BaseIndividual(ABC):
 
     def data_requirements(self):
         all_requirements = set()
-        for p in self.active_parameters:
+        for p in self.parameter_name_list:
             all_requirements = set.union(all_requirements, set(Parameter(p).requirements.keys()))
         return all_requirements
 

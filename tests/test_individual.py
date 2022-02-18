@@ -15,6 +15,13 @@ from configurations.observations import ModalSplitObservation, TimeModeObservati
 
 class MyTestCase(unittest.TestCase):
 
+    def setUp(self):
+        self.x = Individual(21, [])
+        self.x.load("resources/detailed_individual")
+
+        self.x_d = Individual(22, [])
+        self.x_d.load("resources/even_more_detailed_individual")
+
 
     def test_load(self):
         x = Individual(0, [])
@@ -29,56 +36,38 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(x.yaml.get_fraction_of_population(), 0.02)
 
     def test_tuning_effect_subset_parameter(self):
-        x_d = Individual(22, [])
-        x = Individual(223123123, [])
-        x.load("resources/detailed_individual")
-        x_d.load("resources/even_more_detailed_individual")
-        d_c = x.data.get_grouped_modal_split(["gender"])
-        d = x_d.data.get_grouped_modal_split(["gender"])
+        d = self.x.data.get_grouped_modal_split(["gender"])
+        d_c = self.x_d.data.get_grouped_modal_split(["gender"])
         self.assertIsNone(pandas.testing.assert_frame_equal(d_c, d))
 
     def test_precision_does_not_influence_observations(self):
         p_list = ["asc_car_d_mu", "female_on_asc_bike", "b_tt_car_d_mu"]
-        x = Individual(21, p_list)
-        x_d = Individual(22, p_list)
-        x.load("resources/detailed_individual")
-        x_d.load("resources/even_more_detailed_individual")
         for p_name in p_list:
-            p = x_d[p_name]
-            o1 = p.observer._helper(x, x.data, p)
-            o2 = p.observer._helper(x_d, x_d.data, p)
+            p = self.x_d[p_name]
+            o1 = p.observer._helper(self.x, self.x.data, p)
+            o2 = p.observer._helper(self.x_d, self.x_d.data, p)
             self.assertEqual(o1, o2)
 
     def test_column_specification(self):
-        x = Individual(21, [])
-        x_d = Individual(22, [])
-        x.load("resources/detailed_individual")
-        x_d.load("resources/even_more_detailed_individual")
-
-        self.assertEqual(x.data.columns(), {"gender", "tripMode"})
-        self.assertEqual(x_d.data.columns(), {"gender", "age", "tripMode"})
+        self.assertEqual(self.x.data.columns(), {"gender", "tripMode"})
+        self.assertEqual(self.x_d.data.columns(), {"gender", "age", "tripMode"})
 
     def test_subset_selection(self):
-        x_d = Individual(22, [])
-        x_d.load("resources/even_more_detailed_individual")
-        self.assertAlmostEqual(x_d.data.get_modal_split_by_param(x_d["age_0_17_on_asc_bike"]), 0.395593489479)
+        self.assertAlmostEqual(self.x_d.data.get_modal_split_by_param(self.x_d["age_0_17_on_asc_bike"]), 0.395593489479)
 
     def test_subset_selection_invalid(self):
-        x_d = Individual(22, [])
-        x_d.load("resources/detailed_individual")
-        self.assertRaises(AssertionError, x_d.data.get_modal_split_by_param, x_d["age_0_17_on_asc_bike"])
+        self.assertRaises(AssertionError, self.x.data.get_modal_split_by_param, self.x_d["age_0_17_on_asc_bike"])
 
     def test_reduction_results_are_same(self):
-        x_d = Individual(22, [])
-        x_d.load("resources/even_more_detailed_individual")
-        t1 = x_d.data.get_grouped_modal_split()
-        self.assertEqual(x_d.data.columns(), {"gender", "age", "tripMode"})
-        x_d.reduce(["gender", "tripMode"])
-        self.assertEqual(x_d.data.columns(), {"gender", "tripMode"})
-        t2 = x_d.data.get_grouped_modal_split()
-        x_d.reduce(["tripMode"])
-        self.assertEqual(x_d.data.columns(), {"tripMode"})
-        t3 = x_d.data.get_grouped_modal_split()
+
+        t1 = self.x_d.data.get_grouped_modal_split()
+        self.assertEqual(self.x_d.data.columns(), {"gender", "age", "tripMode"})
+        self.x_d.reduce(["gender", "tripMode"])
+        self.assertEqual(self.x_d.data.columns(), {"gender", "tripMode"})
+        t2 = self.x_d.data.get_grouped_modal_split()
+        self.x_d.reduce(["tripMode"])
+        self.assertEqual(self.x_d.data.columns(), {"tripMode"})
+        t3 = self.x_d.data.get_grouped_modal_split()
         pandas.testing.assert_frame_equal(t1, t2)
         pandas.testing.assert_frame_equal(t2, t3)
 
@@ -86,30 +75,26 @@ class MyTestCase(unittest.TestCase):
         self.assertRaises(AssertionError, TimeModeObservation, lambda x: x / 2, lambda x: 3 * x)
 
     def test_access_dict_by_name_or_parameter_object(self):
-        x = Individual(21, [])
-        y = Individual(13, [])
-        x.load("resources/test_population/individual_0")
-        y.load("resources/compare_individual")
-        p = x["asc_car_d_mu"]
+        self.x.load("resources/test_population/individual_0")
+        self.x_d.load("resources/compare_individual")
+        p = self.x["asc_car_d_mu"]
 
-        p2 = y[p]
+        p2 = self.x_d[p]
         self.assertNotEqual(p2.value, p.value)
         p.set(13)
         self.assertEqual(p.value, 13)
         self.assertNotEqual(p2.value, 13)
 
     def test_copy(self):
-        x = Individual(21, [])
-        x["asc_car_d_mu"].set(9)
-        y = x.copy()
+        self.x["asc_car_d_mu"].set(9)
+        y = self.x.copy()
         self.assertEqual(y["asc_car_d_mu"].value, 9)
         y["asc_car_d_mu"].set(2)
-        self.assertEqual(x["asc_car_d_mu"].value, 9)
+        self.assertEqual(self.x["asc_car_d_mu"].value, 9)
 
     def test_change_value(self):
-        x = Individual(9001, [])
-        x["asc_car_d_mu"].set(34)
-        self.assertEqual(x["asc_car_d_mu"].value, 34)
+        self.x["asc_car_d_mu"].set(34)
+        self.assertEqual(self.x["asc_car_d_mu"].value, 34)
 
 
 if __name__ == '__main__':
