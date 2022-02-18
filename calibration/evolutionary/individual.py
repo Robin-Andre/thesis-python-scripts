@@ -61,7 +61,6 @@ class BaseIndividual(ABC):
         return all_requirements
 
     def run(self, relevant_list=["tripMode"]):
-        assert set(relevant_list) == self.data_requirements()
 
         simulation.clean_result_directory()
         self.yaml.write()
@@ -73,7 +72,7 @@ class BaseIndividual(ABC):
             print("FAILED RUN")
             return
 
-        self.data.reduce(relevant_list)
+        self.data.reduce(list(self.data_requirements()))
 
     def save(self, path):
         simulation.save(self.yaml, self.data, path)

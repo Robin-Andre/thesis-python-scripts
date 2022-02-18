@@ -162,6 +162,8 @@ def sse(original, comparison, string):
 class Comparison:
 
     def __init__(self, input_data, comparison_data):
+        x = input_data._get_modal_split()
+        y=comparison_data._get_modal_split()
         self.modal_split = sse(input_data._get_modal_split(), comparison_data._get_modal_split(), "count")
         self.travel_time = sse(input_data.travel_time.get_data_frame(), comparison_data.travel_time.get_data_frame(), "count")
         self.travel_demand = sse(input_data.traffic_demand, comparison_data.traffic_demand, "active_trips")
