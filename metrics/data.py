@@ -50,7 +50,7 @@ class Data:
         cols = list(self.travel_time.get_data_frame().columns.values)
         cols.remove("durationTrip")
         cols.remove("count")
-        return cols
+        return set(cols)
 
     def reduce(self, keep_list):
         self.traffic_demand.reduce(keep_list)

@@ -54,8 +54,8 @@ class MyTestCase(unittest.TestCase):
         x.load("resources/detailed_individual")
         x_d.load("resources/even_more_detailed_individual")
 
-        self.assertEqual(x.data.columns().sort(), ["gender", "tripMode"].sort())
-        self.assertEqual(x_d.data.columns().sort(), ["gender", "age", "tripMode"].sort())
+        self.assertEqual(x.data.columns(), {"gender", "tripMode"})
+        self.assertEqual(x_d.data.columns(), {"gender", "age", "tripMode"})
 
     def test_subset_selection(self):
         x_d = Individual(22, [])

@@ -51,6 +51,17 @@ class MyTestCase(unittest.TestCase):
                 continue
             self.assertAlmostEqual(random_config.parameters[param].value, default_config.parameters[param].value)
 
+    def test_detailed_data_from_population(self):
+        population = Population(param_vector=["asc_car_d_mu", "female_on_asc_car_d"])
+        self.assertEqual(population.data_requirements(), {"tripMode", "gender"})
+        population = Population(param_vector=["asc_car_d_mu", "female_on_asc_car_d", "student_on_asc_bike", "inc_low_on_asc_put"])
+        self.assertEqual(population.data_requirements(), {"tripMode", "gender", "employment", "economicalStatus"})
+
+    def test_individual_takes_proper_data(self):
+        population = Population(
+            param_vector=["asc_car_d_mu", "female_on_asc_car_d", "student_on_asc_bike", "inc_low_on_asc_put"])
+        population.set_random_individual_as_target()
+        self.assertEqual(population.data_requirements(), population.target.columns())
 
 if __name__ == '__main__':
     unittest.main()
