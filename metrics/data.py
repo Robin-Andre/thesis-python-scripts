@@ -109,7 +109,9 @@ class Data:
         requirements_without_trip_mode = copy.deepcopy(param.requirements)
         assert set(param.requirements.keys()).issubset(set(self.columns())), "Underlying data lacks columns required for the parameter"
         del requirements_without_trip_mode["tripMode"]
-        df = df.loc[(df[list(requirements_without_trip_mode)] == pandas.Series(requirements_without_trip_mode)).all(axis=1)]
+
+        if len(requirements_without_trip_mode) > 0: # If a parameter does not work on a subset we don't need to build the subset
+            df = df.loc[(df[list(requirements_without_trip_mode)] == pandas.Series(requirements_without_trip_mode)).all(axis=1)]
         ret = self._modsplit_help(df, mode_list)
         return ret.loc[param.requirements["tripMode"], "count"]
 

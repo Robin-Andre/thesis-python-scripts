@@ -37,7 +37,7 @@ class MyTestCase(unittest.TestCase):
         self.assertIsNone(pandas.testing.assert_frame_equal(d_c, d))
 
     def test_precision_does_not_influence_observations(self):
-        p_list = ["asc_car_d_mu", "age_0_17_on_asc_bike", "b_tt_car_d_mu"]
+        p_list = ["asc_car_d_mu", "female_on_asc_bike", "b_tt_car_d_mu"]
         x = Individual(21, p_list)
         x_d = Individual(22, p_list)
         x.load("resources/detailed_individual")

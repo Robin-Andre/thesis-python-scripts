@@ -12,18 +12,6 @@ from metrics.trafficdemand import TrafficDemand
 
 class MyTestCase(unittest.TestCase):
 
-    def nontest_temporary(self):
-        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        temp_df = evaluation.create_plot_data(raw_data)
-        temp_df["identifier"] = "LOL"
-        plot.draw(temp_df, plot.aggregate_traffic_two_sets)
-        print(temp_df)
-
-    def test_travel_time_data(self):
-        raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-        temp_df = evaluation.create_plot_data(raw_data)
-        print(temp_df)
-
     def test_distance_extraction(self):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         data_frame = evaluation.create_travel_distance_data(raw_data)

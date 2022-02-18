@@ -70,7 +70,6 @@ class Config:
                 self.parameters[name] = p
             else:
                 pass
-                # print(f"Error parsing[{line}] no seperator found", file=sys.stderr)
 
     def get_parameter(self, parameter_name):
         splits = self._text.split("\n")
@@ -78,7 +77,7 @@ class Config:
             if line.__contains__(parameter_name):
                 # TODO maybe not all configs have an equal sign
                 return eval(line.split("=")[1])
-        print("Parameter [" + parameter_name + "] not found")
+        #print("Parameter [" + parameter_name + "] not found")
 
     def set_parameter(self, parameter_name, new_value, absolute=False):
         assert isinstance(new_value, int) or isinstance(new_value, float)
@@ -100,7 +99,7 @@ class Config:
             operator = "+" if diff > 0 else ""
             self._text = re.sub(regex, "\\1\\2 " + operator + str(diff) + "\\3", self._text)
             return
-        print("Parameter[" + parameter_name + "] not found")
+        #print("Parameter[" + parameter_name + "] not found")
         return
 
     def override_parameter(self, parameter_name, parameter_value_absolute):
@@ -113,7 +112,7 @@ class Config:
         if search:
             self._text = re.sub(regex, "\\1 " + str(parameter_value_absolute) + "\\3", self._text)
             return
-        print("Parameter[" + parameter_name + "] not found")
+        #print("Parameter[" + parameter_name + "] not found")
         return
 
     def set_path(self, new_path):
@@ -145,7 +144,6 @@ class ModeChoiceConfig(Config):
         for parameter in parameter_name_list:
             p = self.parameters[parameter]
             p.randomize()
-            #print(p)
 
     def randomize_parameters_to_bound(self, parameter_name_list, mode_prevalence_list):
         for parameter in parameter_name_list:

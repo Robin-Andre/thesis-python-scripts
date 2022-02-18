@@ -69,27 +69,18 @@ class MyTestCase(unittest.TestCase):
         self.assertIsNone(pandas.testing.assert_frame_equal(x, y))
         self.assertIsNone(pandas.testing.assert_frame_equal(x, data.get_grouped_modal_split()))
 
-        #visualization.draw_grouped_modal_split()
-
-
     def test_extracting_data_with_higher_specification(self):
         data = Data()
         data.load("resources/even_more_detailed_individual/results/")
         x = data.get_grouped_modal_split(["age", "gender"])
-        print(x)
-        visualization.draw_grouped_modal_split(data.get_grouped_modal_split(["gender"]))
-        visualization.draw_grouped_modal_split(data.get_grouped_modal_split(["age"]))
-
         p = Parameter("female_on_asc_bike")
-        print(data.get_grouped_modal_split(["gender"]))
         self.assertAlmostEqual(data.get_modal_split_by_param(p), 0.1749315)
-        print(data.get_modal_split_by_param(p))
-        print(p)
 
-        print(data.get_grouped_modal_split(["age"]))
         p = Parameter("age_18_29_on_asc_bike")
-        print(data.get_modal_split_by_param(p))
-        print(p)
+        self.assertAlmostEqual(data.get_modal_split_by_param(p), 0.25136341)
+
+        p = Parameter("asc_car_d_mu")
+        self.assertAlmostEqual(data.get_modal_split_by_param(p), 0.5052792)
 
 
 if __name__ == '__main__':

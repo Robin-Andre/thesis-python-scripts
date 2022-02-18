@@ -163,8 +163,8 @@ class ModalSplitObservation(Observation):
         assert parameter.requirements.keys().__contains__("tripMode")
         mode_num = parameter.requirements["tripMode"]
 
-        y_1 = ind_1.data.get_modal_spliteeee(parameter)
-        y_target = target_data.get_modal_spliteeee(parameter)
+        y_1 = ind_1.data.get_modal_split_by_param(parameter)
+        y_target = target_data.get_modal_split_by_param(parameter)
         x_1 = ind_1[parameter.name].value
 
         return x_1, y_1, y_target, mode_num
@@ -173,7 +173,6 @@ class ModalSplitObservation(Observation):
     def observe(self, ind_1, target_data, parameter):
         x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         x_new = g(y_target, mode_num) + x_1 - g(y_1, mode_num)
-        print(f"Suggested Value: {x_new}")
         return x_new
 
     def error(self, ind_1, target_data, parameter):
@@ -190,6 +189,5 @@ class ModalSplitObservation(Observation):
         z_2 = g(y_2)
         a = (z - z_1) / (z_2 - z_1)  # a is the linear scale factor based on the normalized parameters
         x_new = a * (x_2 - x_1) + x_1
-        print(f"Suggested Value: {x_new}")
         return x_new
 

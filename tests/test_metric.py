@@ -20,7 +20,7 @@ class MyTestCase(unittest.TestCase):
         td_modal_split = td_modal_split / td_modal_split.sum()
         tt_modal_split = data._get_modal_split()
         self.assertTrue(np.array_equal(td_modal_split.values, tt_modal_split.values))
-        self.assertEqual(tt_modal_split["amount"].sum(), 1)
+        self.assertAlmostEqual(tt_modal_split["count"].sum(), 1)
 
     def test_float_diff_function(self):
         numpy_data = np.array([[1, 0, 4],
@@ -28,7 +28,7 @@ class MyTestCase(unittest.TestCase):
                                [5, 0, 2],
                                [6, 0, 2]
                                ])
-        df1 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["distanceInKm", "tripMode", "amount"])
+        df1 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]), columns=["distanceInKm", "tripMode", "count"])
         td1 = metrics.traveldistance.TravelDistance()
         td1.data_frame = df1
         numpy_data = np.array([[1, 0, 3],
@@ -37,7 +37,7 @@ class MyTestCase(unittest.TestCase):
                                [6, 0, 3]
                                ])
         df2 = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0]),
-                               columns=["distanceInKm", "tripMode", "amount"])
+                               columns=["distanceInKm", "tripMode", "count"])
         td2 = metrics.traveldistance.TravelDistance()
         td2.data_frame = df2
         index = pandas.MultiIndex.from_product([[0], [1, 2, 5, 6]], names=["tripMode", "distanceInKm"])
@@ -65,9 +65,9 @@ class MyTestCase(unittest.TestCase):
 
     def help_count_function(self, data_array, expected_data_array, expected_indices_array, group=0, resolution=1):
         df = pandas.DataFrame(data=data_array, index=range(data_array.shape[0])
-                              , columns=["distanceInKm", "tripMode", "amount"])
+                              , columns=["distanceInKm", "tripMode", "count"])
         expected_df = pandas.DataFrame(data=expected_data_array, index=expected_indices_array
-                                       , columns=["amount"])
+                                       , columns=["count"])
         expected_df.index.name = "distanceInKm"
         count = metric.get_counts(df, "distanceInKm", group=group, resolution=resolution)
         self.assertIsNone(pandas.testing.assert_frame_equal(expected_df, count))
@@ -136,10 +136,10 @@ class MyTestCase(unittest.TestCase):
                                [4, 0, 2]
                                ])
         df = pandas.DataFrame(data=numpy_data, index=range(numpy_data.shape[0])
-                              , columns=["distanceInKm", "tripMode", "amount"])
+                              , columns=["distanceInKm", "tripMode", "count"])
         result = metric.get_distribution(df, "distanceInKm")
 
-        self.assertEqual(result["amount"].sum(), 1)
+        self.assertEqual(result["count"].sum(), 1)
 
     def test_incomplete_data_set(self):
         data = metrics.data.Data()

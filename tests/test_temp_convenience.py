@@ -15,7 +15,7 @@ from metrics.trafficdemand import TrafficDemand
 """
 Fill this test case with all the convenience clicker tests to speed up the process
 """
-
+@unittest.skip
 class ConvenienceClickToExecute(unittest.TestCase):
 
 
@@ -481,6 +481,117 @@ class ConvenienceClickToExecute(unittest.TestCase):
         expected_params = dc.get_main_parameters_name_only()
         expected_values = [values for key, values in dc.parameters.items() if key in expected_params]
         self.assertEqual(list(exp[0]), expected_values)
+
+
+    def test_setting_to_value_results(self):
+        p = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
+             "b_tt_put_mu", "b_tt_ped", "asc_bike_mu", "b_tt_bike_mu", "b_cost", "b_cost_put",
+             "asc_car_d_sig", "asc_car_p_sig", "asc_put_sig", "asc_ped_sig", "asc_bike_sig", "b_tt_car_p_sig",
+             "b_tt_car_d_sig", "b_tt_put_sig", "b_tt_bike_sig",
+             "b_u_put",  "b_logsum_acc_put",
+             "elasticity_acc_put", "b_park_car_d", "elasticity_parken"]
+        _, data = simulation.load("resources/compare_individual")
+        population = Population(param_vector=p)
+        population.set_target(data)
+
+
+    def test_double_tournament_selection(self):
+        population = Population()
+        population.load("resources/test_population")
+        _, data = simulation.load("resources/compare_individual")
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+        population.double_tournament_selection()
+
+    def test_draw_boundaries(self):
+        population = Population()
+        population.load("resources/test_population")
+        _, data = simulation.load("resources/compare_individual")
+        population.set_target(data)
+        population.draw_boundaries()
+
+    def test_fancy_combine(self):
+        population = Population()
+        population.load("resources/test_population")
+        _, data = simulation.load("resources/compare_individual")
+
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+        population.draw_boundaries()
+        for i in range(50):
+            print(f"Iteration {i}: {population}")
+            population.desired_partner_selection()
+            #population.draw_boundaries()
+
+
+    def test_random_generation(self):
+        population = Population()
+        population.initialize(1)
+        _, data = simulation.load("resources/compare_individual")
+
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+
+        for i in range(500):
+            print(f"Iteration {i}: {population}")
+            population.random_individual()
+            population.draw_boundaries()
+
+
+    def test_reiterative_mutation(self):
+        population = Population()
+        population.initialize(1)
+        _, data = simulation.load("resources/compare_individual")
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+
+        for i in range(5):
+            print(f"Iteration IP {i}: {population}")
+            population.random_individual()
+            population.draw_boundaries()
+
+        for i in range(45):
+            print(f"Iteration Mutation: {i}: {population}")
+            print(population.best())
+            population.mutate_best()
+            population.draw_boundaries()
+
+    def test_reiterative_mutation2(self):
+        population = Population()
+        population.initialize(1)
+        _, data = simulation.load("resources/compare_individual")
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+
+        for i in range(5):
+            print(f"Iteration IP {i}: {population}")
+            population.random_individual()
+            population.draw_boundaries()
+
+        for i in range(45):
+            print(f"Iteration Mutation: {i}: {population}")
+            print(population.best())
+            population.mutate_best2()
+            population.draw_boundaries()
+
+
+    def test_reiterative_mutation3(self):
+        population = Population()
+        population.initialize(1)
+        _, data = simulation.load("resources/compare_individual")
+        population.set_target(data)
+        population.fitness_for_all_individuals()
+
+        for i in range(5):
+            print(f"Iteration IP {i}: {population}")
+            population.random_individual()
+            population.draw_boundaries()
+
+        for i in range(45):
+            print(f"Iteration Mutation: {i}: {population}")
+            print(population.best())
+            population.mutate_best3()
+            population.draw_boundaries()
 
 if __name__ == '__main__':
     unittest.main()

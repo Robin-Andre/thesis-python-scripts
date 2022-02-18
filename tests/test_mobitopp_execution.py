@@ -96,7 +96,6 @@ class MyTestCase(unittest.TestCase):
 
     def test_execution(self):
         yaml, _ = simulation.load("resources/example_config_load/")
-        print(yaml.data)
         yaml.set_fraction_of_population(0.01)
         data = simulation.run_experiment(yaml)
         self.assertIsNotNone(data)
