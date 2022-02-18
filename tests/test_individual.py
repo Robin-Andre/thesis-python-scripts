@@ -15,6 +15,7 @@ from configurations.observations import ModalSplitObservation, TimeModeObservati
 
 class MyTestCase(unittest.TestCase):
 
+
     def test_load(self):
         x = Individual(0, [])
         try:
@@ -66,6 +67,20 @@ class MyTestCase(unittest.TestCase):
         x_d = Individual(22, [])
         x_d.load("resources/detailed_individual")
         self.assertRaises(AssertionError, x_d.data.get_modal_split_by_param, x_d["age_0_17_on_asc_bike"])
+
+    def test_reduction_results_are_same(self):
+        x_d = Individual(22, [])
+        x_d.load("resources/even_more_detailed_individual")
+        t1 = x_d.data.get_grouped_modal_split()
+        self.assertEqual(x_d.data.columns(), {"gender", "age", "tripMode"})
+        x_d.reduce(["gender", "tripMode"])
+        self.assertEqual(x_d.data.columns(), {"gender", "tripMode"})
+        t2 = x_d.data.get_grouped_modal_split()
+        x_d.reduce(["tripMode"])
+        self.assertEqual(x_d.data.columns(), {"tripMode"})
+        t3 = x_d.data.get_grouped_modal_split()
+        pandas.testing.assert_frame_equal(t1, t2)
+        pandas.testing.assert_frame_equal(t2, t3)
 
     def test_bad_observation_function_is_caught(self):
         self.assertRaises(AssertionError, TimeModeObservation, lambda x: x / 2, lambda x: 3 * x)

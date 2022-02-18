@@ -5,6 +5,7 @@ import random
 from abc import ABC, abstractmethod
 
 from configurations import SPECS
+from configurations.parameter import Parameter
 from metrics.data import Comparison
 
 
@@ -53,7 +54,15 @@ class BaseIndividual(ABC):
     def active_values(self):
         pass
 
+    def data_requirements(self):
+        all_requirements = set()
+        for p in self.active_parameters:
+            all_requirements = set.union(all_requirements, set(Parameter(p).requirements.keys()))
+        return all_requirements
+
     def run(self, relevant_list=["tripMode"]):
+        assert set(relevant_list) == self.data_requirements()
+
         simulation.clean_result_directory()
         self.yaml.write()
         self.yaml.update_configs()
@@ -96,7 +105,8 @@ class Individual(BaseIndividual):
         self.yaml.mode_config().randomize_parameters(self.parameter_name_list)
 
     def active_values(self):
-        return [(self.yaml.mode_config().parameters[x].name, self.yaml.mode_config().parameters[x].value) for x in self.parameter_name_list]
+        return [(self.yaml.mode_config().parameters[x].name, self.yaml.mode_config().parameters[x].value) for x in
+                self.parameter_name_list]
 
     def make_basic(self, nullify_exponential_b_tt=False):
         for param in self.yaml.mode_config().parameters.values():
@@ -111,8 +121,6 @@ class Individual(BaseIndividual):
             # really small number should result in no weight being put on the time component
             if param.name.__contains__("b_tt") and param.name.__contains__("_mu") and nullify_exponential_b_tt:
                 param.value = -999999999
-
-
 
     def evaluate_fitness(self, compare_data):
         difference = Comparison(self.data, compare_data)
@@ -142,6 +150,3 @@ class ModalSplitIndividual(Individual):
     def evaluate_fitness(self, compare_data):
         difference = Comparison(self.data, compare_data)
         return difference.modal_split
-
-
-

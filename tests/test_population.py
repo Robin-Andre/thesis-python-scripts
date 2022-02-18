@@ -63,5 +63,6 @@ class MyTestCase(unittest.TestCase):
         population.set_random_individual_as_target()
         self.assertEqual(population.data_requirements(), population.target.columns())
 
+
 if __name__ == '__main__':
     unittest.main()
