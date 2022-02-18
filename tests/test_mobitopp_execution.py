@@ -114,7 +114,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(type(yaml.mode_config()), configloader.ModeChoiceConfig)
         self.assertEqual(type(yaml.destination_config()), configloader.DestinationChoiceConfig)
 
-
     def test_plot(self):
         yaml, data = simulation.load("resources/example_config_load")
         simulation.save(yaml, data, test_path)

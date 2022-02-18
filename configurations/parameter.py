@@ -18,7 +18,7 @@ def get_workday_from_string(param):
 
 def get_gender_from_string(param):
     if param.__contains__("female"):
-        return True
+        return "FEMALE"
     return None
 
 

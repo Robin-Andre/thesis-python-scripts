@@ -96,7 +96,6 @@ class ConfigTestCase(unittest.TestCase):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
         self.assertEqual(len(mc_c.parameters), 228)
 
-
     def test_base_config_randomization_does_nothing(self):
         config = configloader.Config(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
         expected_results = config.parameters

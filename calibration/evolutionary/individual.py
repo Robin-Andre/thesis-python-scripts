@@ -34,6 +34,9 @@ class BaseIndividual(ABC):
     def set_seed(self, value):
         self.yaml.set_seed(value)
 
+    def reduce(self, keep_list):
+        self.data.reduce(keep_list)
+
     @abstractmethod
     def randomize_to_bound(self, mode_list):
         pass

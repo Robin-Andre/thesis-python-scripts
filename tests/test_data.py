@@ -4,16 +4,17 @@ import pandas.testing
 from matplotlib import pyplot as plt
 
 import evaluation
+import visualization
 from configurations.parameter import Parameter
 from metrics.data import Data
 import calibration
 
+
 def drop_mode(dataframe, mode):
     return dataframe[dataframe["tripMode"] != mode]
 
+
 class MyTestCase(unittest.TestCase):
-
-
 
     def test_modal_split_returns_all_modes(self):
         data = Data()
@@ -43,35 +44,52 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(data.travel_distance.approximations()), 6)
         self.assertEqual(data.travel_distance.approximations()[2], [1, (0, 0, 0), 0])
 
-    def test_draw(self):
+    def test_get_grouped_modal_split(self):
         data = Data()
-        data.load("resources/example_config_load/results/")
-        data2 = Data()
-        data2.load("resources/example_config_load2/results/")
-        a, b, c = data.draw(reference=data2)
-        a.show()
-        b.show()
-        c.show()
-        a, b, c = data.draw_smooth(reference=data2)
-        a.show()
-        b.show()
-        c.show()
+        data.load("resources/even_more_detailed_individual/results/")
+        x = data.get_grouped_modal_split(["age"])
+        y = data.get_grouped_modal_split(["age", "age"])
+        self.assertTrue(x.eq(y.values).all().all())
 
-
-    def test_better_modal_split(self):
+    def test_modal_split_is_sum_of_group(self):
         data = Data()
-        data.load("resources/example_config_load/results/")
-        x = data.get_modal_split_based_by_time(1)
-        y = x.unstack(level=1).T
-        y.plot()
-        plt.show()
+        data.load("resources/even_more_detailed_individual/results/")
+        dt = data.travel_time.get_data_frame()
+        x = dt.groupby("tripMode").sum()["count"].to_frame()
+        x = x / x.sum()
+        self.assertIsNone(pandas.testing.assert_frame_equal(x, data._get_modal_split()))
 
-    def test_new_data_write(self):
-        data = Data(evaluation.default_test_merge())
-        x = data.traffic_demand
-        data.write("temp")
-        data.reduce(["tripMode"])
-        data.write("temp2")
+    def test_extracting_default_modal_split_from_detailed_data(self):
+        data = Data()
+        data.load("resources/even_more_detailed_individual/results/")
+        dt = data.travel_time.get_data_frame()
+        x = dt.groupby("tripMode").sum()["count"].to_frame()
+        x = x / x.sum()
+        y = data.get_grouped_modal_split([])
+        self.assertIsNone(pandas.testing.assert_frame_equal(x, y))
+        self.assertIsNone(pandas.testing.assert_frame_equal(x, data.get_grouped_modal_split()))
+
+        #visualization.draw_grouped_modal_split()
+
+
+    def test_extracting_data_with_higher_specification(self):
+        data = Data()
+        data.load("resources/even_more_detailed_individual/results/")
+        x = data.get_grouped_modal_split(["age", "gender"])
+        print(x)
+        visualization.draw_grouped_modal_split(data.get_grouped_modal_split(["gender"]))
+        visualization.draw_grouped_modal_split(data.get_grouped_modal_split(["age"]))
+
+        p = Parameter("female_on_asc_bike")
+        print(data.get_grouped_modal_split(["gender"]))
+        self.assertAlmostEqual(data.get_modal_split_by_param(p), 0.1749315)
+        print(data.get_modal_split_by_param(p))
+        print(p)
+
+        print(data.get_grouped_modal_split(["age"]))
+        p = Parameter("age_18_29_on_asc_bike")
+        print(data.get_modal_split_by_param(p))
+        print(p)
 
 
 if __name__ == '__main__':

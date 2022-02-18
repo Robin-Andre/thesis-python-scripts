@@ -98,41 +98,42 @@ class Data:
         elif type(p) is int:
             return self._get_modal_split(specific_mode_num=p)
 
+    def _modsplit_help(self, df, mode_list=[0, 1, 2, 3, 4]):
+        x = df.groupby("tripMode").sum()["count"].to_frame()
+        x = x.reindex(mode_list, fill_value=0)
+        x = x / x.sum()
+        return x
+
     def get_modal_split_by_param(self, param, mode_list=[0, 1, 2, 3, 4]):
         df = self.travel_time.get_data_frame()
         requirements_without_trip_mode = copy.deepcopy(param.requirements)
         assert set(param.requirements.keys()).issubset(set(self.columns())), "Underlying data lacks columns required for the parameter"
         del requirements_without_trip_mode["tripMode"]
         df = df.loc[(df[list(requirements_without_trip_mode)] == pandas.Series(requirements_without_trip_mode)).all(axis=1)]
-        df = aggregate(df, numpy.inf, "durationTrip")
-        df = df.droplevel(1)
-        df = df.reindex(mode_list, fill_value=0)
-        ret = df / df.sum()
+        ret = self._modsplit_help(df, mode_list)
         return ret.loc[param.requirements["tripMode"], "count"]
 
-
-    def _get_modal_split(self, specific_mode_num=None, mode_list=[0, 1, 2, 3, 4], precision=numpy.inf):
-        agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
-
-        agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the
-        # modal split
-        agg = agg.reindex(mode_list, fill_value=0)
-        ret = agg / agg.sum()
+    def _get_modal_split(self, specific_mode_num=None, mode_list=[0, 1, 2, 3, 4]):
+        ret = self._modsplit_help(self.travel_time.get_data_frame(), mode_list)
         if specific_mode_num is not None:
             assert specific_mode_num in mode_list
             return ret.loc[specific_mode_num, "count"]
-        return ret
+        else:
+            return ret
 
-    def get_grouped_modal_split(self, column_names, mode_list=[0, 1, 2, 3, 4]):
+    def get_grouped_modal_split(self, column_names=None, mode_list=[0, 1, 2, 3, 4]):
+        if column_names is None or column_names == []:
+            return self._get_modal_split()
+        assert "tripMode" not in column_names
         df = self.travel_time.get_data_frame()
         temp = df.groupby(column_names)
         s_list = []
         for key, group in temp:
-            agg = aggregate(group, numpy.inf, "durationTrip")
-            agg = agg.droplevel(1)
-            agg = agg.reindex(mode_list, fill_value=0)
-            ret = agg["count"] / agg["count"].sum()
-            ret.name = str(key[0]) + "," + str(key[1][:1])
+            ret = self._modsplit_help(group, mode_list).squeeze()
+            if type(key) is tuple:
+                ret.name = ",".join([str(x)[:1] for x in key])
+            else:
+                ret.name = key
             s_list.append(ret)
         df = pandas.concat(s_list, axis=1, keys=[s.name for s in s_list])
         return df
