@@ -17,14 +17,10 @@ def temp(path, compare_keys):
     for x in compare_keys:
         l = text.strip().split(x + " ")[1:]
         if l:
-            #print(f"Splitting on {x}")
             ele = l[0]
-            #print(ele)
             ele = re.split("\n|\t", ele)[0]
-            #print(ele)
             if ele.__contains__("[") and ele.__contains__("]"):
                 fin = ele.split("[")[1].split("]")[0]
-                #print("[" + fin + "]")
                 test.append("[" + fin + "]")
 
     return test
@@ -73,26 +69,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(type(c), configurations.configloader.ModeChoiceConfig)
         d = yaml.destination_config()
         self.assertEqual(type(d), configurations.configloader.DestinationChoiceConfig)
-
-# TODO this is not a test but a stub to extract the details for the config and should be removed when finished
-    def test_extract_config_prelims(self):
-        path_mode1 = Path(SPECS.CWD + "config/choice-models/mode_choice_mixed_logit.gen")
-        path_mode2 = Path(SPECS.CWD + "config/choice-models/mode_choice_mixed_logit_mode_preference.gen")
-        path_mode3 = Path(SPECS.CWD + "config/choice-models/mode_choice_mixed_logit_time_sensitivity.gen")
-        path_dest = Path(SPECS.CWD + "config/choice-models/destination-choice.gen")
-        compare_keys = simulation.default_yaml().mode_config().parameters.keys()
-        compare_dest_keys = simulation.default_yaml().configs[3].parameters.keys()
-
-        woohoo = []
-        for x in [path_mode1, path_mode2, path_mode3]:
-            pass
-            woohoo.append(temp(x, compare_keys))
-        woohoo.append(temp(path_dest, compare_dest_keys))
-        z = list(set([x for y in woohoo for x in y]))
-        print(sorted(z))
-        print("\n".join(z))
-        #print(set(woohoo))
-
 
 
 if __name__ == '__main__':

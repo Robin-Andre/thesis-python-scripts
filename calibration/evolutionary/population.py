@@ -4,6 +4,7 @@ from calibration.evolutionary import combine, mutate, initialization, replace, s
 
 import visualization
 from calibration.evolutionary.individual import Individual, BaseIndividual
+from configurations.parameter import Parameter
 from metrics.data import Comparison
 
 ACTIVE_PARAMETERS = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
@@ -79,6 +80,12 @@ class Population:
     def best(self):
         return max(self.population)
 
+    def data_requirements(self):
+        all_requirements = set()
+        for p in self.active_parameters:
+            all_requirements = set.union(all_requirements, set(Parameter(p).requirements.keys()))
+        return all_requirements
+
     def set_target(self, target):
         self.target = target
 
@@ -130,12 +137,12 @@ class Population:
     def set_random_individual_as_target(self):
         individual = Individual(self.seed, self.active_parameters)
         individual.randomize()
-        individual.run()
+        individual.run(list(self.data_requirements()))
         self.set_target(individual.data)
         return individual
 
     def _run(self, individual):
-        individual.run()
+        individual.run(list(self.data_requirements()))
         self.logger.log(self, individual)
         self.logger.iteration += 1
         individual.set_fitness(self.target)
@@ -181,8 +188,6 @@ class Population:
         big = big[["min", "max"]]
         big["target"] = self.target.travel_time.get_data_frame().set_index(["tripMode", "durationTrip"])
         big["best"] = self.best().data.travel_time.get_data_frame().set_index(["tripMode", "durationTrip"])
-        #big = big.fillna(0)
-        #big = big.rolling(60, center=True, min_periods=1).mean()
         big = big.reset_index()
         visualization.generic_min_max_best_travel_time(big, "tripMode")
 

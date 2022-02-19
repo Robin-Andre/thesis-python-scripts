@@ -96,7 +96,6 @@ class MyTestCase(unittest.TestCase):
 
     def test_execution(self):
         yaml, _ = simulation.load("resources/example_config_load/")
-        print(yaml.data)
         yaml.set_fraction_of_population(0.01)
         data = simulation.run_experiment(yaml)
         self.assertIsNotNone(data)
@@ -113,7 +112,6 @@ class MyTestCase(unittest.TestCase):
         yaml, _ = simulation.load("resources/example_config_load/")
         self.assertEqual(type(yaml.mode_config()), configloader.ModeChoiceConfig)
         self.assertEqual(type(yaml.destination_config()), configloader.DestinationChoiceConfig)
-
 
     def test_plot(self):
         yaml, data = simulation.load("resources/example_config_load")

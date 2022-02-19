@@ -1,7 +1,10 @@
+import copy
+
 import numpy
 import pandas
 
 import visualization
+from configurations.parameter import Parameter
 from metrics.metric import aggregate
 from metrics.trafficdemand import TrafficDemand
 from metrics.traveldistance import TravelDistance
@@ -43,6 +46,12 @@ class Data:
         self.travel_time.print()
         self.travel_distance.print()
 
+    def columns(self):
+        cols = list(self.travel_time.get_data_frame().columns.values)
+        cols.remove("durationTrip")
+        cols.remove("count")
+        return set(cols)
+
     def reduce(self, keep_list):
         self.traffic_demand.reduce(keep_list)
         self.travel_time.reduce(keep_list)
@@ -61,11 +70,11 @@ class Data:
 
     def draw_smooth(self, reference=None):
         if reference is not None:
-            x = self.traffic_demand.smoothen(60).draw(reference.traffic_demand.smoothen(60))
+            x = self.traffic_demand.draw_smooth(reference.traffic_demand)
             y = self.travel_time.smoothen(3).draw(reference.travel_time.smoothen(3))
             z = self.travel_distance.smoothen(3).draw(reference.travel_distance.smoothen(3))
         else:
-            x = self.traffic_demand.smoothen(60).draw()
+            x = self.traffic_demand.draw_smooth()
             y = self.travel_time.smoothen(3).draw()
             z = self.travel_distance.smoothen(3).draw()
         return x, y, z
@@ -82,13 +91,54 @@ class Data:
         self.travel_time.draw_all_distributions()
         self.travel_distance.draw_all_distributions()
 
-    def get_modal_split(self, mode_list=[0, 1, 2, 3, 4], precision=numpy.inf):
-        agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
+    def get_modal_spliteeee(self, p):
+        if type(p) is Parameter:
+            assert len(p.requirements) == 1
+            return self._get_modal_split(specific_mode_num=p.requirements["tripMode"])
+        elif type(p) is int:
+            return self._get_modal_split(specific_mode_num=p)
 
-        agg = agg.droplevel(1)  # Drops "durationTrip" from index The aggregated information is irrelevant for the
-        # modal split
-        agg = agg.reindex(mode_list, fill_value=0)
-        return agg / agg.sum()
+    def _modsplit_help(self, df, mode_list=[0, 1, 2, 3, 4]):
+        x = df.groupby("tripMode").sum()["count"].to_frame()
+        x = x.reindex(mode_list, fill_value=0)
+        x = x / x.sum()
+        return x
+
+    def get_modal_split_by_param(self, param, mode_list=[0, 1, 2, 3, 4]):
+        df = self.travel_time.get_data_frame()
+        requirements_without_trip_mode = copy.deepcopy(param.requirements)
+        assert set(param.requirements.keys()).issubset(set(self.columns())), "Underlying data lacks columns required for the parameter"
+        del requirements_without_trip_mode["tripMode"]
+
+        if len(requirements_without_trip_mode) > 0: # If a parameter does not work on a subset we don't need to build the subset
+            df = df.loc[(df[list(requirements_without_trip_mode)] == pandas.Series(requirements_without_trip_mode)).all(axis=1)]
+        ret = self._modsplit_help(df, mode_list)
+        return ret.loc[param.requirements["tripMode"], "count"]
+
+    def _get_modal_split(self, specific_mode_num=None, mode_list=[0, 1, 2, 3, 4]):
+        ret = self._modsplit_help(self.travel_time.get_data_frame(), mode_list)
+        if specific_mode_num is not None:
+            assert specific_mode_num in mode_list
+            return ret.loc[specific_mode_num, "count"]
+        else:
+            return ret
+
+    def get_grouped_modal_split(self, column_names=None, mode_list=[0, 1, 2, 3, 4]):
+        if column_names is None or column_names == []:
+            return self._get_modal_split()
+        assert "tripMode" not in column_names
+        df = self.travel_time.get_data_frame()
+        temp = df.groupby(column_names)
+        s_list = []
+        for key, group in temp:
+            ret = self._modsplit_help(group, mode_list).squeeze()
+            if type(key) is tuple:
+                ret.name = ",".join([str(x)[:1] for x in key])
+            else:
+                ret.name = key
+            s_list.append(ret)
+        df = pandas.concat(s_list, axis=1, keys=[s.name for s in s_list])
+        return df
 
     def get_modal_split_based_by_time(self, precision, mode_list=[0, 1, 2, 3, 4]):
         agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
@@ -99,9 +149,10 @@ class Data:
 
         y = agg.groupby(level=1).sum()
         t = agg.join(y,  lsuffix='', rsuffix='_full')
-        t["modal_split"] = t["amount"] / t ["amount_full"]
+        t["modal_split"] = t["count"] / t ["amount_full"]
         t = t.fillna(0)
         return t["modal_split"]
+
 
 def sse(original, comparison, string):
     result = (original - comparison)[string] ** 2
@@ -111,7 +162,9 @@ def sse(original, comparison, string):
 class Comparison:
 
     def __init__(self, input_data, comparison_data):
-        self.modal_split = sse(input_data.get_modal_split(), comparison_data.get_modal_split(), "count")
+        x = input_data._get_modal_split()
+        y=comparison_data._get_modal_split()
+        self.modal_split = sse(input_data._get_modal_split(), comparison_data._get_modal_split(), "count")
         self.travel_time = sse(input_data.travel_time.get_data_frame(), comparison_data.travel_time.get_data_frame(), "count")
         self.travel_demand = sse(input_data.traffic_demand, comparison_data.traffic_demand, "active_trips")
 

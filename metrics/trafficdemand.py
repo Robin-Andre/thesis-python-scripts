@@ -5,10 +5,10 @@ import visualization
 from metrics.metric import Metric, difference, reduce
 
 
-def fill_each_group(split_df, agg_list):
+def fill_each_group(split_df, agg_list, method="ffill"):
     tmp = split_df.droplevel(agg_list)
 
-    x = tmp.reindex(range(0, max(tmp.index.max(), 10080)), method="ffill")
+    x = tmp.reindex(range(0, max(tmp.index.max(), 10080)), method=method)
     x = x.fillna(0)
     return x
 
@@ -16,6 +16,7 @@ def fill_each_group(split_df, agg_list):
 def pad(df, agg_list):
     df = df.set_index(agg_list + ["time"])
     df = df.groupby(agg_list).apply(fill_each_group, agg_list)
+    df = df.reset_index()
     return df
 
 
@@ -69,12 +70,24 @@ class TrafficDemand(Metric):
         self._data_frame = reduce(self._data_frame, keep_list, "time", "active_trips_delta")
 
     def draw(self, reference=None):
-        #return visualization.generic_td_demand(self.accumulate(["tripMode"]), "tripMode")
         if reference is None:
-
             return visualization.draw_travel_demand_by_mode(self.accumulate(["tripMode"]))
         else:
-            return visualization.draw_travel_demand_by_mode(self.accumulate(["tripMode"]), reference_df=reference.accumulate(["tripMode"]))
+            return visualization.draw_travel_demand_by_mode(self.accumulate(["tripMode"]),
+                                                            reference_df=reference.accumulate(["tripMode"]))
+
+    def draw_smooth(self, reference=None, smoothness_factor=60):
+        df1 = self.accumulate_padded(["tripMode"])
+        df1["active_trips"] = df1["active_trips"].rolling(smoothness_factor, center=True, min_periods=1).mean()
+        if reference is None:
+            return visualization.draw_travel_demand_by_mode(df1)
+        else:
+            df_r = reference.accumulate_padded(["tripMode"])
+            df_r["active_trips"] = df_r["active_trips"].rolling(smoothness_factor, center=True, min_periods=1).mean()
+            return visualization.draw_travel_demand_by_mode(df1,
+                                                            reference_df=df_r)
+
+
 
     def get_mode_specific_data(self, mode_number):
         return super().get_mode_specific_data(mode_number, "time")

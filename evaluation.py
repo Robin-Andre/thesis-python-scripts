@@ -150,7 +150,7 @@ def create_travel_time_data(raw_data):
 
 # TODO fix that there are journeys with distance 0
 def create_travel_distance_data(raw_data):
-    temp_df = raw_data[["distanceInKm", "tripMode"]]
+    temp_df = raw_data[["distanceInKm", "tripMode"]].copy()
     temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000)  # MobiTopp has an incorrect column
     temp_df = temp_df.groupby(["distanceInKm", "tripMode"]).size()
     temp_df = temp_df.reset_index()
@@ -163,7 +163,6 @@ def create_travel_distance_with_activity_type(raw_data):
     temp_df.loc[temp_df["activityType"] == 7, "activityType"] = temp_df[temp_df["activityType"] == 7]["previousActivityType"]
     temp_df.loc[:, "distanceInKm"] = round(temp_df["distanceInKm"] * 1000)
 
-    print(temp_df[temp_df["activityType"] == 7])
     temp_df["actual_activity"] = temp_df["activityType"]
 
 
@@ -179,7 +178,7 @@ def check_data(raw_data):  # TODO move to experimental??
     temp = raw_data[["fromX", "fromY", "toX", "toY", "distanceInKm"]]
     temp["haversine"] = temp.apply(haversine, axis=1)
     temp["distanceInKm"] = temp["distanceInKm"] * 1000
-    print(temp)
+
 
 
 def haversine(row):

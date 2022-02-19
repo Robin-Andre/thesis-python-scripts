@@ -48,7 +48,7 @@ class TimeModeObservation(Observation):
         for x in [-20, -10, -1, -0.01, 0, 0.01, 10, 20]:
             assert abs(self.f_inverse(self.f(x)) - x) < epsilon
 
-    def __helper(self, ind_1, target_data, parameter):
+    def _helper(self, ind_1, target_data, parameter):
         time_df = ind_1.data.travel_time.get_data_frame()
         target_df = target_data.travel_time.get_data_frame()
 
@@ -56,37 +56,36 @@ class TimeModeObservation(Observation):
 
         assert parameter.requirements.keys().__contains__("tripMode")
 
-        time_df = time_df[time_df["tripMode"] == parameter.requirements["tripMode"]]
-        target_df = target_df[target_df["tripMode"] == parameter.requirements["tripMode"]]
+        temp = time_df.groupby(["tripMode", "durationTrip"]).sum()["count"].to_frame()
+        temp_target = target_df.groupby(["tripMode", "durationTrip"]).sum()["count"].to_frame()
 
-        time_df = time_df.set_index(["tripMode", "durationTrip"])
-        target_df = target_df.set_index(["tripMode", "durationTrip"])
+        wololo = temp.iloc[temp.index.get_level_values("tripMode") == 1]
+        target_wololo = temp_target.iloc[temp_target.index.get_level_values("tripMode") == 1]
 
-        temp = target_df.join(time_df, how="left", lsuffix=lsuffix, rsuffix="_observation")
+        temp = target_wololo.join(wololo, how="left", lsuffix=lsuffix, rsuffix="_observation")
         temp = temp.fillna(0)
 
         drop_threshold = 0.005
         sum_count = temp["count" + lsuffix].sum()
         data = temp[temp["count" + lsuffix] >= sum_count * drop_threshold]
 
-        data["relative_values"] = data["count_observation"] / data["count" + lsuffix]
-
-        vals = data["relative_values"].values
-        ind = data.index.get_level_values("durationTrip").values
-
+        filtered_data = data.copy()
+        filtered_data.loc[:, "relative_values"] = filtered_data["count_observation"] / filtered_data["count" + lsuffix]
+        vals = filtered_data["relative_values"].values
+        ind = filtered_data.index.get_level_values("durationTrip").values
         popt, pcov = scipy.optimize.curve_fit(expected_b_tt_func, list(ind), list(vals))
 
         #plt.plot(ind, expected_b_tt_func(ind, *popt))
         #plt.plot(ind, vals)
         #plt.show()
         #plt.close(fig)
-        return popt
+        return tuple(popt)
 
     def error(self, ind_1, target_data, parameter):
-        return self.__helper(ind_1, target_data, parameter)[1]
+        return self._helper(ind_1, target_data, parameter)[1]
 
     def observe(self, ind_1, target_data, parameter):
-        popt = self.__helper(ind_1, target_data, parameter)
+        popt = self._helper(ind_1, target_data, parameter)
         # A positive value for popt[1] means that the time preference component has too much impact
         # In order to reduce it the -exp(x) function needs to return a smaller value (for all except b_tt_ped_mu)
         # So counterintuitively b_tt-* needs to be decreased to reduce the negative impact. For this reason
@@ -115,8 +114,8 @@ class TimeModeObservation(Observation):
         return self.f_inverse(x_new)
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
-        popt1 = self.__helper(ind_1, target_data, parameter)
-        popt2 = self.__helper(ind_2, target_data, parameter)
+        popt1 = self._helper(ind_1, target_data, parameter)
+        popt2 = self._helper(ind_2, target_data, parameter)
 
         x_1 = ind_1[parameter].value
         y_1 = self.f(x_1)
@@ -160,37 +159,35 @@ def bike_logit(x):
 
 class ModalSplitObservation(Observation):
 
-    def __helper(self, ind_1, target_data, parameter):
+    def _helper(self, ind_1, target_data, parameter):
         assert parameter.requirements.keys().__contains__("tripMode")
         mode_num = parameter.requirements["tripMode"]
 
-        y_1 = ind_1.data.get_modal_split().loc[mode_num, "count"]
-        y_target = target_data.get_modal_split().loc[mode_num, "count"]
+        y_1 = ind_1.data.get_modal_split_by_param(parameter)
+        y_target = target_data.get_modal_split_by_param(parameter)
         x_1 = ind_1[parameter.name].value
 
         return x_1, y_1, y_target, mode_num
 
     # This function suggests, for a lack of information, the estimated value from the sigmoid transformation as a new
     def observe(self, ind_1, target_data, parameter):
-        x_1, y_1, y_target, mode_num = self.__helper(ind_1, target_data, parameter)
+        x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         x_new = g(y_target, mode_num) + x_1 - g(y_1, mode_num)
-        print(f"Suggested Value: {x_new}")
         return x_new
 
     def error(self, ind_1, target_data, parameter):
-        x_1, y_1, y_target, mode_num = self.__helper(ind_1, target_data, parameter)
+        x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         return abs(y_1 - y_target)
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
-        x_1, y_1, y_target, mode_num = self.__helper(ind_1, target_data, parameter)
+        x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         x_2 = ind_2[parameter.name].value
-        y_2 = ind_2.data.get_modal_split().loc[mode_num, "count"]
+        y_2 = ind_2.data.get_modal_spliteeee(mode_num)
 
         z = g(y_target)
         z_1 = g(y_1)
         z_2 = g(y_2)
         a = (z - z_1) / (z_2 - z_1)  # a is the linear scale factor based on the normalized parameters
         x_new = a * (x_2 - x_1) + x_1
-        print(f"Suggested Value: {x_new}")
         return x_new
 

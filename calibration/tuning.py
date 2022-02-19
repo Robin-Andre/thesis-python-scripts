@@ -1,4 +1,6 @@
+from calibration.evolutionary.individual import BaseIndividual
 from calibration.evolutionary.population import Population
+from metrics.data import Data
 
 
 def __do_population_shenanigans(copy_ind_1, population, draw, mode):
@@ -13,7 +15,7 @@ def __do_population_shenanigans(copy_ind_1, population, draw, mode):
         copy_ind_1.run()
 
 
-def tune(individual, data_target, parameter, epsilon=0.05, population=None, draw=False):
+def tune(individual: BaseIndividual, data_target: Data, parameter, epsilon=0.05, population=None, draw=False):
 
     print(f"Original Value {individual[parameter].value}")
     error = parameter.error(individual, data_target)
@@ -44,7 +46,7 @@ def tune(individual, data_target, parameter, epsilon=0.05, population=None, draw
     return copy_ind_1
 
 
-def tune_strategy1(individual, data_target, epsilon, rounds=10):
+def tune_strategy1(individual: BaseIndividual, data_target: Data, epsilon, rounds=10):
     p = Population()
     p.set_target(data_target)
     p.append(individual)
@@ -53,7 +55,7 @@ def tune_strategy1(individual, data_target, epsilon, rounds=10):
     param_name_list = ["asc_bike_mu", "asc_car_d_mu", "asc_car_p_mu", "asc_ped_mu", "asc_put_mu"]
     flag = True
     for i in range(rounds):
-        diff = individual.data.get_modal_split() - data_target.get_modal_split()
+        diff = individual.data._get_modal_split() - data_target._get_modal_split()
         if flag:
             individual = tune(individual, data_target, individual[param_name_list[diff.idxmin()["count"]]], population=p, epsilon=epsilon)
 
@@ -66,7 +68,7 @@ def tune_strategy1(individual, data_target, epsilon, rounds=10):
     return individual, p.best()
 
 
-def tune_strategy2(individual, data_target):
+def tune_strategy2(individual: BaseIndividual, data_target: Data):
     p = Population()
     p.set_target(data_target)
     p.append(individual)

@@ -18,7 +18,7 @@ def get_workday_from_string(param):
 
 def get_gender_from_string(param):
     if param.__contains__("female"):
-        return True
+        return "FEMALE"
     return None
 
 
@@ -327,7 +327,7 @@ def get_appropriate_observation_function(p_name):
     elif p_name == "b_tt_ped":
         return TimeModeObservation(lambda x: x, lambda x: x)
     else:
-        return Observation()
+        return ModalSplitObservation()
 
 
 class ActivityGroup(Enum):
