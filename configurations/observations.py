@@ -182,7 +182,7 @@ class ModalSplitObservation(Observation):
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
         x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         x_2 = ind_2[parameter.name].value
-        y_2 = ind_2.data.get_modal_spliteeee(mode_num)
+        y_2 = ind_2.data.get_modal_split_by_param(parameter)
 
         z = g(y_target)
         z_1 = g(y_1)

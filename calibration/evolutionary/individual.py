@@ -19,6 +19,7 @@ class BaseIndividual(ABC):
         self.fitness = None
         self.data = None
         self.parameter_name_list = param_list
+        self.requirements = list(self.data_requirements())
 
     def __str__(self):
         return str(f"Value: {self.active_values()} Fitness: {self.fitness}")
@@ -31,6 +32,9 @@ class BaseIndividual(ABC):
 
     def copy(self):
         return copy.deepcopy(self)
+
+    def set_requirements(self, reqs):
+        self.requirements = reqs
 
     def set_seed(self, value):
         self.yaml.set_seed(value)
@@ -60,7 +64,7 @@ class BaseIndividual(ABC):
             all_requirements = set.union(all_requirements, set(Parameter(p).requirements.keys()))
         return all_requirements
 
-    def run(self, relevant_list=["tripMode"]):
+    def run(self):
 
         simulation.clean_result_directory()
         self.yaml.write()
@@ -72,7 +76,7 @@ class BaseIndividual(ABC):
             print("FAILED RUN")
             return
 
-        self.data.reduce(list(self.data_requirements()))
+        self.data.reduce(self.requirements)
 
     def save(self, path):
         simulation.save(self.yaml, self.data, path)
