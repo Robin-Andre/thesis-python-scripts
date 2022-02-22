@@ -132,10 +132,12 @@ def extract_big_car_fleet(household_df):
     household_df["eachAdultHasCar"] = (household_df["nominalSize"] - household_df["numberOfMinors"] \
                                      - household_df["numberOfNotSimulatedChildren"]) <= household_df["totalNumberOfCars"]
 
+def extract_intrazonal(df):
+    df["isIntrazonal"] = df["sourceZone"] == df["targetZone"]
 
 
 def merge_data(data, household, person):
-
+    extract_intrazonal(data)
     data = extract_previous_trip(data)
     extract_big_car_fleet(household)
 

@@ -82,6 +82,11 @@ def get_household_size_from_string(param):
         return HouseholdSize.SIZE_3_OR_BIGGER.value
     return None
 
+def get_intrazonal_from_string(param):
+    if param.__contains__("intrazonal"):
+        return True
+    return None
+
 
 def get_umland_from_string(param):
     if param.__contains__("_uml_"):
@@ -172,7 +177,7 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("workday", get_workday_from_string),  # Weekday
                      ("previousMode", get_prev_mode_from_string),
                      ("eachAdultHasCar", get_carav_from_string),
-
+                     ("isIntrazonal", get_intrazonal_from_string),
                      # All of the following methods have yet to be extracted from the simulation output.
 
                      ("reliefNotImplemented", get_relief_from_string),

@@ -100,24 +100,11 @@ class MyTestCase(unittest.TestCase):
         for v in self.x.errors(self.x.data).values():
             self.assertAlmostEqual(v, 0)
 
-    def test_individual_weekday_extraction(self):
-        r = Individual(9, ["b_arbwo_car_p"])
+    def test_individual_parameter_extraction(self):
+        r = Individual(9, ["shift_carav_on_logsum_drive", "b_mode_bef_ped", "b_arbwo_car_p"])
         r.run()
-        self.assertEqual(r.data.columns(), {"tripMode", "workday"})
-        self.assertEqual(r.requirements, {"tripMode", "workday"})
-
-
-    def test_individual_previous_trip_extraction(self):
-        r = Individual(9, ["b_mode_bef_ped"])
-        r.run()
-        self.assertEqual(r.data.columns(), {"tripMode", "previousMode"})
-        self.assertEqual(r.requirements, {"tripMode", "previousMode"})
-
-    def test_individual_carav_extraction(self):
-        r = Individual(9, ["shift_carav_on_logsum_drive"])
-        r.run()
-        self.assertEqual(r.data.columns(), {"eachAdultHasCar"})
-        self.assertEqual(r.requirements, {"eachAdultHasCar"})
+        self.assertEqual(r.data.columns(), {"tripMode", "previousMode", "eachAdultHasCar", "workday"})
+        self.assertEqual(r.requirements, {"tripMode", "previousMode", "eachAdultHasCar", "workday"})
 
 
 if __name__ == '__main__':

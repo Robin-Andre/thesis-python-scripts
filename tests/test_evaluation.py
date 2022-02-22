@@ -59,6 +59,11 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue("eachAdultHasCar" in x)
         self.assertTrue(set(x["eachAdultHasCar"]).issubset({False, True}))
 
+    def test_intrazonal_calculation_works(self):
+        data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        evaluation.extract_intrazonal(data)
+        self.assertTrue("isIntrazonal" in data.columns)
+        self.assertTrue(set(data["isIntrazonal"]).issubset({False, True}))
 
     def test_merge_data(self):
         pass
