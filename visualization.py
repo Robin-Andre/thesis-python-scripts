@@ -165,10 +165,11 @@ def draw_modal_split(df_list):
     fig.show()
     return
 
-def draw_grouped_modal_split(df):
+
+def draw_grouped_modal_split(df, title=""):
     x = df.T
     #df.plot(kind="bar", title=[""] * 13, stacked=True, rot=1, subplots=True, layout=(5, 3), legend=False)
-    ax = x.plot(kind="bar", title="", stacked=True, rot=1, legend=True)
+    ax = x.plot(kind="bar", title=title, stacked=True, rot=1, legend=True)
     #plt.show()
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])

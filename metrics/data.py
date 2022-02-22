@@ -149,7 +149,7 @@ class Data:
 
         y = agg.groupby(level=1).sum()
         t = agg.join(y,  lsuffix='', rsuffix='_full')
-        t["modal_split"] = t["count"] / t ["amount_full"]
+        t["modal_split"] = t["count"] / t["count_full"]
         t = t.fillna(0)
         return t["modal_split"]
 

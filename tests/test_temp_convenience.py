@@ -15,7 +15,7 @@ from metrics.trafficdemand import TrafficDemand
 """
 Fill this test case with all the convenience clicker tests to speed up the process
 """
-@unittest.skip
+
 class ConvenienceClickToExecute(unittest.TestCase):
 
 
@@ -190,18 +190,19 @@ class ConvenienceClickToExecute(unittest.TestCase):
 
 
     """
-    Tests the effect of a specialized parameter and plots the result.
+    Tests the effect of a specialized parameter and plots the result. Meeting 21.2
     """
 
 
     def test_tuning_effect_subset_parameeter_copy(self):
         x_d = Individual(22, [])
         x_d.load("resources/even_more_detailed_individual")
+        x_d.set_requirements(["tripMode", "gender", "age"])
         d = x_d.data.get_grouped_modal_split(["age", "gender"])
 
         visualization.draw_grouped_modal_split(d)
         x_d["age_60_69_on_asc_car_d"].set(-10)
-        x_d.run(["tripMode", "gender", "age"])
+        x_d.run()
 
         d = x_d.data.get_grouped_modal_split(["age", "gender"])
 

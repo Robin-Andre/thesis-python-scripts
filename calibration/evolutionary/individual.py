@@ -42,6 +42,13 @@ class BaseIndividual(ABC):
     def reduce(self, keep_list):
         self.data.reduce(keep_list)
 
+    def errors(self, data):
+        errvals = {}
+        for p in self.parameter_name_list:
+            errvals[p] = self[p].error(self, data)
+
+        return errvals
+
     @abstractmethod
     def randomize_to_bound(self, mode_list):
         pass

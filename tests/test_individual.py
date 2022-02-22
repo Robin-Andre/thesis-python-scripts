@@ -16,7 +16,7 @@ from configurations.observations import ModalSplitObservation, TimeModeObservati
 class MyTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.x = Individual(21, [])
+        self.x = Individual(21, ["asc_car_d_mu", "female_on_asc_bike"])
         self.x.load("resources/detailed_individual")
 
         self.x_d = Individual(22, [])
@@ -95,6 +95,15 @@ class MyTestCase(unittest.TestCase):
     def test_change_value(self):
         self.x["asc_car_d_mu"].set(34)
         self.assertEqual(self.x["asc_car_d_mu"].value, 34)
+
+    def test_error_calculation(self):
+        for v in self.x.errors(self.x.data).values():
+            self.assertAlmostEqual(v, 0)
+
+
+
+
+
 
 
 if __name__ == '__main__':
