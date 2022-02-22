@@ -14,7 +14,7 @@ def helper(data, title):
 
 
 class MyTestCase(unittest.TestCase):
-
+    @unittest.skip("Not a test but a convenience run")
     def test_something(self):
         individual = Individual(42, ["asc_car_d_mu", "female_on_asc_car_d"])
         individual.set_requirements(["tripMode", "gender", "age"])

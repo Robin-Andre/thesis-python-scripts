@@ -151,6 +151,9 @@ def get_mode_from_string(string):
     return None
 
 
+"""
+This vector contains the names of the requirements set to a parameter  
+"""
 mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("activityType", get_activity_from_string),
                      ("age", get_age_group_from_string),
@@ -159,11 +162,11 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("hasCommuterTicket", get_commuter_ticket_from_string),
                      ("economicalStatus", get_economical_group_from_string),
                      ("totalNumberOfCars", get_number_of_cars_from_string),
-
                      ("nominalSize", get_household_size_from_string),
+                     ("workday", get_workday_from_string),  # Weekday
 
                      # All of the following methods have yet to be extracted from the simulation output.
-                     ("workdayNotImplemented", get_workday_from_string),  # Weekday
+
                      ("reliefNotImplemented", get_relief_from_string),
                      ("PreviousTripNotImplemented", get_prev_mode_from_string),
                      ("CarsPerAdultNotImplemented", get_carav_from_string),
@@ -179,6 +182,11 @@ def get_all_parameter_limitations(param):
         if f(param) is not None:
             ret_dict[name] = f(param)
     return ret_dict
+
+
+def group_weekday(df):
+    group_list(df, "tripBeginDay", ["Mo.", "Di.", "Mi.", "Do.", "Fr."], "WORKDAY")
+    group_list(df, "tripBeginDay", ["Sa.", "So."], "WEEKEND")
 
 
 def group_employment(df):
@@ -266,8 +274,9 @@ def group(df, colname, valfrom, valto, target=None):
         target = valfrom
     df.loc[(df[colname] >= valfrom) & (df[colname] <= valto), [colname]] = target
 
-def group_list(df, colname, list, target):
-    df.loc[df[colname].isin(list), [colname]] = target
+
+def group_list(df, colname, glist, target):
+    df.loc[df[colname].isin(glist), [colname]] = target
 
 def group_age(df):
     group(df, "age", 0, 17)

@@ -28,6 +28,13 @@ class MyTestCase(unittest.TestCase):
         x = raw_data.merge(raw_data_household, how="left", left_on="householdOid", right_on="householdId")
         self.assertEqual(len(x), len(raw_data))
 
+    def test_weekday_extraction(self):
+        x = evaluation.default_test_merge()
+        self.assertTrue("tripBeginDay" in x)
+        self.assertEqual(set(x["tripBeginDay"]), {"WORKDAY", "WEEKEND"})
+
+    def test_merge_data(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()

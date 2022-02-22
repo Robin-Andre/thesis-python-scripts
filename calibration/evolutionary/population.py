@@ -137,12 +137,13 @@ class Population:
     def set_random_individual_as_target(self):
         individual = Individual(self.seed, self.active_parameters)
         individual.randomize()
-        individual.run(list(self.data_requirements()))
+        individual.run()
         self.set_target(individual.data)
         return individual
 
     def _run(self, individual):
-        individual.run(list(self.data_requirements()))
+        assert self.data_requirements().issubset(set(individual.requirements))
+        individual.run()
         self.logger.log(self, individual)
         self.logger.iteration += 1
         individual.set_fitness(self.target)

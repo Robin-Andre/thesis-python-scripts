@@ -47,8 +47,12 @@ class MyTestCase(unittest.TestCase):
         random_config = population.random_individual().yaml.mode_config()
         default_config = simulation.default_yaml().mode_config()
         for param in c:
+            # Since the parameter asc_car_d_mu is in the parameter vector it should be randomized, and therefore it
+            # is impossible to track which value it should be assigned. It would be possible to test that asc_car_d is
+            # changed, but it could theoretically be assigned the same value as before.
             if param == "asc_car_d_mu":
                 continue
+            # However, the important part of the test is to ensure that all the other parameters are not changed.
             self.assertAlmostEqual(random_config.parameters[param].value, default_config.parameters[param].value)
 
     def test_detailed_data_from_population(self):

@@ -28,6 +28,7 @@ class MyTestCase(unittest.TestCase):
         self.detailed_helper("b_home_car_p", {"tripMode": Mode.PASSENGER.value, "activityType": Activity.HOME.value})
         self.detailed_helper("shift_home_on_logsum_pt_fix", {"employment": Employment.HOME.value})
         self.detailed_helper("shift_high_inc_on_logsum_pt", {"economicalStatus": Economics.RICH.value})
+        self.detailed_helper("b_arbwo_bike", {"tripMode": 0, "workday": True})
 
     def test_detailed_destination_config(self):
         conf = configloader.Config(Path("resources/example_config_load/configs/destination_choice_parameters_LEISURE.txt"))
