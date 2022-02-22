@@ -107,11 +107,5 @@ class MyTestCase(unittest.TestCase):
         x = r.data
         print(x)
 
-
-
-
-
-
-
 if __name__ == '__main__':
     unittest.main()
