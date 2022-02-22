@@ -178,9 +178,11 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("previousMode", get_prev_mode_from_string),
                      ("eachAdultHasCar", get_carav_from_string),
                      ("isIntrazonal", get_intrazonal_from_string),
+                     ("relief", get_relief_from_string),
+
                      # All of the following methods have yet to be extracted from the simulation output.
 
-                     ("reliefNotImplemented", get_relief_from_string),
+
                      ("HasEBikeNotImplemented", get_ebike_from_string),
                      ("HasCSMembershipNotImplemented", get_cs_membership_from_string),
                      ("isUmlandNotImplemented", get_umland_from_string)

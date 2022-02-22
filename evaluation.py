@@ -89,19 +89,21 @@ def create_travel_distance_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     return temp
 
 
-def extract_data(yaml):
+def read_in_data(yaml):
     data = pandas.read_csv(SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv", sep=";")
     data_household = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["demandDataFolder"] + "/household.csv",
                                      sep=";")
     data_person = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["demandDataFolder"] + "/person.csv", sep=";")
-    return merge_data(data, data_household, data_person)
+    zone_properties = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["zonePropertiesDataFile"], sep=";")
+    return merge_data(data, data_household, data_person, zone_properties)
 
 
 def default_test_merge():
     data_person = pandas.read_csv("resources/person.csv", sep=";")
     data_household = pandas.read_csv("resources/household.csv", sep=";")
     data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-    return merge_data(data, data_household, data_person)
+    zone_data = pandas.read_csv("resources/zone_properties.csv", sep=";")
+    return merge_data(data, data_household, data_person, zone_data)
 
 
 def group_data(x):
@@ -132,11 +134,21 @@ def extract_big_car_fleet(household_df):
     household_df["eachAdultHasCar"] = (household_df["nominalSize"] - household_df["numberOfMinors"] \
                                      - household_df["numberOfNotSimulatedChildren"]) <= household_df["totalNumberOfCars"]
 
+
 def extract_intrazonal(df):
     df["isIntrazonal"] = df["sourceZone"] == df["targetZone"]
 
 
-def merge_data(data, household, person):
+def merge_relief(data, zone_data):
+    x = zone_data[["zoneId", "relief"]].copy()
+    x["relief"] = x["relief"].apply(lambda a: a.replace(",", "."))
+    x["relief"] = pandas.to_numeric(x["relief"])
+    x["relief"] = x["relief"] >= 250
+    return data.merge(x, left_on="targetZone", right_on="zoneId")
+
+
+def merge_data(data, household, person, zone_properties):
+    data = merge_relief(data, zone_properties)
     extract_intrazonal(data)
     data = extract_previous_trip(data)
     extract_big_car_fleet(household)

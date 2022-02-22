@@ -1,5 +1,6 @@
 import time
 import unittest
+from pathlib import Path
 
 import numpy
 import numpy as np
@@ -9,6 +10,7 @@ import evaluation
 import visualization
 
 import visualization as plot
+import yamlloader
 from configurations.parameter import Mode
 from metrics.trafficdemand import TrafficDemand
 
@@ -64,6 +66,13 @@ class MyTestCase(unittest.TestCase):
         evaluation.extract_intrazonal(data)
         self.assertTrue("isIntrazonal" in data.columns)
         self.assertTrue(set(data["isIntrazonal"]).issubset({False, True}))
+
+    def test_extract_zone_properties(self):
+        data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        zone_data = pandas.read_csv("resources/zone_properties.csv", sep=";")
+        data = evaluation.merge_relief(data, zone_data)
+        self.assertTrue("relief" in data.columns)
+        self.assertTrue(set(data["relief"]).issubset({False, True}))
 
     def test_merge_data(self):
         pass
