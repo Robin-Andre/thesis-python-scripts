@@ -1,5 +1,7 @@
 import time
 import unittest
+
+import numpy
 import numpy as np
 import pandas
 
@@ -7,6 +9,7 @@ import evaluation
 import visualization
 
 import visualization as plot
+from configurations.parameter import Mode
 from metrics.trafficdemand import TrafficDemand
 
 
@@ -32,6 +35,19 @@ class MyTestCase(unittest.TestCase):
         x = evaluation.default_test_merge()
         self.assertTrue("workday" in x)
         self.assertEqual(set(x["workday"]), {"WORKDAY", "WEEKEND"})
+
+    def test_previous_mode_extraction_does_not_influence_data(self):
+        data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        y = evaluation.extract_previous_trip(data)
+        y = y.drop("previousMode", axis=1)
+        self.assertIsNone(pandas.testing.assert_frame_equal(y, data))
+
+    def test_previous_mode_extraction_works(self):
+        x = evaluation.default_test_merge()
+        self.assertTrue("previousMode" in x)
+        expected_dict = {x.value for x in Mode}
+        expected_dict.add(-1)
+        self.assertTrue(set(x["previousMode"]).issubset(expected_dict))
 
     def test_merge_data(self):
         pass

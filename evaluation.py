@@ -3,6 +3,7 @@ import time
 from math import radians, cos, sin, asin, sqrt
 from pathlib import Path
 
+import numpy
 import pandas
 import pandas as pd
 import numpy as np
@@ -38,9 +39,10 @@ def create_plot_data(raw_data):
 
 
 DEFAULT_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "tripBeginDay"]
+                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode"]
 ADAPTED_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "workday"]
+                  "totalNumberOfCars", "nominalSize", "workday", "previousMode"]
+
 
 def create_traffic_demand_data(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["tripBegin"] + vector].copy()
@@ -114,7 +116,20 @@ def group_data(x):
     return x
 
 
+
+
+def extract_previous_trip(x):
+
+    x = x.sort_values(["personOid", "tripId"])
+    x["previousMode"] = x["tripMode"].shift(1)
+    x.loc[~x["personOid"].duplicated(), "previousMode"] = -1
+    x.sort_index(inplace=True)
+    return x
+
+
 def merge_data(data, household, person):
+    data = extract_previous_trip(data)
+
     x = data.merge(person, how="left", left_on="personOid", right_on="personId")
     x = x.merge(household, how="left", left_on="householdOid", right_on="householdId")
 

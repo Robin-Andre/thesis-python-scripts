@@ -103,12 +103,15 @@ class MyTestCase(unittest.TestCase):
     def test_individual_weekday_extraction(self):
         r = Individual(9, ["b_arbwo_car_p"])
         r.run()
-
-        x = r.data
-        print(r.data.columns())
         self.assertEqual(r.data.columns(), {"tripMode", "workday"})
         self.assertEqual(r.requirements, {"tripMode", "workday"})
-        #self.assertEqual()
+
+
+    def test_individual_previous_trip_extraction(self):
+        r = Individual(9, ["b_mode_bef_ped"])
+        r.run()
+        self.assertEqual(r.data.columns(), {"tripMode", "previousMode"})
+        self.assertEqual(r.requirements, {"tripMode", "previousMode"})
 
 
 if __name__ == '__main__':

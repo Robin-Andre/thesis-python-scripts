@@ -47,7 +47,13 @@ def get_commuter_ticket_from_string(param):
 
 def get_prev_mode_from_string(param):
     if param.__contains__("mode_bef"):
-        return True
+        if param.__contains__("ped"):
+            return Mode.PEDESTRIAN.value
+        elif param.__contains__("put"):
+            return Mode.PUBLIC_TRANSPORT.value
+        elif param.__contains__("bike"):
+            return Mode.BIKE.value
+
     return None
 
 
@@ -164,11 +170,11 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("totalNumberOfCars", get_number_of_cars_from_string),
                      ("nominalSize", get_household_size_from_string),
                      ("workday", get_workday_from_string),  # Weekday
-
+                     ("previousMode", get_prev_mode_from_string),
                      # All of the following methods have yet to be extracted from the simulation output.
 
                      ("reliefNotImplemented", get_relief_from_string),
-                     ("PreviousTripNotImplemented", get_prev_mode_from_string),
+
                      ("CarsPerAdultNotImplemented", get_carav_from_string),
                      ("HasEBikeNotImplemented", get_ebike_from_string),
                      ("HasCSMembershipNotImplemented", get_cs_membership_from_string),
