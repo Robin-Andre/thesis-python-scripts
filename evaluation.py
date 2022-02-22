@@ -39,9 +39,10 @@ def create_plot_data(raw_data):
 
 DEFAULT_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
                   "totalNumberOfCars", "nominalSize", "tripBeginDay"]
+ADAPTED_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
+                  "totalNumberOfCars", "nominalSize", "workday"]
 
-
-def create_traffic_demand_data(almost_raw_data, vector=DEFAULT_VECTOR):
+def create_traffic_demand_data(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["tripBegin"] + vector].copy()
 
     temp["counts_begin"] = 1
@@ -65,7 +66,7 @@ def create_traffic_demand_data(almost_raw_data, vector=DEFAULT_VECTOR):
     return z
 
 
-def create_travel_time_data_new(almost_raw_data, vector=DEFAULT_VECTOR):
+def create_travel_time_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["durationTrip"] + vector].copy()
 
     temp = temp.groupby(vector + ["durationTrip"]).agg({"durationTrip": "count"})
@@ -74,7 +75,7 @@ def create_travel_time_data_new(almost_raw_data, vector=DEFAULT_VECTOR):
     return temp
 
 
-def create_travel_distance_data_new(almost_raw_data, vector=DEFAULT_VECTOR):
+def create_travel_distance_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["distanceInKm"] + vector].copy()
 
     temp["distanceInKm"] = 1000 * temp["distanceInKm"]
@@ -119,6 +120,7 @@ def merge_data(data, household, person):
 
     x = x[DEFAULT_VECTOR + ["tripBegin", "tripEnd", "durationTrip", "distanceInKm"]]
     x = group_data(x)
+    x.rename(columns={"tripBeginDay": "workday"}, inplace=True)
     return x
 
 

@@ -100,6 +100,13 @@ class MyTestCase(unittest.TestCase):
         for v in self.x.errors(self.x.data).values():
             self.assertAlmostEqual(v, 0)
 
+    def test_individual_weekday_ectraction(self):
+        r = Individual(9, ["b_arbwo_car_p"])
+        r.run()
+
+        x = r.data
+        print(x)
+
 
 
 
