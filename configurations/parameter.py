@@ -171,11 +171,11 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("nominalSize", get_household_size_from_string),
                      ("workday", get_workday_from_string),  # Weekday
                      ("previousMode", get_prev_mode_from_string),
+                     ("eachAdultHasCar", get_carav_from_string),
+
                      # All of the following methods have yet to be extracted from the simulation output.
 
                      ("reliefNotImplemented", get_relief_from_string),
-
-                     ("CarsPerAdultNotImplemented", get_carav_from_string),
                      ("HasEBikeNotImplemented", get_ebike_from_string),
                      ("HasCSMembershipNotImplemented", get_cs_membership_from_string),
                      ("isUmlandNotImplemented", get_umland_from_string)
@@ -200,7 +200,6 @@ def group_employment(df):
     group_list(df, "employment", ['FULLTIME', 'PARTTIME', "MARGINAL"], "EMPLOYED")
     group_list(df, "employment", ['UNEMPLOYED', 'HOMEKEEPER'], "HOME")
     group_list(df, "employment", ["INFANT", "RETIRED", "UNKNOWN"], "UNSPECIFIED")
-
 
 
 class Employment(Enum):

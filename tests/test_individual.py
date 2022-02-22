@@ -113,6 +113,12 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(r.data.columns(), {"tripMode", "previousMode"})
         self.assertEqual(r.requirements, {"tripMode", "previousMode"})
 
+    def test_individual_carav_extraction(self):
+        r = Individual(9, ["shift_carav_on_logsum_drive"])
+        r.run()
+        self.assertEqual(r.data.columns(), {"eachAdultHasCar"})
+        self.assertEqual(r.requirements, {"eachAdultHasCar"})
+
 
 if __name__ == '__main__':
     unittest.main()

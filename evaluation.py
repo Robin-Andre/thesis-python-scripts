@@ -39,9 +39,9 @@ def create_plot_data(raw_data):
 
 
 DEFAULT_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode"]
+                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar"]
 ADAPTED_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "workday", "previousMode"]
+                  "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar"]
 
 
 def create_traffic_demand_data(almost_raw_data, vector=ADAPTED_VECTOR):
@@ -116,10 +116,11 @@ def group_data(x):
     return x
 
 
-
-
 def extract_previous_trip(x):
-
+    """
+    The current mobiTopp output format does not contain a column for the previous mode which is required by
+    certain tuning parameters. This method adds the previous mode column.
+    """
     x = x.sort_values(["personOid", "tripId"])
     x["previousMode"] = x["tripMode"].shift(1)
     x.loc[~x["personOid"].duplicated(), "previousMode"] = -1
@@ -127,8 +128,16 @@ def extract_previous_trip(x):
     return x
 
 
+def extract_big_car_fleet(household_df):
+    household_df["eachAdultHasCar"] = (household_df["nominalSize"] - household_df["numberOfMinors"] \
+                                     - household_df["numberOfNotSimulatedChildren"]) <= household_df["totalNumberOfCars"]
+
+
+
 def merge_data(data, household, person):
+
     data = extract_previous_trip(data)
+    extract_big_car_fleet(household)
 
     x = data.merge(person, how="left", left_on="personOid", right_on="personId")
     x = x.merge(household, how="left", left_on="householdOid", right_on="householdId")

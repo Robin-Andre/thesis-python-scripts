@@ -49,6 +49,17 @@ class MyTestCase(unittest.TestCase):
         expected_dict.add(-1)
         self.assertTrue(set(x["previousMode"]).issubset(expected_dict))
 
+    def test_household_fleet_calculation(self):
+        data = pandas.read_csv("resources/household.csv", sep=";")
+        evaluation.extract_big_car_fleet(data)
+        self.assertTrue("eachAdultHasCar" in data.columns)
+
+    def test_carfleet_extraction_works(self):
+        x = evaluation.default_test_merge()
+        self.assertTrue("eachAdultHasCar" in x)
+        self.assertTrue(set(x["eachAdultHasCar"]).issubset({False, True}))
+
+
     def test_merge_data(self):
         pass
 
