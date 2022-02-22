@@ -100,12 +100,16 @@ class MyTestCase(unittest.TestCase):
         for v in self.x.errors(self.x.data).values():
             self.assertAlmostEqual(v, 0)
 
-    def test_individual_weekday_ectraction(self):
+    def test_individual_weekday_extraction(self):
         r = Individual(9, ["b_arbwo_car_p"])
         r.run()
 
         x = r.data
-        print(x)
+        print(r.data.columns())
+        self.assertEqual(r.data.columns(), {"tripMode", "workday"})
+        self.assertEqual(r.requirements, {"tripMode", "workday"})
+        #self.assertEqual()
+
 
 if __name__ == '__main__':
     unittest.main()

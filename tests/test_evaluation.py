@@ -30,8 +30,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_weekday_extraction(self):
         x = evaluation.default_test_merge()
-        self.assertTrue("tripBeginDay" in x)
-        self.assertEqual(set(x["tripBeginDay"]), {"WORKDAY", "WEEKEND"})
+        self.assertTrue("workday" in x)
+        self.assertEqual(set(x["workday"]), {"WORKDAY", "WEEKEND"})
 
     def test_merge_data(self):
         pass

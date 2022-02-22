@@ -19,7 +19,7 @@ class BaseIndividual(ABC):
         self.fitness = None
         self.data = None
         self.parameter_name_list = param_list
-        self.requirements = list(self.data_requirements())
+        self.requirements = self.data_requirements()
 
     def __str__(self):
         return str(f"Value: {self.active_values()} Fitness: {self.fitness}")
