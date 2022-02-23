@@ -10,7 +10,7 @@ from metrics.data import Comparison
 
 
 class BaseIndividual(ABC):
-    def __init__(self, seed, param_list, fraction_of_pop=0.02):
+    def __init__(self, seed=-1, param_list=[], fraction_of_pop=0.02):
         simulation.restore_experimental_configs()
         self.yaml = simulation.default_yaml()
 

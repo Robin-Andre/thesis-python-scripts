@@ -59,9 +59,9 @@ class Data:
 
     def draw(self, reference=None):
         if reference is not None:
-            x = self.traffic_demand.draw(reference.traffic_demand)
-            y = self.travel_time.draw(reference.travel_time)
-            z = self.travel_distance.draw(reference.travel_distance)
+            x = self.traffic_demand.draw(reference=reference.traffic_demand)
+            y = self.travel_time.draw(reference=reference.travel_time)
+            z = self.travel_distance.draw(reference=reference.travel_distance)
         else:
             x = self.traffic_demand.draw()
             y = self.travel_time.draw()

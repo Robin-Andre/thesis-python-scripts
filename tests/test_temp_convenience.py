@@ -214,8 +214,9 @@ class ConvenienceClickToExecute(unittest.TestCase):
         x = Individual(21, [])
         x.load("resources/example_config_load")
         x.yaml.set_fraction_of_population(0.02)
-        x.run(["tripMode", "gender", "age"])
-        x.save("resources/even_more_detailed_individual")
+        x.set_requirements(["tripMode", "workday"])
+        x.run()
+        x.save("resources/workday_individual")
 
 
     def test_detailed_ind(self):

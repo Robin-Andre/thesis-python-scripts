@@ -124,7 +124,7 @@ def generic_smol_plot(data_frame, agg_list, keyword, x, element):
     fig.show()
 
 
-def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True):
+def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None):
     inputs = list(set(data_frame[split_element_name]))
     inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
@@ -138,19 +138,28 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
             cur_ax = ax[i // rest]
 
         temp = data_frame[data_frame[split_element_name] == element]
+
+
         if color_seperator is not None:
             tmp = temp.groupby(color_seperator)
             for key, group in tmp:
-                print(key)
-                print(group)
                 cur_ax.plot(group[x], group[keyword], color=color_modes(key), alpha=0.4)
         else:
+
             cur_ax.plot(temp[x], temp[keyword])
+
+            if reference_df is not None:
+                temp2 = reference_df[reference_df[split_element_name] == element]
+                cur_ax.plot(temp2[x], temp2[keyword])
+
+
+
         cur_ax.set_title(element)
 
     fig.suptitle(split_element_name)
     plt.legend(temp[keyword])
-    fig.show()
+    #fig.show()
+    return fig
 
 
 def draw_modal_split(df_list):

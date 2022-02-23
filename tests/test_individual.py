@@ -22,6 +22,10 @@ class MyTestCase(unittest.TestCase):
         self.x_d = Individual(22, [])
         self.x_d.load("resources/even_more_detailed_individual")
 
+        self.workday_ind = Individual()
+        self.workday_ind.load("resources/workday_individual")
+
+
 
     def test_load(self):
         x = Individual(0, [])
@@ -105,6 +109,14 @@ class MyTestCase(unittest.TestCase):
         r.run()
         self.assertEqual(r.data.columns(), {"tripMode", "previousMode", "eachAdultHasCar", "workday"})
         self.assertEqual(r.requirements, {"tripMode", "previousMode", "eachAdultHasCar", "workday"})
+
+    def test_draw(self):
+        #self.workday_ind.reduce(["workday"])
+        self.workday_ind.data.traffic_demand.draw_smooth().show()
+
+        #visualization.generic_travel_time(self.workday_ind.data.travel_time.get_data_frame(), "workday")
+        #visualization.generic_td_demand(self.workday_ind.data.traffic_demand.accumulate(["workday", "tripMode"]), "workday")
+        #self.x.draw()
 
 
 if __name__ == '__main__':

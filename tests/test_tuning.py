@@ -39,5 +39,17 @@ class MyTestCase(unittest.TestCase):
         helper(individual.data, "iteration3")
 
 
+    def test_weekday_works(self):
+        individual = Individual(42, ["b_arbwo_car_d"])
+        self.assertAlmostEqual(individual["b_arbwo_car_d"].value, 3.6962)
+        self.assertEqual(individual.requirements, {"workday", "tripMode"})
+        #individual.make_basic(nullify_exponential_b_tt=True)
+        individual.run()
+        individual.data.traffic_demand.draw_smooth().show()
+        temp = individual.copy()
+        temp["b_arbwo_car_d"].set(-20)
+        temp.run()
+        temp.data.traffic_demand.draw_smooth(reference=individual.data.traffic_demand).show()
+
 if __name__ == '__main__':
     unittest.main()

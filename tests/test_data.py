@@ -82,6 +82,14 @@ class MyTestCase(unittest.TestCase):
         p = Parameter("asc_car_d_mu")
         self.assertAlmostEqual(data.get_modal_split_by_param(p), 0.5052792)
 
+    def test_draw(self):
+        data = Data()
+        data.load("resources/even_more_detailed_individual/results/")
+        a, b, c, = data.draw()
+        a.show()
+        b.show()
+        c.show()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,8 +18,12 @@ class TravelTime(Metric):
     def read_from_raw_data(self, raw_data):
         self._data_frame = evaluation.create_travel_time_data_new(raw_data)
 
-    def draw(self, reference=None):
-        return visualization.draw_travel_time_per_mode(self, reference_df=reference)
+    def draw(self, grouper="tripMode", reference=None):
+        temp = metric.reduce(self._data_frame, [grouper], "durationTrip", "count")
+        temp2 = None
+        if reference is not None:
+            temp2 = metric.reduce(reference._data_frame, [grouper], "durationTrip", "count")
+        return visualization.generic_plot(temp, grouper, "count", "durationTrip", reference_df=temp2)
 
     def reduce(self, keeper_list):
         self._data_frame = metric.reduce(self._data_frame, keeper_list, "durationTrip", "count")
