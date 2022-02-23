@@ -70,12 +70,15 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(type(d), configurations.configloader.DestinationChoiceConfig)
 
     def test_util_yaml_checker(self):
+        simulation.restore_experimental_configs()
         yaml = simulation.default_yaml()
         utils.check_parameters_from_gen_files.check_yaml(yaml, remove_invalid_parameters=True)
         # Warning there is a parameter "b_ausb_put" which is obviously misspelled in the gen file, once fixed this
         # test will fail so increase the number of expected parameters to 217 (the other 11 parameters are for car
         # sharing which will not be in this model)
         self.assertEqual(len(yaml.mode_config().parameters), 216)
+        self.assertEqual(len(yaml.destination_config().parameters), 18)
+        self.assertEqual(len(yaml.activity_destination_config("business").parameters), 66 - 7)
 
 if __name__ == '__main__':
     unittest.main()

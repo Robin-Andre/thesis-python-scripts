@@ -22,7 +22,7 @@ class ConfigTestCase(unittest.TestCase):
         self.invalid_parameter_name_setting("")
 
     def test_equal_amount_of_parameters(self):
-        self.assertEqual(len(self.config.parameters), len(self.config.get_parameter_list()))
+        self.assertEqual(len(self.config.parameters), len(self.config.get_parameter_list()) - 12) # 12 Parameters are missing
 
     def test_none_parameter_name(self):
         self.invalid_parameter_name_setting(None)
@@ -33,7 +33,7 @@ class ConfigTestCase(unittest.TestCase):
 
     def test_get_parameter_list(self):
         parameter_list = self.config.get_parameter_list()
-        self.assertEqual(len(parameter_list), 228)  # 228 is the amount of parameters in mode_choice.
+        self.assertEqual(len(parameter_list), 228)
 
     def valid_parameter_target_overwrite(self, parameter, value):
         self.config.override_parameter(parameter, value)
@@ -94,7 +94,7 @@ class ConfigTestCase(unittest.TestCase):
 
     def test_subclass_config(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
-        self.assertEqual(len(mc_c.parameters), 228)
+        self.assertEqual(len(mc_c.parameters), 228 - 12) # Twelve parameters are missing
 
     def test_base_config_randomization_does_nothing(self):
         config = configloader.Config(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))

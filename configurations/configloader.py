@@ -1,6 +1,7 @@
 import re
 import random
 
+import utils.check_parameters_from_gen_files
 from configurations import limits
 from configurations.parameter import Parameter
 
@@ -16,6 +17,7 @@ class Config:
             self.name = path.name
         self.parameters = {}
         self.initialize_dictionary()
+        utils.check_parameters_from_gen_files.check_config(self, remove_invalid_parameters=True)
 
     def __str__(self):
         return self._text

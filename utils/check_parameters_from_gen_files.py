@@ -51,11 +51,15 @@ def check_in_dest(config, remove_invalid=False):
     rename_helper_method(config, parameters_not_in_gen, remove_invalid)
 
 
+def check_config(config, remove_invalid_parameters=False):
+    if config.name.__contains__("mode_choice_main"):
+        check_in_modes(config, remove_invalid_parameters)
+    else:
+        check_in_dest(config, remove_invalid_parameters)
+
+
 def check_yaml(yaml, remove_invalid_parameters=False):
     for config in yaml.configs:
-        if config.name.__contains__("mode_choice_main"):
-            check_in_modes(config, remove_invalid_parameters)
-        else:
-            check_in_dest(config, remove_invalid_parameters)
+        check_config(config, remove_invalid_parameters)
 
 
