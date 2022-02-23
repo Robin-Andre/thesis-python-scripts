@@ -162,6 +162,13 @@ def get_mode_from_string(string):
     return None
 
 
+def get_distance_from_string(param):
+    if param == "b_0_1":
+        return 0
+    elif param == "b_1_2":
+        return 1
+    return None
+
 """
 This vector contains the names of the requirements set to a parameter  
 """
@@ -179,6 +186,7 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("eachAdultHasCar", get_carav_from_string),
                      ("isIntrazonal", get_intrazonal_from_string),
                      ("relief", get_relief_from_string),
+                     ("shortDistance", get_distance_from_string),
 
                      # All of the following methods have yet to be extracted from the simulation output.
 

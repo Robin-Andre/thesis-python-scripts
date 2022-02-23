@@ -31,10 +31,11 @@ class MyTestCase(unittest.TestCase):
         self.detailed_helper("b_arbwo_bike", {"tripMode": 0, "workday": True})
         self.detailed_helper("shift_carav_on_logsum_drive", {"eachAdultHasCar": True})
 
+    @unittest.skip("Console print spam")
     def test_detailed_destination_config(self):
         conf = configloader.Config(Path("resources/example_config_load/configs/destination_choice_parameters_LEISURE.txt"))
         for key in conf.parameters.keys():
-            p = Parameter(key)
+            print(conf.parameters[key])
         self.helper("shift_age_78_on_logsum_attr", ["age"])
 
 

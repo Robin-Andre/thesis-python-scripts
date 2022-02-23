@@ -124,24 +124,28 @@ class MyTestCase(unittest.TestCase):
     @unittest.skip("Visual Test not automated")
     def test_access_destination_individual(self):
         d_individual = DestinationIndividual()
-        d_individual.set_requirements(["tripMode", "activityType"])
+        d_individual.set_requirements(["tripMode", "activityType", "age"])
 
-        d_individual.run()
+        #d_individual.run()
 
         x = d_individual.copy()
-        self.assertEqual(x.requirements, ["tripMode", "activityType"])
+        self.assertEqual(x.requirements, ["tripMode", "activityType", "age"])
         x["b_tt_car_d"].set(-0.05)
         self.assertEqual(x["b_tt_car_d"].value, -0.05)
         x["b_logsum_acc_put"].set(25)
-        x["shopping", "b_logsum_drive"].set(10)
+        x["shopping", "shift_age_1_on_logsum_attr"].set(10)
 
         y = x.copy()
-        y["shopping", "b_logsum_drive"].set(-10)
+        y["shopping", "shift_age_1_on_logsum_attr"].set(-10)
 
         x.run()
         y.run()
 
         a, b, c = y.draw(reference=x.data, group="activityType")
+        a.show()
+        c.show()
+
+        a, b, c = y.draw(reference=x.data, group="age")
         a.show()
         c.show()
 
