@@ -69,12 +69,12 @@ class TrafficDemand(Metric):
         assert "time", "active_trips_delta" not in keep_list
         self._data_frame = reduce(self._data_frame, keep_list, "time", "active_trips_delta")
 
-    def draw(self, reference=None):
+    def draw(self, reference=None, group="tripMode"):
         if reference is None:
-            return visualization.draw_travel_demand_by_mode(self.accumulate(["tripMode"]))
+            return visualization.draw_travel_demand_by_mode(self.accumulate([group]), group=group)
         else:
-            return visualization.draw_travel_demand_by_mode(self.accumulate(["tripMode"]),
-                                                            reference_df=reference.accumulate(["tripMode"]))
+            return visualization.draw_travel_demand_by_mode(self.accumulate([group]),
+                                                            reference_df=reference.accumulate([group]), group=group)
 
     def draw_smooth(self, reference=None, smoothness_factor=60):
         df1 = self.accumulate_padded(["tripMode"])

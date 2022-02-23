@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 import visualization
 from calibration import tuning
-from calibration.evolutionary.individual import Individual
+from calibration.evolutionary.individual import Individual, DestinationIndividual
 
 from calibration.evolutionary.population import Population
 
@@ -24,7 +24,6 @@ class MyTestCase(unittest.TestCase):
 
         self.workday_ind = Individual()
         self.workday_ind.load("resources/workday_individual")
-
 
 
     def test_load(self):
@@ -113,6 +112,30 @@ class MyTestCase(unittest.TestCase):
     @unittest.skip("Visualization Test")
     def test_draw(self):
         self.workday_ind.data.traffic_demand.draw_smooth().show()
+        a, b, c = self.workday_ind.draw(group="workday")
+        a.show()
+
+    @unittest.skip("Visual Test not automated")
+    def test_access_destination_individual(self):
+        d_individual = DestinationIndividual()
+        d_individual.set_requirements(["tripMode", "activityType"])
+
+        d_individual.run()
+
+        x = d_individual.copy()
+        self.assertEqual(x.requirements, ["tripMode", "activityType"])
+        x["b_tt_car_d"].set(-0.05)
+        self.assertEqual(x["b_tt_car_d"].value, -0.05)
+        x["b_logsum_acc_put"].set(25)
+        x.run()
+
+        a, b, c = d_individual.draw(reference=x.data, group="activityType")
+        a.show()
+        c.show()
+
+        a, b, c = d_individual.draw(reference=x.data)
+        a.show()
+        c.show()
 
 
 if __name__ == '__main__':

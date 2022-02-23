@@ -57,15 +57,15 @@ class Data:
         self.travel_time.reduce(keep_list)
         self.travel_distance.reduce(keep_list)
 
-    def draw(self, reference=None):
+    def draw(self, reference=None, group="tripMode"):
         if reference is not None:
-            x = self.traffic_demand.draw(reference=reference.traffic_demand)
-            y = self.travel_time.draw(reference=reference.travel_time)
-            z = self.travel_distance.draw(reference=reference.travel_distance)
+            x = self.traffic_demand.draw(reference=reference.traffic_demand, group=group)
+            y = self.travel_time.draw(reference=reference.travel_time, group=group)
+            z = self.travel_distance.draw(reference=reference.travel_distance, group=group)
         else:
-            x = self.traffic_demand.draw()
-            y = self.travel_time.draw()
-            z = self.travel_distance.draw()
+            x = self.traffic_demand.draw(group=group)
+            y = self.travel_time.draw(group=group)
+            z = self.travel_distance.draw(group=group)
         return x, y, z
 
     def draw_smooth(self, reference=None):

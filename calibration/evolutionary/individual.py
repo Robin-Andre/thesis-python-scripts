@@ -57,9 +57,9 @@ class BaseIndividual(ABC):
     def randomize(self):
         pass
 
-    def draw(self, reference=None):
+    def draw(self, reference=None, group="tripMode"):
 
-        return self.data.draw(reference)
+        return self.data.draw(reference, group=group)
 
     @abstractmethod
     def active_values(self):
@@ -146,6 +146,13 @@ class Individual(BaseIndividual):
 
     def similarity(self, compare_individual):
         return self.evaluate_fitness(compare_individual.data)
+
+
+class DestinationIndividual(Individual):
+
+    def __getitem__(self, item):
+        return self.yaml.destination_config()[item]
+
 
 
 class TravelTimeIndividual(Individual):

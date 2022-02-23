@@ -68,18 +68,18 @@ def draw_travel_demand(data_series, color_num=-1, title=""):
     plt.show()
 
 
-def draw_travel_demand_by_mode(data_frame, title="Active Trips", reference_df=None):
-
-    fig, ax = plt.subplots(3, 2, sharex=True)
+def draw_travel_demand_by_mode(data_frame, title="Active Trips", reference_df=None, group="tripMode"):
+    trip_mode_list = list(set(data_frame[group]))
+    fig, ax = plt.subplots(math.ceil(len(trip_mode_list)), 2, sharex=True)
     fig.suptitle(title)
-    trip_mode_list = list(set(data_frame["tripMode"]))
+
     for i, element in enumerate(trip_mode_list):
-        df = data_frame[data_frame["tripMode"] == element]
+        df = data_frame[data_frame[group] == element]
         ax[i // 2][i % 2].plot(df["time"], df["active_trips"], color=color_modes(element))
         ax[i // 2][i % 2].set_xticks([0, 1440, 2880, 4320, 5760, 7200, 8640, 10080])
         ax[i // 2][i % 2].set_xticklabels(["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So", "Mo"])
         if reference_df is not None:
-            ref = reference_df[reference_df["tripMode"] == element]
+            ref = reference_df[reference_df[group] == element]
             ax[i // 2][i % 2].plot(ref["time"], ref["active_trips"], color="black", alpha=0.2)
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     return fig

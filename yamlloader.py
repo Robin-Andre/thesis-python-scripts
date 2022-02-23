@@ -53,6 +53,13 @@ class YAML:
                 return config
         return None
 
+    def activity_destination_config(self, activity):
+        assert activity.lower() in ["business", "leisure", "service", "shopping"]
+        for config in self.configs:
+            if config.name.lower().__contains__(activity.lower()) and config.name.__contains__("destination"):
+                return config
+        return None
+
     # TODO mobitopp might not be at the same location
     def find_config(self, cwd, dict_entry1, dict_entry2):
         path = Path(cwd + self.data[dict_entry1][dict_entry2])

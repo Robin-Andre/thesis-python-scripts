@@ -51,5 +51,6 @@ class MyTestCase(unittest.TestCase):
         temp.run()
         temp.data.traffic_demand.draw_smooth(reference=individual.data.traffic_demand).show()
 
+
 if __name__ == '__main__':
     unittest.main()
