@@ -151,6 +151,8 @@ class Individual(BaseIndividual):
 class DestinationIndividual(Individual):
 
     def __getitem__(self, item):
+        if type(item) is tuple:
+            return self.yaml.activity_destination_config(item[0])[item[1]]
         return self.yaml.destination_config()[item]
 
 

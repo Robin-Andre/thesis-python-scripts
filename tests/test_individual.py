@@ -115,6 +115,12 @@ class MyTestCase(unittest.TestCase):
         a, b, c = self.workday_ind.draw(group="workday")
         a.show()
 
+    def test_access_special_parameter(self):
+        d_individual = DestinationIndividual()
+        p = d_individual["business", "shift_purp_on_logsum_pt_fix"]
+        self.assertEqual(p.value, 0.0143122619879248)
+
+
     @unittest.skip("Visual Test not automated")
     def test_access_destination_individual(self):
         d_individual = DestinationIndividual()
@@ -127,15 +133,22 @@ class MyTestCase(unittest.TestCase):
         x["b_tt_car_d"].set(-0.05)
         self.assertEqual(x["b_tt_car_d"].value, -0.05)
         x["b_logsum_acc_put"].set(25)
+        x["shopping", "b_logsum_drive"].set(10)
+
+        y = x.copy()
+        y["shopping", "b_logsum_drive"].set(-10)
+
         x.run()
+        y.run()
 
-        a, b, c = d_individual.draw(reference=x.data, group="activityType")
+        a, b, c = y.draw(reference=x.data, group="activityType")
         a.show()
         c.show()
 
-        a, b, c = d_individual.draw(reference=x.data)
-        a.show()
-        c.show()
+        #a, b, c = d_individual.draw(reference=x.data, group="activityType")
+        #a.show()
+        #c.show()
+
 
 
 if __name__ == '__main__':

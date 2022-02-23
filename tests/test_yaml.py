@@ -3,11 +3,10 @@ import unittest
 from pathlib import Path
 
 import configurations.configloader
+import utils.check_parameters_from_gen_files
 import yamlloader
 from configurations import SPECS
 import mobitopp_execution as simulation
-
-
 
 
 def temp(path, compare_keys):
@@ -70,6 +69,13 @@ class MyTestCase(unittest.TestCase):
         d = yaml.destination_config()
         self.assertEqual(type(d), configurations.configloader.DestinationChoiceConfig)
 
+    def test_util_yaml_checker(self):
+        yaml = simulation.default_yaml()
+        utils.check_parameters_from_gen_files.check_yaml(yaml, remove_invalid_parameters=True)
+        # Warning there is a parameter "b_ausb_put" which is obviously misspelled in the gen file, once fixed this
+        # test will fail so increase the number of expected parameters to 217 (the other 11 parameters are for car
+        # sharing which will not be in this model)
+        self.assertEqual(len(yaml.mode_config().parameters), 216)
 
 if __name__ == '__main__':
     unittest.main()
