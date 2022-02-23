@@ -110,13 +110,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(r.data.columns(), {"tripMode", "previousMode", "eachAdultHasCar", "workday"})
         self.assertEqual(r.requirements, {"tripMode", "previousMode", "eachAdultHasCar", "workday"})
 
+    @unittest.skip("Visualization Test")
     def test_draw(self):
-        #self.workday_ind.reduce(["workday"])
         self.workday_ind.data.traffic_demand.draw_smooth().show()
-
-        #visualization.generic_travel_time(self.workday_ind.data.travel_time.get_data_frame(), "workday")
-        #visualization.generic_td_demand(self.workday_ind.data.traffic_demand.accumulate(["workday", "tripMode"]), "workday")
-        #self.x.draw()
 
 
 if __name__ == '__main__':

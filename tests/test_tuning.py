@@ -38,7 +38,7 @@ class MyTestCase(unittest.TestCase):
         individual = tuning.tune(individual, data, p)#, population=pop)
         helper(individual.data, "iteration3")
 
-
+    @unittest.skip("Visualization Test")
     def test_weekday_works(self):
         individual = Individual(42, ["b_arbwo_car_d"])
         self.assertAlmostEqual(individual["b_arbwo_car_d"].value, 3.6962)
