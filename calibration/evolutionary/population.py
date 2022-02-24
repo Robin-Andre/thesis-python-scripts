@@ -125,7 +125,7 @@ class Population:
             self.population.append(ind)
 
     def random_individual(self, make_basic=False):
-        individual = Individual(self.seed, self.active_parameters)
+        individual = self.individual_constructor(self.seed, self.active_parameters)
         if make_basic:
             individual.make_basic(nullify_exponential_b_tt=True)
 
@@ -135,7 +135,7 @@ class Population:
         return individual
 
     def set_random_individual_as_target(self):
-        individual = Individual(self.seed, self.active_parameters)
+        individual = self.individual_constructor(self.seed, self.active_parameters)
         individual.randomize()
         individual.run()
         self.set_target(individual.data)

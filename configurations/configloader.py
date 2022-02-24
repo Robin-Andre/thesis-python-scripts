@@ -18,9 +18,10 @@ class Config:
         self.parameters = {}
         self.initialize_dictionary()
         utils.check_parameters_from_gen_files.check_config(self, remove_invalid_parameters=True)
+        self.parameters.pop("max_attractivity", None)  # This parameter is not part of the tuning process
 
     def __str__(self):
-        return "\n".join([x.name + " = " + str(x.value) for x in self.parameters.values()])
+        return "\n".join([str(x) for x in self.parameters.values()])
 
     def __repr__(self):
         return self._text

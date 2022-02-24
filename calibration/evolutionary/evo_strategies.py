@@ -8,11 +8,12 @@ def temp_rename2(population):
 def simple_combine(population):
     ind1, ind2 = population.select()
     child = population.combine(ind1, ind2)
+    print(f"The child has fitness: {child.fitness}")
     population.insert(child)
-    if child.fitness == population.best().fitness:
-        population.draw_boundaries()
-        population.draw_boundaries_traveltime()
-        population.draw_boundaries_modal_split()
+    #if child.fitness == population.best().fitness:
+        #population.draw_boundaries()
+        #population.draw_boundaries_traveltime()
+        #population.draw_boundaries_modal_split()
 
 
 def simple_repeated_mutation(population):

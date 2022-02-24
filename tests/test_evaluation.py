@@ -11,6 +11,7 @@ import visualization
 
 import visualization as plot
 import yamlloader
+from configurations import parameter
 from configurations.parameter import Mode
 from metrics.trafficdemand import TrafficDemand
 
@@ -74,8 +75,11 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue("relief" in data.columns)
         self.assertTrue(set(data["relief"]).issubset({False, True}))
 
-    def test_merge_data(self):
-        pass
+    def test_zone_destination_data(self):
+        data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
+        parameter.group_activity(data)
+        x = data.groupby(["sourceZone", "targetZone", "activityType"]).size()
+        print(x)
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import unittest
 
 import mobitopp_execution as simulation
 from calibration.evolutionary import initialization, evo_strategies, selection, replace, individual
-from calibration.evolutionary.individual import Individual
+from calibration.evolutionary.individual import Individual, DestinationIndividual
 from calibration.evolutionary.population import Population
 
 
@@ -66,6 +66,18 @@ class MyTestCase(unittest.TestCase):
             param_vector=["asc_car_d_mu", "female_on_asc_car_d", "student_on_asc_bike", "inc_low_on_asc_put"])
         population.set_random_individual_as_target()
         self.assertEqual(population.data_requirements(), population.target.columns())
+
+
+    def test_population_can_combine_appropriately(self):
+        population = Population(param_vector=["asc_car_d"], individual_constructor=DestinationIndividual, replace_func=replace.fancy_replace)
+        population.set_random_individual_as_target()
+        for i in range(4):
+            population.append(population.random_individual())
+            print(population)
+        for i in range(50):
+            evo_strategies.simple_combine(population)
+            print(population)
+        print(population)
 
 
 if __name__ == '__main__':

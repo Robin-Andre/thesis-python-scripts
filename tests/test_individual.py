@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 
 import visualization
 from calibration import tuning
+from calibration.evolutionary import combine
 from calibration.evolutionary.individual import Individual, DestinationIndividual
 
 from calibration.evolutionary.population import Population
@@ -120,6 +121,22 @@ class MyTestCase(unittest.TestCase):
         p = d_individual["business", "shift_purp_on_logsum_pt_fix"]
         self.assertEqual(p.value, 0.0143122619879248)
 
+    @unittest.skip("Reevaluate what this test does test.individual l.124")
+    def test_randomize_dest_individual(self):
+        d_individual = DestinationIndividual()
+        d_second = DestinationIndividual()
+        child = DestinationIndividual()
+        d_individual.randomize()
+        d_individual.run()
+        print(d_individual.evaluate_fitness(d_individual.data))
+        combine.basic_combine(d_individual, d_second, child, None, d_individual.parameter_names())
+        print(child["asc_car_d"])
+
+    @unittest.skip("Reevaluate what this test does test.individual l.135")
+    def test_dest(self):
+        d_individual = DestinationIndividual()
+        print(d_individual.parameter_names())
+
 
     @unittest.skip("Visual Test not automated")
     def test_access_destination_individual(self):
@@ -130,16 +147,28 @@ class MyTestCase(unittest.TestCase):
 
         x = d_individual.copy()
         self.assertEqual(x.requirements, ["tripMode", "activityType", "age"])
-        x["b_tt_car_d"].set(-0.05)
-        self.assertEqual(x["b_tt_car_d"].value, -0.05)
-        x["b_logsum_acc_put"].set(25)
-        x["shopping", "shift_age_1_on_logsum_attr"].set(10)
-
+        #x["b_tt_car_d"].set(-0.05)
+        #self.assertEqual(x["b_tt_car_d"].value, -0.05)
+        #x["b_logsum_acc_put"].set(25)
+        #x["shopping", "shift_age_1_on_logsum_attr"].set(10)
+        #x["shopping", "b_logsum_drive"].set(10)
+        x["asc_car_d"].set(25)
+        x["asc_car_p"].set(0)
         y = x.copy()
-        y["shopping", "shift_age_1_on_logsum_attr"].set(-10)
+        #y["shopping", "shift_age_1_on_logsum_attr"].set(-10)
+        #y["shopping", "b_logsum_drive"].set(0)
+
+        y["asc_car_d"].set(0)
+        y["asc_car_p"].set(25)
 
         x.run()
         y.run()
+
+        test1 = x.data.zone_destination
+        test2 = y.data.zone_destination
+        subtest = test1 - test2
+        subtestx = subtest.groupby(["targetZone"]).sum()
+        print(test1)
 
         a, b, c = y.draw(reference=x.data, group="activityType")
         a.show()

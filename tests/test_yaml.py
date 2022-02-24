@@ -75,6 +75,7 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue("elasticity_acc_put" not in yaml.destination_config().parameters.keys())
         self.assertEqual(len(yaml.activity_destination_config("business").parameters), 66 - 7 - 5)
 
+    #@unittest.skip("Just a print, not a test")
     def test_print_all_params(self):
         yaml = simulation.default_yaml()
         config = yaml.activity_destination_config("leisure")

@@ -39,7 +39,7 @@ def create_plot_data(raw_data):
 
 
 DEFAULT_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar"]
+                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone"]
 ADAPTED_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
                   "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar"]
 
@@ -86,6 +86,11 @@ def create_travel_distance_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = temp.groupby(vector + ["distanceInKm"]).agg({"distanceInKm": "count"})
     temp = temp.rename(columns={"distanceInKm": "count"})
     temp = temp.reset_index()
+    return temp
+
+def create_zone_destination_traffic_data(almost_raw_data):
+    temp = almost_raw_data[["sourceZone", "targetZone", "activityType"]].copy()
+    temp = temp.groupby(["sourceZone", "targetZone", "activityType"]).size().to_frame("traffic")
     return temp
 
 

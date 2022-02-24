@@ -118,6 +118,9 @@ class Individual(BaseIndividual):
         return [(self.yaml.mode_config().parameters[x].name, self.yaml.mode_config().parameters[x].value) for x in
                 self.parameter_name_list]
 
+    def parameter_names(self):
+        return self.yaml.mode_config().parameters.keys()
+
     def make_basic(self, nullify_exponential_b_tt=False):
         for param in self.yaml.mode_config().parameters.values():
             param.value = 0
@@ -148,6 +151,12 @@ class Individual(BaseIndividual):
         return self.evaluate_fitness(compare_individual.data)
 
 
+
+def sse(original, comparison, string):
+    x = original - comparison
+    result = x[string] ** 2
+    return -result.sum()
+
 class DestinationIndividual(Individual):
 
     def __getitem__(self, item):
@@ -155,6 +164,21 @@ class DestinationIndividual(Individual):
             return self.yaml.activity_destination_config(item[0])[item[1]]
         return self.yaml.destination_config()[item]
 
+    def parameter_names(self):
+        return self.yaml.destination_config().parameters.keys()
+
+    def evaluate_fitness(self, compare_data):
+
+        return sse(self.data.zone_destination, compare_data.zone_destination, "traffic")
+
+    def randomize(self):
+        for p in self.yaml.destination_config().parameters.values():
+            p.randomize()
+            print(p)
+        #special_configs = ["leisure", "shopping", "business", "service"]
+        #for s in special_configs:
+        #    for p in self.yaml.activity_destination_config(s).parameters.values():
+        #        p.value = random.uniform(-10, 10)
 
 
 class TravelTimeIndividual(Individual):

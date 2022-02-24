@@ -7,11 +7,11 @@ from calibration.evolutionary.individual import Individual
 
 def basic_combine(ind1, ind2, child, target, parameter_list):
     for param in parameter_list:
-        a = ind1.yaml.mode_config().parameters[param].value
-        b = ind2.yaml.mode_config().parameters[param].value
+        a = ind1[param].value
+        b = ind2[param].value
         c = random.uniform(min(a, b), max(a, b))
 
-        child.yaml.mode_config().parameters[param].set(c)
+        child[param].set(c)
     return child
 
 
@@ -19,15 +19,15 @@ def __helper(ind1, ind2, child, target, parameter_list, respect_same_sign=True):
     parent1_bounds = ind1.evaluate_fitness_by_group(target)
     parent2_bounds = ind2.evaluate_fitness_by_group(target)
     for param in parameter_list:
-        a = ind1.yaml.mode_config().parameters[param]
-        b = ind2.yaml.mode_config().parameters[param]
+        a = ind1[param]
+        b = ind2[param]
         y1 = parent1_bounds.iloc[a.requirements['tripMode']]['active_trips']
         x1 = a.value
         y2 = parent2_bounds.iloc[b.requirements['tripMode']]['active_trips']
         x2 = b.value
         if x1 - x2 < 0.1 or (numpy.sign(y1) == numpy.sign(y2) and respect_same_sign):
             set_val = a.value if ind1.fitness > ind2.fitness else b.value
-            child.yaml.mode_config().parameters[param].set(set_val)
+            child[param].set(set_val)
             continue
         assert x1 - x2 != 0
         m = (y2 - y1) / (x2 - x1)
@@ -37,7 +37,7 @@ def __helper(ind1, ind2, child, target, parameter_list, respect_same_sign=True):
         #print(f"[{a.lower_bound},{a.upper_bound}] {target}")
         assert a.upper_bound >= target >= a.lower_bound
         #print(f"{param} {x1} {y1}|{x2} {y2} {target} [{a.lower_bound},{a.upper_bound}]")
-        child.yaml.mode_config().parameters[param].set(target)
+        child[param].set(target)
     return child
 
 
@@ -51,13 +51,13 @@ def mathematical_combine_without_sign_limit(ind1, ind2, child, target, parameter
 
 def classic_combine(ind1, ind2, child, target, parameter_list):
     for param in parameter_list:
-        a = ind1.yaml.mode_config().parameters[param]
-        b = ind2.yaml.mode_config().parameters[param]
+        a = ind1[param]
+        b = ind2[param]
         parent_flag = random.randint(0, 1)
         if parent_flag:
             set_value = a.value
         else:
             set_value = b.value
 
-        child.yaml.mode_config().parameters[param].set(set_value)
+        child[param].set(set_value)
     return child

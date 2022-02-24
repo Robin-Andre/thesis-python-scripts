@@ -290,4 +290,3 @@ def generate_destination_choice_parameter_bounds(parameter_name):
         return 0, 100
     if parameter_name.__contains__("b_tt"):
         return -1, 0
-

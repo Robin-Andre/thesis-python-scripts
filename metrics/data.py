@@ -9,6 +9,7 @@ from metrics.metric import aggregate
 from metrics.trafficdemand import TrafficDemand
 from metrics.traveldistance import TravelDistance
 from metrics.traveltime import TravelTime
+from metrics.zone_destination_traffic import ZoneDestinationTraffic
 
 
 class Data:
@@ -17,16 +18,19 @@ class Data:
             self.traffic_demand = None
             self.travel_time = None
             self.travel_distance = None
+            self.zone_destination = None
             return
 
         self.traffic_demand = TrafficDemand.from_raw_data(raw_data)
         self.travel_time = TravelTime.from_raw_data(raw_data)
         self.travel_distance = TravelDistance.from_raw_data(raw_data)
+        self.zone_destination = ZoneDestinationTraffic.from_raw_data(raw_data)
 
     def __eq__(self, other):
         return self.traffic_demand._data_frame.equals(other.traffic_demand._data_frame)\
                and self.travel_time._data_frame.equals(other.travel_time._data_frame) \
-               and self.travel_distance._data_frame.equals(other.travel_distance._data_frame)
+               and self.travel_distance._data_frame.equals(other.travel_distance._data_frame) \
+               and self.zone_destination._data_frame.equals(other.zone_destination._data_frame)
 
     def empty(self):
         return all(v is None for v in [self.traffic_demand, self.travel_time, self.travel_distance])
@@ -35,16 +39,19 @@ class Data:
         self.traffic_demand.write(path + "Demand.csv")
         self.travel_time.write(path + "Time.csv")
         self.travel_distance.write(path + "Distance.csv")
+        self.zone_destination.write(path + "ZoneDestination.csv")
 
     def load(self, path="dump\\"):
         self.traffic_demand = TrafficDemand.from_file(path + "Demand.csv")
         self.travel_time = TravelTime.from_file(path + "Time.csv")
         self.travel_distance = TravelDistance.from_file(path + "Distance.csv")
+        self.zone_destination = ZoneDestinationTraffic.from_file(path + "ZoneDestination.csv")
 
     def print(self):
         self.traffic_demand.print()
         self.travel_time.print()
         self.travel_distance.print()
+        self.zone_destination.print()
 
     def columns(self):
         cols = list(self.travel_time.get_data_frame().columns.values)

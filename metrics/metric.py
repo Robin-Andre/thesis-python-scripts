@@ -70,7 +70,10 @@ class Metric:
     @classmethod
     def from_file(cls, file_path):
         obj = cls()
-        obj._data_frame = pandas.read_csv(file_path)
+        try:
+            obj._data_frame = pandas.read_csv(file_path)
+        except FileNotFoundError:
+            return None
         return obj
 
     @classmethod
