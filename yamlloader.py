@@ -16,7 +16,6 @@ V2Loader.add_constructor(
     V2Loader.let_v2_through)
 
 
-#TODO make one liner class method for reading in yaml
 class YAML:
 
     def __init__(self, yaml_file_path):
@@ -35,7 +34,6 @@ class YAML:
         return [item.name for item in self.configs]
 
     def set_configs(self, configs):
-        # TODO find better solution to reload configs
         cur_dir = "/".join(self.data["modeChoice"]["main"].split("/")[:-1]) + "/"
         for config in configs:
             config.path = SPECS.CWD + cur_dir + config.name
@@ -106,7 +104,7 @@ class YAML:
         if self.configs is not None:
             for c in self.configs:
                 c.write()
-    # TODO remove deepcopy
+
     def reset(self):
         print("Restoring Original")
         self.data = deepcopy(self.original)

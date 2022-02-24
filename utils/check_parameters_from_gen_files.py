@@ -5,11 +5,12 @@ from configurations import SPECS
 
 
 def search_regex(parameter_name, text):
-    regex = "\W" + parameter_name + "\W"
-    disabled_regex = "// .*" + regex
+    regex = "\W" + parameter_name + "\W" # It is very important to add \W guards in case a parameter is a subset of another
+    disabled_regex = "//\W[^\n]*" + regex  # Basically: Have a started comment block but no newline in front of the parameter
     occurences = len(re.findall(regex, text))
     disabled = len(re.findall(disabled_regex, text))
 
+    # Should have done an enum here but this is just a quick fix
     if occurences == 0:
         return -2
     if occurences - disabled <= 0:
@@ -46,16 +47,15 @@ def check_in_modes(config, remove_invalid=False):
     params_disabled = []
     for p in config.parameters:
         results = [search_regex(p, text1), search_regex(p, text2), search_regex(p, text3)]
-
+        # Since mode choice is split among 3 files some effort has to be put in to search for the parameter
         if all(i == -2 for i in results):
             parameters_not_in_gen.append(p)
 
         elif all(i <= -1 for i in results):
+            # Less than -1 because it might be commented out in one file and not even present in the others
             params_disabled.append(p)
 
     rename_helper_method(config, parameters_not_in_gen, params_disabled, remove_invalid)
-
-
 
 
 def check_in_dest(config, remove_invalid=False):

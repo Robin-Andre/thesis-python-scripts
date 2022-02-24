@@ -20,10 +20,11 @@ class Config:
         utils.check_parameters_from_gen_files.check_config(self, remove_invalid_parameters=True)
 
     def __str__(self):
-        return self._text
+        return "\n".join([x.name + " = " + str(x.value) for x in self.parameters.values()])
 
     def __repr__(self):
-        return f"Data: {self.parameters}\nPath: {self.path}\nName: {self.name}\n"
+        return self._text
+        #return f"Data: {self.parameters}\nPath: {self.path}\nName: {self.name}\n"
 
     def __getitem__(self, item):
         if type(item) == Parameter:

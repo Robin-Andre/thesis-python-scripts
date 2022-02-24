@@ -27,12 +27,6 @@ def temp(path, compare_keys):
 
 class MyTestCase(unittest.TestCase):
 
-    # TODO this should be in main, not a unit test
-    #def test_calibration_folder_exists(self):
-    #    cal_dir = cwd + "calibration/"
-    #    self.assertTrue(os.path.exists(cal_dir))
-    #    self.assertTrue(os.path.isdir(cal_dir))
-
     def test_existing_yaml_file_can_be_loaded(self):
         yaml_path = Path("resources/example_config_load/launch.yaml")
         yaml = yamlloader.YAML(yaml_path)
@@ -76,9 +70,15 @@ class MyTestCase(unittest.TestCase):
         # Warning there is a parameter "b_ausb_put" which is obviously misspelled in the gen file, once fixed this
         # test will fail so increase the number of expected parameters to 217 (the other 11 parameters are for car
         # sharing which will not be in this model)
-        self.assertEqual(len(yaml.mode_config().parameters), 216)
-        self.assertEqual(len(yaml.destination_config().parameters), 23 - 5 - 3)
-        self.assertEqual(len(yaml.activity_destination_config("business").parameters), 66 - 7 - 1)
+        self.assertEqual(len(yaml.mode_config().parameters), 228 - 12 - 1)
+        self.assertEqual(len(yaml.destination_config().parameters), 23 - 5 - 5)
+        self.assertTrue("elasticity_acc_put" not in yaml.destination_config().parameters.keys())
+        self.assertEqual(len(yaml.activity_destination_config("business").parameters), 66 - 7 - 5)
+
+    def test_print_all_params(self):
+        yaml = simulation.default_yaml()
+        config = yaml.activity_destination_config("leisure")
+        print(config)
 
 if __name__ == '__main__':
     unittest.main()
