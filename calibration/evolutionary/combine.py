@@ -49,6 +49,21 @@ def mathematical_combine_without_sign_limit(ind1, ind2, child, target, parameter
     return __helper(ind1, ind2, child, target, parameter_list, respect_same_sign=False)
 
 
+def average_or_parent_combine(ind1, ind2, child, target, parameter_list):
+    for param in parameter_list:
+        a = ind1[param].value
+        b = ind2[param].value
+        c = (a + b) / 2
+        val = random.randint(0, 3)
+        if val == 3:
+            child[param].set(a)
+        elif val == 2:
+            child[param].set(b)
+        else:
+            child[param].set(c)
+
+    return child
+
 def classic_combine(ind1, ind2, child, target, parameter_list):
     for param in parameter_list:
         a = ind1[param]

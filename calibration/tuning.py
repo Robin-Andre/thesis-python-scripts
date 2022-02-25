@@ -45,6 +45,11 @@ def tune(individual: BaseIndividual, data_target: Data, parameter, epsilon=0.05,
 
     return copy_ind_1
 
+def search_parameter_optimum(individual: BaseIndividual, data_target: Data, parameter):
+    low = parameter.lower_bound
+    up = parameter.upper_bound
+
+
 
 def tune_strategy1(individual: BaseIndividual, data_target: Data, epsilon, rounds=10):
     p = Population()

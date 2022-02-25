@@ -1,5 +1,7 @@
 import copy
 
+from matplotlib import pyplot as plt
+
 import mobitopp_execution as simulation
 import random
 from abc import ABC, abstractmethod
@@ -151,14 +153,11 @@ class Individual(BaseIndividual):
         return self.evaluate_fitness(compare_individual.data)
 
 
+def temp_helper(x, y, vals):
+    return [x + y * v for v in vals]
 
-def sse(original, comparison, string):
-    x = original - comparison
-    result = x[string] ** 2
-    return -result.sum()
 
 class DestinationIndividual(Individual):
-
     def __getitem__(self, item):
         if type(item) is tuple:
             return self.yaml.activity_destination_config(item[0])[item[1]]
@@ -169,7 +168,30 @@ class DestinationIndividual(Individual):
 
     def evaluate_fitness(self, compare_data):
 
-        return sse(self.data.zone_destination, compare_data.zone_destination, "traffic")
+        difference = Comparison(self.data, compare_data)
+        print(difference.zone_traffic)
+        return difference.sum_zones()
+
+    def draw_utility_functions(self):
+        modes = ["car_d", "car_p", "put", "ped", "bike"]
+        xvals = list(range(0, 100))
+        for x in modes:
+            asc = "asc_" + x
+            b_tt = "b_tt_" + x
+            asc_val = self[asc].value
+            b_tt_val = self[b_tt].value
+            print(asc_val)
+            print(b_tt_val)
+            yvals = temp_helper(asc_val, b_tt_val, xvals)
+            plt.plot(xvals, yvals)
+        plt.legend(["car_d", "car_p", "put", "ped", "bike"])
+        plt.show()
+
+    def randomize_special_config(self, activity):
+        for p in self.yaml.activity_destination_config(activity).parameters.values():
+            p.randomize()
+            print(p)
+
 
     def randomize(self):
         for p in self.yaml.destination_config().parameters.values():
@@ -179,6 +201,20 @@ class DestinationIndividual(Individual):
         #for s in special_configs:
         #    for p in self.yaml.activity_destination_config(s).parameters.values():
         #        p.value = random.uniform(-10, 10)
+
+
+class ShoppingDestinationIndividual(DestinationIndividual):
+
+    def __getitem__(self, item):
+
+        return self.yaml.activity_destination_config("shopping")[item]
+
+
+    def randomize(self):
+        for p in self.yaml.activity_destination_config("shopping").parameters.values():
+            p.randomize()
+            print(p)
+
 
 
 class TravelTimeIndividual(Individual):

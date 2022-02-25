@@ -30,7 +30,6 @@ def mutate2(individual, mutation, target):
         #print(f"{param} :{a.value} -> {target} ")
     return mutation
 
-
 def mutate3(individual, mutation, target):
     temp = individual.evaluate_fitness_by_group(target)
     temp = (temp / temp.abs().sum())

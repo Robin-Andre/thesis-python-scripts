@@ -39,9 +39,9 @@ def create_plot_data(raw_data):
 
 
 DEFAULT_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone"]
+                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone", "isIntrazonal"]
 ADAPTED_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar"]
+                  "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar", "isIntrazonal"]
 
 
 def create_traffic_demand_data(almost_raw_data, vector=ADAPTED_VECTOR):

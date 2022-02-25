@@ -186,7 +186,7 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("eachAdultHasCar", get_carav_from_string),
                      ("isIntrazonal", get_intrazonal_from_string),
                      ("relief", get_relief_from_string),
-                     ("shortDistance", get_distance_from_string),
+                     # TODO Disabled due to difficulties with distance("distanceInKm", get_distance_from_string),
 
                      # All of the following methods have yet to be extracted from the simulation output.
 
@@ -402,7 +402,7 @@ class Parameter:
     def __init__(self, name, value=0):
         self.name = name
         self.value = value
-        self.lower_bound, self.upper_bound = None, None
+        self.lower_bound, self.upper_bound = -1, 1
         self.requirements = get_all_parameter_limitations(name)
         self.observer = get_appropriate_observation_function(name)
 

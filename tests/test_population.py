@@ -1,8 +1,9 @@
+import random
 import unittest
 
 import mobitopp_execution as simulation
-from calibration.evolutionary import initialization, evo_strategies, selection, replace, individual
-from calibration.evolutionary.individual import Individual, DestinationIndividual
+from calibration.evolutionary import initialization, evo_strategies, selection, replace, individual, combine
+from calibration.evolutionary.individual import Individual, DestinationIndividual, ShoppingDestinationIndividual
 from calibration.evolutionary.population import Population
 
 
@@ -69,15 +70,51 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_population_can_combine_appropriately(self):
-        population = Population(param_vector=["asc_car_d"], individual_constructor=DestinationIndividual, replace_func=replace.fancy_replace)
+        random.seed(42)
+        population = Population(param_vector=simulation.default_yaml().activity_destination_config("shopping").parameters.keys(), individual_constructor=ShoppingDestinationIndividual,
+                                replace_func=replace.fancy_replace, combine_func=combine.average_or_parent_combine)
         population.set_random_individual_as_target()
-        for i in range(4):
+        for i in range(10):
             population.append(population.random_individual())
             print(population)
         for i in range(50):
             evo_strategies.simple_combine(population)
             print(population)
         print(population)
+
+    def test_load(self):
+        random.seed(42)
+        population = Population(param_vector=simulation.default_yaml().destination_config().parameters.keys(), individual_constructor=DestinationIndividual,
+                                replace_func=replace.fancy_replace, combine_func=combine.average_or_parent_combine)
+        population.set_random_individual_as_target()
+        population.load("resources/test2_population")
+        for i in range(50):
+            evo_strategies.simple_combine(population)
+            print(population)
+
+    def test_proempfel(self):
+        d = DestinationIndividual()
+        d.run()
+        c = DestinationIndividual()
+        #random.seed(42)
+        c.randomize_special_config("leisure")
+        c.run()
+        print(f"Current fitness: {c.evaluate_fitness(d.data)}")
+
+        c["leisure", "b_attr"].set(0.1)
+        c.run()
+        print(f"Current fitness: {c.evaluate_fitness(d.data)}")
+        c["leisure", "b_attr"].set(1)
+        c.run()
+        print(f"Current fitness: {c.evaluate_fitness(d.data)}")
+
+        c["leisure", "b_attr"].set(0.5)
+        c.run()
+        print(f"Current fitness: {c.evaluate_fitness(d.data)}")
+
+        c["leisure", "b_attr"].set(0.7)
+        c.run()
+        print(f"Current fitness: {c.evaluate_fitness(d.data)}")
 
 
 if __name__ == '__main__':

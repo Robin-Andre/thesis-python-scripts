@@ -4,7 +4,7 @@ import numpy
 import pandas
 
 import visualization
-from configurations.parameter import Parameter
+from configurations.parameter import Parameter, ActivityGroup
 from metrics.metric import aggregate
 from metrics.trafficdemand import TrafficDemand
 from metrics.traveldistance import TravelDistance
@@ -167,19 +167,41 @@ def sse(original, comparison, string):
     return -result.sum()
 
 
+def super_sse(original, comparison, string):
+    x = original - comparison
+    result = x[string] ** 2
+    temp = "activityType"
+    business = result.loc[result.index.get_level_values(temp) == ActivityGroup.BUSINESS.value]  # Business
+    shopping = result.loc[result.index.get_level_values(temp) == ActivityGroup.SHOPPING.value]  # Shopping
+    service = result.loc[result.index.get_level_values(temp) == ActivityGroup.SERVICE.value]  # Service#
+    rest = result.loc[(result.index.get_level_values(temp) != ActivityGroup.BUSINESS.value) &
+                      (result.index.get_level_values(temp) != ActivityGroup.SHOPPING.value) &
+                      (result.index.get_level_values(temp) != ActivityGroup.SERVICE.value)]
+    return -business.sum(), -shopping.sum(), -service.sum(), -rest.sum()
+
+
 class Comparison:
 
     def __init__(self, input_data, comparison_data):
-        x = copy.deepcopy(input_data)
-        x.reduce(["tripMode"])
-        y = copy.deepcopy(comparison_data)
-        y.reduce(["tripMode"])
-        self.modal_split = sse(x._get_modal_split(), y._get_modal_split(), "count")
-        self.travel_time = sse(x.travel_time.get_data_frame(), y.travel_time.get_data_frame(), "count")
-        self.travel_demand = sse(x.traffic_demand, y.traffic_demand, "active_trips")
+        if "tripMode" in input_data.columns():
+            x = copy.deepcopy(input_data)
+            x.reduce(["tripMode"])
+            y = copy.deepcopy(comparison_data)
+            y.reduce(["tripMode"])
+            self.modal_split = sse(x._get_modal_split(), y._get_modal_split(), "count")
+            self.travel_time = sse(x.travel_time.get_data_frame(), y.travel_time.get_data_frame(), "count")
+            self.travel_demand = sse(x.traffic_demand, y.traffic_demand, "active_trips")
+        else:
+            self.modal_split = numpy.inf
+            self.travel_time = numpy.inf
+            self.travel_demand = numpy.inf
+        self.zone_traffic = super_sse(input_data.zone_destination, comparison_data.zone_destination, "traffic")
+
+    def sum_zones(self):
+        return sum(list(self.zone_traffic))
 
     def __str__(self):
-        return ", ".join([str(x) for x in [self.modal_split, self.travel_time, self.travel_demand]])
+        return ", ".join([str(x) for x in [self.modal_split, self.travel_time, self.travel_demand, self.sum_zones()]])
 
 
 

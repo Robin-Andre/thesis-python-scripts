@@ -121,16 +121,24 @@ class MyTestCase(unittest.TestCase):
         p = d_individual["business", "shift_purp_on_logsum_pt_fix"]
         self.assertEqual(p.value, 0.0143122619879248)
 
-    @unittest.skip("Reevaluate what this test does test.individual l.124")
+    #@unittest.skip("Reevaluate what this test does test.individual l.124")
     def test_randomize_dest_individual(self):
         d_individual = DestinationIndividual()
         d_second = DestinationIndividual()
         child = DestinationIndividual()
-        d_individual.randomize()
+        #d_individual.randomize()
         d_individual.run()
-        print(d_individual.evaluate_fitness(d_individual.data))
-        combine.basic_combine(d_individual, d_second, child, None, d_individual.parameter_names())
-        print(child["asc_car_d"])
+        x = d_individual.copy()
+
+        xvals = []
+        for i in range(10):
+            x["asc_car_d"].set((i - 5) * 10)
+            x.run()
+            xvals.append(x.evaluate_fitness(d_individual.data))
+            print(x.evaluate_fitness(d_individual.data))
+        print(xvals)
+        #combine.basic_combine(d_individual, d_second, child, None, d_individual.parameter_names())
+        #print(child["asc_car_d"])
 
     @unittest.skip("Reevaluate what this test does test.individual l.135")
     def test_dest(self):
@@ -178,9 +186,10 @@ class MyTestCase(unittest.TestCase):
         a.show()
         c.show()
 
-        #a, b, c = d_individual.draw(reference=x.data, group="activityType")
-        #a.show()
-        #c.show()
+
+    def test_draw_lines(self):
+        d = DestinationIndividual()
+        d.draw_utility_functions()
 
 
 

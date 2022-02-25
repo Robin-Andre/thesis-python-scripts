@@ -123,6 +123,7 @@ class Population:
             ind = self.individual_constructor(self.seed, self.active_parameters)
             ind.load(x)
             self.population.append(ind)
+        self.fitness_for_all_individuals()
 
     def random_individual(self, make_basic=False):
         individual = self.individual_constructor(self.seed, self.active_parameters)
