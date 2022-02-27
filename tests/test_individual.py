@@ -110,6 +110,16 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(r.data.columns(), {"tripMode", "previousMode", "eachAdultHasCar", "workday"})
         self.assertEqual(r.requirements, {"tripMode", "previousMode", "eachAdultHasCar", "workday"})
 
+    def test_asc_tuning_destination_choice(self):
+        d = DestinationIndividual()
+        values = [(d[p].name, d[p].value) for p in d.parameter_names()]
+        d.tune_asc(5)
+        for name, value in values:
+            if name.__contains__("asc"):
+                self.assertEqual(d[name].value, value + 5)
+            else:
+                self.assertEqual(d[name].value, value)
+
     @unittest.skip("Visualization Test")
     def test_draw(self):
         self.workday_ind.data.traffic_demand.draw_smooth().show()

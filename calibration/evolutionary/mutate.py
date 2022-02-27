@@ -1,3 +1,6 @@
+import random
+
+
 def mutate(individual, mutation, target):
     temp = individual.evaluate_fitness_by_group(target)
     temp = -(temp / temp.abs().sum())
@@ -13,6 +16,17 @@ def mutate(individual, mutation, target):
 
         mutation[param].set(target)
         #print(f"{param} : {target} ")
+    return mutation
+
+def mutate_one_parameter(individual, mutation, target):
+    param_name = random.choice(list(individual.parameter_name_list))
+    print(f"Chosen Parameter: {param_name}")
+    a, lower, upper = individual[param_name].value, individual[param_name].lower_bound, individual[param_name].upper_bound
+    alpha = 0.05
+    sign = 1 if random.random() < 0.5 else -1
+    target = a + alpha * sign * (upper - lower)
+    print(f"Original Value: {a} target: {target}")
+    mutation[param_name].set(target)
     return mutation
 
 

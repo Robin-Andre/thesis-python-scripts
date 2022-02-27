@@ -84,17 +84,6 @@ class MyTestCase(unittest.TestCase):
         print(population)
 
     @unittest.skip("not a test but just an execution")
-    def test_load(self):
-        random.seed(42)
-        population = Population(param_vector=simulation.default_yaml().destination_config().parameters.keys(), individual_constructor=DestinationIndividual,
-                                replace_func=replace.fancy_replace, combine_func=combine.average_or_parent_combine)
-        population.set_random_individual_as_target()
-        population.load("resources/test2_population")
-        for i in range(50):
-            evo_strategies.simple_combine(population)
-            print(population)
-
-    @unittest.skip("not a test but just an execution")
     def test_proempfel(self):
         d = DestinationIndividual()
         d.run()

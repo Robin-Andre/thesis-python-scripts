@@ -1,9 +1,13 @@
 import math
+from ast import literal_eval
 
 import numpy
 import pandas
 import scipy
 from matplotlib import pyplot as plt
+
+from configurations import SPECS
+
 
 def label_modes(s):
     d = {
@@ -83,6 +87,66 @@ def draw_travel_demand_by_mode(data_frame, title="Active Trips", reference_df=No
             ax[i // 2][i % 2].plot(ref["time"], ref["active_trips"], color="black", alpha=0.2)
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     return fig
+
+def draw_travel_distance_without_modes(obj, reference=None):
+    temp = obj.get_data_frame().groupby("distanceInKm").sum()["count"]
+    fig, ax = plt.subplots()
+    if reference is not None:
+        temp2 = reference.get_data_frame().groupby("distanceInKm").sum()["count"]
+        temp2 = temp2.rename("Reference")
+        temp = pandas.concat([temp, temp2], axis=1)
+
+    temp.plot(kind="line", ax=ax)
+    return fig
+
+def helper(row):
+    print("lol")
+
+
+def draw_zone_demand(obj, reference=None):
+    fig, ax = plt.subplots()
+    temp = obj.get_data_frame()
+    if reference is not None:
+        temp = obj - reference
+    lol = temp.groupby(level=[0, 1]).sum()
+    centroids = pandas.read_csv(SPECS.CWD + "output/rastatt/zone-repository/test_zone.csv", encoding='cp1252', sep=";")[["id", "centroidLocation", "classification"]]
+
+
+
+    centroids["centroidLocation"] = centroids["centroidLocation"].apply(lambda x: x.replace(":", ","))
+    centroids[["x", "y", "boring", "noidea"]] = centroids["centroidLocation"].str[1:-1].str.split(",", expand=True).astype(float)
+
+    t = centroids[centroids["classification"] == "studyArea"]
+    xmin = t["x"].min()
+    xmax = t["x"].max()
+    ymin = t["y"].min()
+    ymax = t["y"].max()
+
+
+    leonidas = centroids[["id", "x", "y"]]
+    lol = lol.reset_index()
+    test = pandas.merge(lol, leonidas, left_on="sourceZone", right_on="id")
+    test = test.rename(columns={"x": "origin_x", "y": "origin_y"})
+    test = pandas.merge(test, leonidas, left_on="targetZone", right_on="id")
+    test = test.rename(columns={"x": "target_x", "y": "target_y"})
+    test = test[["sourceZone", "targetZone", "traffic", "origin_x", "origin_y", "target_x", "target_y"]]
+
+    for idx, row in test.iterrows():
+        col = "red" if row["traffic"] > 0 else "blue"
+        if row["sourceZone"] != row["targetZone"] and row["traffic"] != 0:
+            ax.plot([row["origin_x"], row["target_x"]], [row["origin_y"], row["target_y"]],
+                     linewidth=math.log2(abs(row["traffic"])) - 1, color=col, alpha=math.log10(abs(row["traffic"])) * 0.05)
+        elif row["sourceZone"] == row["targetZone"] and row["traffic"] != 0:
+            ax.plot(row["origin_x"], row["origin_y"], marker="o", color=col, markersize=math.log2(abs(row["traffic"])) - 1, alpha=math.log10(abs(row["traffic"])) * 0.05)
+
+
+    #ax.set_xlim([8.15, 8.25])
+    #ax.set_ylim([48.825, 48.9])
+    #ax.set_xlim([xmin, xmax])
+    #ax.set_ylim([ymin, ymax])
+    fig.show()
+
+
 
 
 def generic_td_demand(data_frame, agg_list):

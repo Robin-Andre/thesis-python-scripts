@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 import evaluation
 import visualization
 from calibration import tuning
-from calibration.evolutionary.individual import Individual
+from calibration.evolutionary.individual import Individual, DestinationIndividual
 from calibration.evolutionary.population import Population
 from metrics.data import Data
 from metrics.trafficdemand import TrafficDemand
@@ -15,7 +15,7 @@ from metrics.trafficdemand import TrafficDemand
 """
 Fill this test case with all the convenience clicker tests to speed up the process
 """
-@unittest.skip
+#@unittest.skip
 class ConvenienceClickToExecute(unittest.TestCase):
 
 
@@ -594,6 +594,44 @@ class ConvenienceClickToExecute(unittest.TestCase):
             print(population.best())
             population.mutate_best3()
             population.draw_boundaries()
+
+    def test_run_destination(self):
+        d = DestinationIndividual()
+        d.set_requirements(["tripMode"])
+        d.load("resources/destination_individual")
+        x = d.copy()
+        x["asc_ped"].set(100)
+        #x.tune_b_tt(-2.5)
+        x.run()
+        a, b, c = x.draw(reference=d.data)
+        c.show()
+        x.data.zone_destination.draw(reference=d.data.zone_destination)
+
+        x["asc_ped"].set(-100)
+        #x.tune_b_tt(-2.5)
+        x.run()
+        a, b, c = x.draw(reference=d.data)
+        c.show()
+        x.data.zone_destination.draw(reference=d.data.zone_destination)
+
+
+
+    def test_run_destination_and_check_for_difference_in_travel_distance(self):
+        d = DestinationIndividual()
+        d.set_requirements(["tripMode"])
+        d.run()
+        x = d.copy()
+        #x.tune_asc(0)
+        #x["asc_ped"].set(25)
+        for i in range(10):
+            x.tune_b_tt(-0.01)
+            print(x["b_tt_car_d"])
+            x.run()
+            a, b, c = x.draw(reference=d.data)
+            c.show()
+            print(x.evaluate_fitness(d.data))
+
+
 
 if __name__ == '__main__':
     unittest.main()

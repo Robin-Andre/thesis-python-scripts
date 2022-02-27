@@ -26,12 +26,12 @@ class TravelDistance(Metric):
         self._data_frame = metric.reduce(self._data_frame, keeper_list, "distanceInKm", "count")
 
     def draw(self, group="tripMode", reference=None):
-
-        temp = metric.reduce(self._data_frame, [group], "distanceInKm", "count")
-        temp2 = None
-        if reference is not None:
-            temp2 = metric.reduce(reference._data_frame, [group], "distanceInKm", "count")
-        return visualization.generic_plot(temp, group, "count", "distanceInKm", reference_df=temp2)
+        return visualization.draw_travel_distance_without_modes(self, reference)
+        #temp = metric.reduce(self._data_frame, [], "distanceInKm", "count")
+        #temp2 = None
+        #if reference is not None:
+        #    temp2 = metric.reduce(reference._data_frame, [], "distanceInKm", "count")
+        #return visualization.generic_plot(temp, group, "count", "distanceInKm", reference_df=temp2)
 
 
     def get_mode_specific_data(self, mode_number):

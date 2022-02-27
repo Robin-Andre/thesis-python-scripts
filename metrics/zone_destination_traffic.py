@@ -1,6 +1,7 @@
 import pandas
 
 import evaluation
+import visualization
 from metrics.metric import Metric
 
 
@@ -24,3 +25,6 @@ class ZoneDestinationTraffic(Metric):
             return None
         obj._data_frame = obj._data_frame.set_index(["sourceZone", "targetZone", "activityType"])
         return obj
+
+    def draw(self, reference=None):
+        visualization.draw_zone_demand(self, reference)

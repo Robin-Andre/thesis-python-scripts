@@ -166,10 +166,20 @@ class DestinationIndividual(Individual):
     def parameter_names(self):
         return self.yaml.destination_config().parameters.keys()
 
+    def tune_asc(self, delta):
+        for p in self.parameter_names():
+            if p.__contains__("asc_"):
+                self[p].value = self[p].value + delta
+
+    def tune_b_tt(self, delta):
+        for p in self.parameter_names():
+            if p.__contains__("b_tt"):
+                self[p].value = self[p].value + delta
+
+
     def evaluate_fitness(self, compare_data):
 
         difference = Comparison(self.data, compare_data)
-        print(difference.zone_traffic)
         return difference.sum_zones()
 
     def draw_utility_functions(self):
@@ -190,13 +200,12 @@ class DestinationIndividual(Individual):
     def randomize_special_config(self, activity):
         for p in self.yaml.activity_destination_config(activity).parameters.values():
             p.randomize()
-            print(p)
 
 
     def randomize(self):
         for p in self.yaml.destination_config().parameters.values():
             p.randomize()
-            print(p)
+
         #special_configs = ["leisure", "shopping", "business", "service"]
         #for s in special_configs:
         #    for p in self.yaml.activity_destination_config(s).parameters.values():
@@ -213,7 +222,7 @@ class ShoppingDestinationIndividual(DestinationIndividual):
     def randomize(self):
         for p in self.yaml.activity_destination_config("shopping").parameters.values():
             p.randomize()
-            print(p)
+
 
 
 

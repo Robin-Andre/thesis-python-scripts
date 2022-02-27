@@ -185,8 +185,8 @@ def super_sse(original, comparison, string):
     if original is None or comparison is None:
         logging.warning(" Cannot calculate zone difference as one df is None")
         return None
-    original_df = original.zone_destination
-    comparison_df = comparison.zone_destination
+    original_df = original.get_data_frame()
+    comparison_df = comparison.get_data_frame()
     x = original_df - comparison_df
     result = x[string] ** 2
     temp = "activityType"
@@ -214,7 +214,7 @@ class Comparison:
             self.modal_split = numpy.inf
             self.travel_time = numpy.inf
             self.travel_demand = numpy.inf
-        self.zone_traffic = super_sse(input_data, comparison_data.zone_destination, "traffic")
+        self.zone_traffic = super_sse(input_data.zone_destination, comparison_data.zone_destination, "traffic")
         if self.zone_traffic is None:
             self.zone_traffic = (numpy.inf, numpy.inf)
 
