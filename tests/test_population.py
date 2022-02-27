@@ -31,13 +31,14 @@ class MyTestCase(unittest.TestCase):
     def test_different_metrics_from_load(self):
         population = Population(individual_constructor=individual.Individual)
         population2 = Population(individual_constructor=individual.TravelTimeIndividual)
-        population.load("resources/test_population")
-        population2.load("resources/test_population")
+
         _, data = simulation.load("resources/compare_individual")
         population.set_target(data)
         population2.set_target(data)
-        population.fitness_for_all_individuals()
-        population2.fitness_for_all_individuals()
+
+        population.load("resources/test_population")
+        population2.load("resources/test_population")
+
         self.assertNotEqual(population, population2)
 
     def test_active_parameters_is_working(self):
@@ -68,7 +69,7 @@ class MyTestCase(unittest.TestCase):
         population.set_random_individual_as_target()
         self.assertEqual(population.data_requirements(), population.target.columns())
 
-
+    @unittest.skip("not a test but just an execution")
     def test_population_can_combine_appropriately(self):
         random.seed(42)
         population = Population(param_vector=simulation.default_yaml().activity_destination_config("shopping").parameters.keys(), individual_constructor=ShoppingDestinationIndividual,
@@ -82,6 +83,7 @@ class MyTestCase(unittest.TestCase):
             print(population)
         print(population)
 
+    @unittest.skip("not a test but just an execution")
     def test_load(self):
         random.seed(42)
         population = Population(param_vector=simulation.default_yaml().destination_config().parameters.keys(), individual_constructor=DestinationIndividual,
@@ -92,6 +94,7 @@ class MyTestCase(unittest.TestCase):
             evo_strategies.simple_combine(population)
             print(population)
 
+    @unittest.skip("not a test but just an execution")
     def test_proempfel(self):
         d = DestinationIndividual()
         d.run()

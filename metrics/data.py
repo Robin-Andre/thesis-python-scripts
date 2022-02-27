@@ -1,4 +1,6 @@
 import copy
+import logging
+from pathlib import Path
 
 import numpy
 import pandas
@@ -36,16 +38,28 @@ class Data:
         return all(v is None for v in [self.traffic_demand, self.travel_time, self.travel_distance])
 
     def write(self, path="dump\\"):
-        self.traffic_demand.write(path + "Demand.csv")
-        self.travel_time.write(path + "Time.csv")
-        self.travel_distance.write(path + "Distance.csv")
-        self.zone_destination.write(path + "ZoneDestination.csv")
+        self.safe_write(self.traffic_demand, path + "Demand.csv")
+        self.safe_write(self.travel_time, path + "Time.csv")
+        self.safe_write(self.travel_distance, path + "Distance.csv")
+        self.safe_write(self.zone_destination, path + "ZoneDestination.csv")
+
+    def safe_write(self, write_object, path):
+        if write_object is None:
+            logging.warning(f" Cannot write data for {path}: Object is None")
+        else:
+            write_object.write(path)
 
     def load(self, path="dump\\"):
-        self.traffic_demand = TrafficDemand.from_file(path + "Demand.csv")
-        self.travel_time = TravelTime.from_file(path + "Time.csv")
-        self.travel_distance = TravelDistance.from_file(path + "Distance.csv")
-        self.zone_destination = ZoneDestinationTraffic.from_file(path + "ZoneDestination.csv")
+        self.traffic_demand = self.safe_load(TrafficDemand, path + "Demand.csv")
+        self.travel_time = self.safe_load(TravelTime, path + "Time.csv")
+        self.travel_distance = self.safe_load(TravelDistance, path + "Distance.csv")
+        self.zone_destination = self.safe_load(ZoneDestinationTraffic, path + "ZoneDestination.csv")
+
+    def safe_load(self, load_object_class, path):
+        if not Path(path).exists():
+            logging.warning(f" Cannot load from {path}: File does not exist.")
+        else:
+            return load_object_class.from_file(path)
 
     def print(self):
         self.traffic_demand.print()
@@ -168,7 +182,12 @@ def sse(original, comparison, string):
 
 
 def super_sse(original, comparison, string):
-    x = original - comparison
+    if original is None or comparison is None:
+        logging.warning(" Cannot calculate zone difference as one df is None")
+        return None
+    original_df = original.zone_destination
+    comparison_df = comparison.zone_destination
+    x = original_df - comparison_df
     result = x[string] ** 2
     temp = "activityType"
     business = result.loc[result.index.get_level_values(temp) == ActivityGroup.BUSINESS.value]  # Business
@@ -195,7 +214,9 @@ class Comparison:
             self.modal_split = numpy.inf
             self.travel_time = numpy.inf
             self.travel_demand = numpy.inf
-        self.zone_traffic = super_sse(input_data.zone_destination, comparison_data.zone_destination, "traffic")
+        self.zone_traffic = super_sse(input_data, comparison_data.zone_destination, "traffic")
+        if self.zone_traffic is None:
+            self.zone_traffic = (numpy.inf, numpy.inf)
 
     def sum_zones(self):
         return sum(list(self.zone_traffic))

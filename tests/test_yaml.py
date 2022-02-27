@@ -73,7 +73,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(yaml.mode_config().parameters), 228 - 12 - 1)
         self.assertEqual(len(yaml.destination_config().parameters), 23 - 5 - 5)
         self.assertTrue("elasticity_acc_put" not in yaml.destination_config().parameters.keys())
-        self.assertEqual(len(yaml.activity_destination_config("business").parameters), 66 - 7 - 5)
+        self.assertEqual(len(yaml.activity_destination_config("business").parameters), 66 - 7 - 5 - 1) # -1 because maxAttractivity is not part of the tuning process
 
     #@unittest.skip("Just a print, not a test")
     def test_print_all_params(self):

@@ -121,7 +121,7 @@ class MyTestCase(unittest.TestCase):
         p = d_individual["business", "shift_purp_on_logsum_pt_fix"]
         self.assertEqual(p.value, 0.0143122619879248)
 
-    #@unittest.skip("Reevaluate what this test does test.individual l.124")
+    @unittest.skip("Reevaluate what this test does test.individual l.124")
     def test_randomize_dest_individual(self):
         d_individual = DestinationIndividual()
         d_second = DestinationIndividual()
@@ -186,7 +186,7 @@ class MyTestCase(unittest.TestCase):
         a.show()
         c.show()
 
-
+    @unittest.skip("Visual Test, not automated")
     def test_draw_lines(self):
         d = DestinationIndividual()
         d.draw_utility_functions()
