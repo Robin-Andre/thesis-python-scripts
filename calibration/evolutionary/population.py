@@ -5,7 +5,7 @@ from calibration.evolutionary import combine, mutate, initialization, replace, s
 import visualization
 from calibration.evolutionary.individual import Individual, BaseIndividual
 from configurations.parameter import Parameter
-from metrics.data import Comparison
+from metrics.data import Comparison, Data
 
 ACTIVE_PARAMETERS = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
                      "b_tt_put_mu", "b_tt_ped", "asc_bike_mu", "b_tt_bike_mu", "b_cost", "b_cost_put",
@@ -86,7 +86,7 @@ class Population:
             all_requirements = set.union(all_requirements, set(Parameter(p).requirements.keys()))
         return all_requirements
 
-    def set_target(self, target):
+    def set_target(self, target: Data):
         self.target = target
 
     def initialize(self, size):
@@ -140,6 +140,11 @@ class Population:
         individual.randomize()
         individual.run()
         self.set_target(individual.data)
+        return individual
+
+    def seed_individual(self, seed):
+        individual = self.individual_constructor(seed, self.active_parameters)
+        self._run(individual)
         return individual
 
     def _run(self, individual):

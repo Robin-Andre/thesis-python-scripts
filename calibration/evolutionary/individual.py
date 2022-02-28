@@ -120,8 +120,21 @@ class Individual(BaseIndividual):
         return [(self.yaml.mode_config().parameters[x].name, self.yaml.mode_config().parameters[x].value) for x in
                 self.parameter_name_list]
 
+    def pygad_bound_dict(self):
+        l = []
+        for p in self.parameter_name_list:
+            l.append({"low": self[p].lower_bound, "high": self[p].upper_bound})
+
+        return l
+
     def parameter_names(self):
         return self.yaml.mode_config().parameters.keys()
+
+    def set_list(self, new_val_list):
+        for p, val in zip(self.parameter_name_list, new_val_list):
+            print(f"{p} {val}")
+            self[p].set(val)
+
 
     def make_basic(self, nullify_exponential_b_tt=False):
         for param in self.yaml.mode_config().parameters.values():

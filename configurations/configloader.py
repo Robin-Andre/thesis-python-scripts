@@ -46,6 +46,10 @@ class Config:
 
         return parameter_list
 
+    def set_list(self, new_list):
+        for param, new_val in zip(self.parameters.values(), new_list):
+            param.set(new_val)
+
     def reset(self):
         with open(self.path, "r") as file:
             self._text = file.read()

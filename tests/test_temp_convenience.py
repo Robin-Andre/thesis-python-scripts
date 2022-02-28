@@ -12,6 +12,15 @@ from calibration.evolutionary.population import Population
 from metrics.data import Data
 from metrics.trafficdemand import TrafficDemand
 
+
+def _helper(x, d):
+    x.run()
+    a, b, c = x.draw(reference=d.data)
+    c.show()
+    x.data.zone_destination.draw(reference=d.data.zone_destination)
+
+
+
 """
 Fill this test case with all the convenience clicker tests to speed up the process
 """
@@ -595,24 +604,29 @@ class ConvenienceClickToExecute(unittest.TestCase):
             population.mutate_best3()
             population.draw_boundaries()
 
+
+
     def test_run_destination(self):
         d = DestinationIndividual()
         d.set_requirements(["tripMode"])
         d.load("resources/destination_individual")
         x = d.copy()
         x["asc_ped"].set(100)
-        #x.tune_b_tt(-2.5)
-        x.run()
-        a, b, c = x.draw(reference=d.data)
-        c.show()
-        x.data.zone_destination.draw(reference=d.data.zone_destination)
-
+        _helper(x, d)
         x["asc_ped"].set(-100)
-        #x.tune_b_tt(-2.5)
-        x.run()
-        a, b, c = x.draw(reference=d.data)
-        c.show()
-        x.data.zone_destination.draw(reference=d.data.zone_destination)
+        _helper(x, d)
+
+        x = d.copy()
+        x.tune_asc(50)
+        _helper(x, d)
+        x.tune_asc(0)
+        _helper(x, d)
+
+        x = d.copy()
+        x.tune_b_tt(0.05)
+        _helper(x, d)
+        x.tune_asc(-0.25)
+        _helper(x, d)
 
 
 
