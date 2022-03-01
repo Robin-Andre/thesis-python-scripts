@@ -127,6 +127,16 @@ class Individual(BaseIndividual):
 
         return l
 
+    def pyswarms_bound_lists(self):
+        l_lower = []
+        l_upper = []
+        for p in self.parameter_name_list:
+            l_lower.append(self[p].lower_bound)
+            l_upper.append(self[p].upper_bound)
+
+        return l_lower, l_upper
+
+
     def parameter_names(self):
         return self.yaml.mode_config().parameters.keys()
 
