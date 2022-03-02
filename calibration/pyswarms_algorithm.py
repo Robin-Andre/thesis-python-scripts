@@ -10,43 +10,62 @@ def rosenbrock_with_args(x, a, b, c=0):
     f = (a - x[:, 0]) ** 2 + b * (x[:, 1] - x[:, 0] ** 2) ** 2 + c
     return f
 
-def fitness(p_list):
-    pass
+
 
 def test(a):
-    print(a)
-    for x in a:
-        print(x)
+    yaml, data = simulation.load("../tests/resources/compare_individual")
+    p_list = list(yaml.mode_config().get_main_parameters_name_only())
 
-        individual = ind_constructor(param_list=param_list)
-        individual.set_list(solution)
-        #for y in x:
-        #    print(y)
-    return 4 + a[:, 1] ** 2
+    fitness_vals = []
+    for x in a:
+
+
+        individual = ind_constructor(param_list=p_list)
+        individual.set_list(x)
+        individual.run()
+
+        #a, b, c = individual.draw(reference=data)
+        #a.show()
+
+        fitness = individual.evaluate_fitness(data)
+        print(-fitness)
+        fitness_vals.append(-fitness) # Pyswarms optimizes towards a minima so the fitness needs to be big if invalid
+
+    return numpy.asarray(fitness_vals)
 
 
 if __name__ == "__main__":
 
     yaml, data = simulation.load("../tests/resources/compare_individual")
 
-    p_list = list(yaml.mode_config().get_main_parameters_name_only())
 
+
+    p_list = list(yaml.mode_config().get_main_parameters_name_only())
+    #p_list = ["asc_car_d_mu"]
     ind_constructor = ModalSplitIndividual
     d = ind_constructor(param_list=p_list)
 
-    #bounds = d.pyswarms_bound_lists()
-
-    #print(bounds)
-
+    d.run()
+    data = d.data
     # instatiate the optimizer
-    x_max = 10 * numpy.ones(2)
+    bounds = d.pyswarms_bound_lists()
 
-    x_min = -1 * x_max
-    bounds = (x_min, x_max)
+    print(bounds)
+
+
     options = {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
-    optimizer = GlobalBestPSO(n_particles=3, dimensions=2, options=options)#, bounds=bounds)
+    optimizer = GlobalBestPSO(n_particles=10, dimensions=len(p_list), options=options, bounds=bounds)
 
     # now run the optimization, pass a=1 and b=100 as a tuple assigned to args
 
-    cost, pos = optimizer.optimize(test, iters=1000)
+    cost, pos = optimizer.optimize(test, iters=10)
+    print(pos)#
+    x = d.copy()
+    x.set_list(pos)
+    x.run()#
+
+    a, b, c = x.draw(reference=data)
+    a.show()
+    b.show()
+
 

@@ -120,6 +120,10 @@ class MyTestCase(unittest.TestCase):
             else:
                 self.assertEqual(d[name].value, value)
 
+    def test_pygad(self):
+        d = DestinationIndividual(param_list=["asc_car_d", "asc_car_p"])
+        self.assertEqual(d.pygad_bound_dict(), [{'low': 0, 'high': 100}, {'low': 0, 'high': 100}])
+
     @unittest.skip("Visualization Test")
     def test_draw(self):
         self.workday_ind.data.traffic_demand.draw_smooth().show()
