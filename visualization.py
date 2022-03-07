@@ -316,7 +316,7 @@ def draw_distribution(distribution, mode=-1, approximation=None, ax=None):
         plt.tick_params(bottom=None, labelbottom=True)
         plt.show()
     else:
-        ax.bar(distribution.index, distribution["amount"], width=1.0, alpha=0.5, color=color_modes(mode))
+        ax.bar(distribution.index, distribution["count"], width=1.0, alpha=0.5, color=color_modes(mode))
         ax.plot(numpy.linspace(0, len(approximation) / 10, len(approximation)), approximation, color=color_modes(mode))
         #ax.title(label_modes(mode))
         ax.tick_params(bottom=None, labelbottom=True)

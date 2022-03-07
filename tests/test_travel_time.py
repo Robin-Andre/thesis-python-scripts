@@ -28,6 +28,11 @@ class MyTestCase(unittest.TestCase):
         data.load("resources/even_more_detailed_individual/results/")
         data.travel_time.draw(reference=data.travel_time)
 
+    def test_pdf(self):
+        data = Data()
+        data.load("resources/even_more_detailed_individual/results/")
+        print(data.travel_time.pdf(0))
+        print(data.travel_time.cdf(-1))
 
 if __name__ == '__main__':
     unittest.main()

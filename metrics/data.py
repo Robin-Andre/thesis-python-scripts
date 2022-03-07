@@ -1,5 +1,6 @@
 import copy
 import logging
+import math
 from pathlib import Path
 
 import numpy
@@ -180,6 +181,15 @@ def sse(original, comparison, string):
     result = x[string] ** 2
     return -result.sum()
 
+def theils_inequality(original, comparision, string):
+    diff = original - comparision
+
+    nominator = (diff._data_frame[string] ** 2).sum() / len(diff._data_frame)
+    denominator1 = (original._data_frame[string] ** 2).sum() / len(original._data_frame)
+    denominator2 = (comparision._data_frame[string] ** 2).sum() / len(comparision._data_frame)
+
+    result = math.sqrt(nominator) / (math.sqrt(denominator1) + math.sqrt(denominator2))
+    return result
 
 def super_sse(original, comparison, string):
     if original is None or comparison is None:
@@ -210,6 +220,7 @@ class Comparison:
             self.modal_split = sse(x._get_modal_split(), y._get_modal_split(), "count")
             self.travel_time = sse(x.travel_time.get_data_frame(), y.travel_time.get_data_frame(), "count")
             self.travel_demand = sse(x.traffic_demand, y.traffic_demand, "active_trips")
+            self.test = theils_inequality(x.travel_time, y.travel_time, "count")
         else:
             self.modal_split = numpy.inf
             self.travel_time = numpy.inf

@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 import evaluation
 import visualization
 from metrics import metric
@@ -36,6 +38,15 @@ class TravelTime(Metric):
         distribution = get_distribution(self._data_frame, "durationTrip", group=mode)
         pdf, _, _ = metric.get_fit_and_error_from_dataframe(self._data_frame, "durationTrip", mode)
         return distribution, pdf
+
+    def pdf(self, mode):
+        distribution = get_distribution(self._data_frame, "durationTrip", group=mode)
+        return distribution
+
+    def cdf(self, mode):
+        temp = self.pdf(mode)
+        temp["x"] = temp["count"].cumsum()
+        return temp["x"]
 
     def draw_all_distributions(self):
         x, y, z = [], [], []

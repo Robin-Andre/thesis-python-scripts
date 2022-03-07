@@ -1,12 +1,13 @@
 import unittest
 
 import pandas.testing
+import scipy
 from matplotlib import pyplot as plt
 
 import evaluation
 import visualization
 from configurations.parameter import Parameter
-from metrics.data import Data
+from metrics.data import Data, Comparison
 import calibration
 
 
@@ -82,14 +83,44 @@ class MyTestCase(unittest.TestCase):
         p = Parameter("asc_car_d_mu")
         self.assertAlmostEqual(data.get_modal_split_by_param(p), 0.5052792)
 
-    @unittest.skip("Visual test/Graphic analysis")
+    #@unittest.skip("Visual test/Graphic analysis")
     def test_draw(self):
         data = Data()
-        data.load("resources/even_more_detailed_individual/results/")
-        a, b, c, = data.draw()
+        data.load("resources/example_config_load/results/")
+        data2 = Data()
+        data2.load("resources/example_config_load2/results/")
+        #data.travel_time.draw_all_distributions().show()
+        #data2.travel_time.draw_all_distributions().show()
+
+        for x in [-1, 0, 1, 2, 3, 4]:
+            print(x)
+
+            y = scipy.stats.kstest(data.travel_time.cdf(x), data2.travel_time.cdf(x))
+            print(y)
+            y = scipy.stats.ttest_ind(data.travel_time.cdf(x), data2.travel_time.cdf(x))
+            print(y)
+            y = scipy.stats.ranksums(data.travel_time.cdf(x), data2.travel_time.cdf(x))
+            print(y)
+
+
+        return
+        a, b, c, = data.draw(reference=data2)
         a.show()
-        b.show()
-        c.show()
+        data.travel_time.draw_all_distributions().show()
+        data.traffic_demand = data.traffic_demand.aggregate_time(1440)
+        data2.traffic_demand = data2.traffic_demand.aggregate_time(1440)
+        a, b, c, = data.draw(reference=data2)
+        a.show()
+        #b.show()
+        #c.show()
+
+    def test_comparison(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        data2 = Data()
+        data2.load("resources/example_config_load2/results/")
+        c = Comparison(data, data2)
+        print(c)
 
 
 if __name__ == '__main__':

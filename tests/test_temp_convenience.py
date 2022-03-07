@@ -16,8 +16,9 @@ from metrics.trafficdemand import TrafficDemand
 def _helper(x, d):
     x.run()
     a, b, c = x.draw(reference=d.data)
+    b.show()
     c.show()
-    x.data.zone_destination.draw(reference=d.data.zone_destination)
+    #x.data.zone_destination.draw(reference=d.data.zone_destination)
 
 
 
@@ -610,22 +611,27 @@ class ConvenienceClickToExecute(unittest.TestCase):
         d = DestinationIndividual()
         d.set_requirements(["tripMode"])
         d.load("resources/destination_individual")
-        x = d.copy()
-        x["asc_ped"].set(100)
-        _helper(x, d)
-        x["asc_ped"].set(-100)
-        _helper(x, d)
+
 
         x = d.copy()
-        x.tune_asc(50)
-        _helper(x, d)
-        x.tune_asc(0)
-        _helper(x, d)
 
-        x = d.copy()
+        x["b_tt_car_d"].set(-0.05)
+        _helper(x, d)
+        x["b_tt_car_d"].set(-0.2)
+        _helper(x, d)
+        x["b_tt_car_d"].set(-100)
+        _helper(x, d)
+        return
+        print(x["b_tt_car_d"])
+
         x.tune_b_tt(0.05)
+        print(x["b_tt_car_d"])
         _helper(x, d)
-        x.tune_asc(-0.25)
+        x.tune_b_tt(-1)
+        print(x["b_tt_car_d"])
+        _helper(x, d)
+        x.tune_b_tt(-1)
+        print(x["b_tt_car_d"])
         _helper(x, d)
 
 

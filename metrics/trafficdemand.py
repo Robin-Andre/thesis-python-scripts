@@ -36,6 +36,15 @@ class TrafficDemand(Metric):
         ret._data_frame = super().smoothen(smoothness_in_minutes, "active_trips_delta")
         return ret
 
+    def aggregate_time(self, minute_interval):
+        ret = TrafficDemand()
+        temp = self._data_frame.copy()
+        temp["time"] = (temp["time"] // minute_interval + 1) * minute_interval
+        temp = temp.groupby(["tripMode", "time"]).sum()
+        temp = temp.reset_index()
+        ret._data_frame = temp
+        return ret
+
     def read_from_raw_data_old(self, raw_data):
         temp = raw_data[["tripBegin", "tripEnd", "tripMode"]].groupby("tripMode")
         temp = temp.apply(lambda x: evaluation.create_plot_data(x)).reset_index()
