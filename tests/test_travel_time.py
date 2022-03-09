@@ -34,5 +34,23 @@ class MyTestCase(unittest.TestCase):
         print(data.travel_time.pdf(0))
         print(data.travel_time.cdf(-1))
 
+    def test_subtraction(self):
+        data = Data()
+        data.load("resources/workday_individual/results/")
+        x = data.travel_time
+        y = x.sub_all(x)
+        z = x.sub_none(x)
+        w = x - x
+        self.assertTrue(not y.any(axis=None))
+        self.assertFalse(y.any(axis=None))
+        self.assertFalse(z.any(axis=None))
+        self.assertFalse(w.any(axis=None))
+        self.assertEqual(len(y.columns), 1)
+        self.assertEqual(len(z.columns), 1)
+        self.assertEqual(len(w.columns), 1)
+
+    def test_unequal_subtraction(self):
+        pass
+
 if __name__ == '__main__':
     unittest.main()

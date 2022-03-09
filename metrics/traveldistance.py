@@ -11,6 +11,12 @@ class TravelDistance(Metric):
         ret._data_frame = super()._sub(other, "distanceInKm")
         return ret
 
+    def columns(self):
+        cols = list(self._data_frame.columns.values)
+        cols.remove("count")
+        cols.remove("distanceInKm")
+        return set(cols)
+
     def smoothen(self, smoothness_in_minutes):
         ret = TravelDistance()
         ret._data_frame = super().smoothen(smoothness_in_minutes, "count")

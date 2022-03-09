@@ -1,6 +1,7 @@
 import copy
 import logging
 import math
+from operator import __sub__
 from pathlib import Path
 
 import numpy
@@ -69,10 +70,7 @@ class Data:
         self.zone_destination.print()
 
     def columns(self):
-        cols = list(self.travel_time.get_data_frame().columns.values)
-        cols.remove("durationTrip")
-        cols.remove("count")
-        return set(cols)
+        return self.travel_time.columns()
 
     def reduce(self, keep_list):
         self.traffic_demand.reduce(keep_list)
@@ -176,20 +174,71 @@ class Data:
         return t["modal_split"]
 
 
+def help_difference_builder(original, comparison, method, string):
+    diff = original - comparison
+    return method(diff[string], diff[string + "_original"], diff[string + "_comparison"])
+
+
+def help_difference_builder_all(original, comparison, method, string):
+    diff = original.sub_all(comparison)
+    return method(diff[string], diff[string + "_original"], diff[string + "_comparison"])
+
+
+def help_difference_builder_none(original, comparison, method, string):
+    diff = original.sub_none(comparison)
+    return method(diff[string], diff[string + "_original"], diff[string + "_comparison"])
+
+
+def help_modal_split(original, comparison, method, string):
+    diff = original - comparison
+    return method(diff.squeeze(), original.squeeze(), comparison.squeeze())
+
+
 def sse(original, comparison, string):
     x = original - comparison
     result = x[string] ** 2
     return -result.sum()
 
-def theils_inequality(original, comparision, string):
-    diff = original - comparision
 
-    nominator = (diff._data_frame[string] ** 2).sum() / len(diff._data_frame)
-    denominator1 = (original._data_frame[string] ** 2).sum() / len(original._data_frame)
-    denominator2 = (comparision._data_frame[string] ** 2).sum() / len(comparision._data_frame)
+def root_mean_squared_error(diff, original=None, comparison=None):
+    return math.sqrt(sum_squared_error(diff, original, comparison) / diff.size)
+
+
+def sum_squared_percent_error(diff, original=None, comparison=None):
+    frac = diff / comparison
+    frac.replace(numpy.inf, numpy.NaN, inplace=True)
+    frac.dropna(inplace=True)
+
+    return (frac ** 2).sum()
+
+
+def mean_average_error(diff, original=None, comparison=None):
+    return diff.sum() / diff.size
+
+
+def mean_absolute_error(diff, original=None, comparison=None):
+    return numpy.abs(diff).sum() / diff.size
+
+
+def sum_squared_error(diff, original=None, comparison=None):
+    x = diff ** 2
+    y = x.sum()
+
+    return y
+
+
+def mean_sum_squared_error(diff, original=None, comparison=None):
+    return (diff ** 2).sum() / diff.size
+
+
+def theils_inequality(diff, original=None, comparison=None):
+    nominator = (diff ** 2).sum() / diff.size
+    denominator1 = (original ** 2).sum() / original.size
+    denominator2 = (comparison ** 2).sum() / comparison.size
 
     result = math.sqrt(nominator) / (math.sqrt(denominator1) + math.sqrt(denominator2))
     return result
+
 
 def super_sse(original, comparison, string):
     if original is None or comparison is None:
@@ -209,18 +258,37 @@ def super_sse(original, comparison, string):
     return -business.sum(), -shopping.sum(), -service.sum(), -rest.sum()
 
 
+FUNCTIONS = [sum_squared_error, mean_absolute_error, mean_average_error,
+             root_mean_squared_error, theils_inequality, sum_squared_percent_error,
+             mean_sum_squared_error]
+
+
 class Comparison:
 
     def __init__(self, input_data, comparison_data):
+        self.metrics = {}
+        self.apply_on_all_sub_methods(input_data.travel_time, comparison_data.travel_time, "TravelTime", "count")
+        self.apply_on_all_sub_methods(input_data.traffic_demand, comparison_data.traffic_demand, "TrafficDemand", "active_trips")
+
+        self.apply_on_all_sub_methods(input_data.traffic_demand.aggregate_time(5), comparison_data.traffic_demand.aggregate_time(5), "TrafficDemand5min",
+                                      "active_trips")
+        self.apply_on_all_sub_methods(input_data.traffic_demand.aggregate_time(15), comparison_data.traffic_demand.aggregate_time(15), "TrafficDemand15min",
+                                      "active_trips")
+        self.apply_on_all_sub_methods(input_data.traffic_demand.aggregate_time(60), comparison_data.traffic_demand.aggregate_time(60), "TrafficDemand60min",
+                                      "active_trips")
+        self.do_all_modal_splits(input_data, comparison_data)
+        #self.apply_on_all_sub_methods(input_data._get_modal_split(), comparison_data._get_modal_split, "ModalSplit", "count")
+
         if "tripMode" in input_data.columns():
             x = copy.deepcopy(input_data)
-            x.reduce(["tripMode"])
+
             y = copy.deepcopy(comparison_data)
+            #self.temp_val = sse(x.travel_time.get_data_frame(), y.travel_time.get_data_frame(), "count")
+            x.reduce(["tripMode"])
             y.reduce(["tripMode"])
             self.modal_split = sse(x._get_modal_split(), y._get_modal_split(), "count")
             self.travel_time = sse(x.travel_time.get_data_frame(), y.travel_time.get_data_frame(), "count")
             self.travel_demand = sse(x.traffic_demand, y.traffic_demand, "active_trips")
-            self.test = theils_inequality(x.travel_time, y.travel_time, "count")
         else:
             self.modal_split = numpy.inf
             self.travel_time = numpy.inf
@@ -228,6 +296,47 @@ class Comparison:
         self.zone_traffic = super_sse(input_data.zone_destination, comparison_data.zone_destination, "traffic")
         if self.zone_traffic is None:
             self.zone_traffic = (numpy.inf, numpy.inf)
+
+        print(self.metrics)
+
+
+    def do_all_modal_splits(self, input_obj, comparison_obj):
+        if len(input_obj.columns()) >= 2:
+            x = input_obj.columns()
+            x.remove("tripMode")
+            for func in FUNCTIONS:
+                x = help_modal_split(input_obj.get_grouped_modal_split(), comparison_obj.get_grouped_modal_split(),
+                                     func, "EH")
+                self.metrics["MODALSPLITVERYDETAILED" + func.__name__] = x
+
+        else:
+            for func in FUNCTIONS:
+                x = numpy.inf
+                self.metrics["MODALSPLITVERYDETAILED" + func.__name__] = x
+
+        for func in FUNCTIONS:
+            x = help_modal_split(input_obj.get_grouped_modal_split(), comparison_obj.get_grouped_modal_split(), func, "EH")
+            self.metrics["MODALSPLIT" + func.__name__] = x
+
+    def apply_on_all_sub_methods(self, input_obj, comparison_obj, name, string):
+        self.apply_all_metrics(input_obj, comparison_obj, name + "TripMode", string)
+        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "All", string)
+        self.apply_all_metrics_generic(input_obj, comparison_obj, name , string)
+
+    def __helper(self, input_obj, comparison_obj, name, metric_func, string):
+        for func in FUNCTIONS:
+            x = metric_func(input_obj, comparison_obj, func, string)
+            self.metrics[name + func.__name__] = x
+
+    def apply_all_metrics_detailed(self, input_obj, comparison_obj, name, string):
+        self.__helper(input_obj, comparison_obj, name, help_difference_builder_all, string)
+
+    def apply_all_metrics(self, input_obj, comparison_obj, name, string):
+        self.__helper(input_obj, comparison_obj, name, help_difference_builder, string)
+
+    def apply_all_metrics_generic(self, input_obj, comparison_obj, name, string):
+        self.__helper(input_obj, comparison_obj, name, help_difference_builder_none, string)
+
 
     def sum_zones(self):
         return sum(list(self.zone_traffic))

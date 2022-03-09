@@ -1,3 +1,6 @@
+import math
+
+import numpy
 import pandas
 
 import evaluation
@@ -20,16 +23,43 @@ def pad(df, agg_list):
     return df
 
 
-def subtract(trafdemand, trafdemand_other):
-    x = trafdemand.accumulate_padded(["tripMode"])
-    y = trafdemand_other.accumulate_padded(["tripMode"])
-    return x.sub(y, fill_value=0)
+
+def subtract(trafdemand, trafdemand_other, keep_list=["tripMode"]):
+    x = trafdemand.accumulate(keep_list)
+    x = x.set_index(keep_list + ["time"])
+    y = trafdemand_other.accumulate(keep_list)
+    y = y.set_index(keep_list + ["time"])
+    q = x.join(y, how="outer", lsuffix='_original', rsuffix='_comparison')
+    q = q.fillna(method="ffill") # Important to ffill instead of 0
+    q["active_trips"] = q["active_trips_original"] - q["active_trips_comparison"]
+
+    #q = q.reset_index()
+    return q
 
 
 class TrafficDemand(Metric):
 
     def __sub__(self, other):
         return subtract(self, other)
+
+    def sub_all(self, other):
+        intersection = list(self.columns() & other.columns())
+        return subtract(self, other, intersection)
+
+    def sub_none(self, other):
+        return subtract(self, other, [])
+
+    def columns(self):
+        cols = list(self._data_frame.columns.values)
+        cols.remove("time")
+        cols.remove("active_trips_delta")
+        return set(cols)
+
+    def columns_list(self):
+        cols = list(self._data_frame.columns.values)
+        cols.remove("time")
+        cols.remove("active_trips_delta")
+        return cols
 
     def smoothen(self, smoothness_in_minutes):
         ret = TrafficDemand()
@@ -39,8 +69,8 @@ class TrafficDemand(Metric):
     def aggregate_time(self, minute_interval):
         ret = TrafficDemand()
         temp = self._data_frame.copy()
-        temp["time"] = (temp["time"] // minute_interval + 1) * minute_interval
-        temp = temp.groupby(["tripMode", "time"]).sum()
+        temp["time"] = (numpy.ceil(temp["time"] / minute_interval)).astype(int) * minute_interval
+        temp = temp.groupby(self.columns_list() + ["time"]).sum()
         temp = temp.reset_index()
         ret._data_frame = temp
         return ret
@@ -69,7 +99,10 @@ class TrafficDemand(Metric):
         temp = reduce(self._data_frame, acc_list, "time", "active_trips_delta")
         temp = temp.drop(columns=["active_trips_delta"])
         data = reduce(self._data_frame, acc_list, "time", "active_trips_delta").drop(columns="time")
-        data["active_trips"] = data.groupby(acc_list).cumsum()
+        if len(acc_list) == 0:
+            data["active_trips"] = data.cumsum()
+        else:
+            data["active_trips"] = data.groupby(acc_list).cumsum()
         data["time"] = temp["time"]
         data = data.drop(columns=["active_trips_delta"])
         return data
@@ -78,12 +111,12 @@ class TrafficDemand(Metric):
         assert "time", "active_trips_delta" not in keep_list
         self._data_frame = reduce(self._data_frame, keep_list, "time", "active_trips_delta")
 
-    def draw(self, reference=None, group="tripMode"):
+    def draw(self, reference=None, group=["tripMode"]):
         if reference is None:
-            return visualization.draw_travel_demand_by_mode(self.accumulate([group]), group=group)
+            return visualization.draw_travel_demand_by_mode(self.accumulate(group), group="tripMode")
         else:
-            return visualization.draw_travel_demand_by_mode(self.accumulate([group]),
-                                                            reference_df=reference.accumulate([group]), group=group)
+            return visualization.draw_travel_demand_by_mode(self.accumulate(group),
+                                                            reference_df=reference.accumulate(group), group="tripMode")
 
     def draw_smooth(self, reference=None, smoothness_factor=60):
         df1 = self.accumulate_padded(["tripMode"])

@@ -7,7 +7,8 @@ from matplotlib import pyplot as plt
 import evaluation
 import visualization
 from configurations.parameter import Parameter
-from metrics.data import Data, Comparison
+from metrics.data import Data, Comparison, mean_average_error, mean_absolute_error, sum_squared_error, \
+    help_difference_builder, sum_squared_percent_error
 import calibration
 
 
@@ -103,12 +104,12 @@ class MyTestCase(unittest.TestCase):
             print(y)
 
 
-        return
+
         a, b, c, = data.draw(reference=data2)
         a.show()
         data.travel_time.draw_all_distributions().show()
-        data.traffic_demand = data.traffic_demand.aggregate_time(1440)
-        data2.traffic_demand = data2.traffic_demand.aggregate_time(1440)
+        data.traffic_demand = data.traffic_demand.aggregate_time(60)
+        data2.traffic_demand = data2.traffic_demand.aggregate_time(60)
         a, b, c, = data.draw(reference=data2)
         a.show()
         #b.show()
@@ -116,12 +117,48 @@ class MyTestCase(unittest.TestCase):
 
     def test_comparison(self):
         data = Data()
-        data.load("resources/example_config_load/results/")
+        data.load("resources/detailed_individual/results/")
         data2 = Data()
-        data2.load("resources/example_config_load2/results/")
+        data2.load("resources/even_more_detailed_individual/results/")
         c = Comparison(data, data2)
         print(c)
 
+    def test_comparison_diff(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        data2 = Data()
+        data2.load("resources/example_config_load2/results/")
+        x = data.traffic_demand - data2.traffic_demand
+
+        c = Comparison(data, data2)
+        return
+        print(data.get_grouped_modal_split())
+        print(data2.get_grouped_modal_split())
+        print(c)
+        print(x)
+
+        wololo = help_difference_builder(data.traffic_demand, data2.traffic_demand, sum_squared_percent_error, "active_trips")
+        print(wololo)
+        print(mean_absolute_error(x))
+        print(sum_squared_error(x))
+        return
+
+    def test_grouped_modal_split(self):
+        data = Data()
+        data.load("resources/even_more_detailed_individual/results/")
+
+        c = Comparison(data, data)
+        x = data.get_grouped_modal_split(["age", "gender"])
+        print(mean_absolute_error(x))
+        print(x.size)
+        print((x ** 2).to_numpy().sum())
+
+
+    def test_equal_columns(self):
+        data = Data()
+        data.load("resources/example_config_load/results/")
+        self.assertEqual(data.travel_time.columns(), data.travel_distance.columns())
+        self.assertEqual(data.traffic_demand.columns(), data.travel_distance.columns())
 
 if __name__ == '__main__':
     unittest.main()

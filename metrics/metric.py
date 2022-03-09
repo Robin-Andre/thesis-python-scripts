@@ -36,6 +36,8 @@ def reduce(data, keep, string1, string2):
     return temp
 
 
+
+
 class Metric:
 
     def __init__(self):
@@ -48,6 +50,7 @@ class Metric:
         temp = self._data_frame.set_index(["tripMode", string])
         temp2 = other._data_frame.set_index(["tripMode", string])
         return temp.sub(temp2, fill_value=0).reset_index()
+
 
     def get_mode_specific_data(self, mode_number, string):
         """
