@@ -14,6 +14,7 @@ class MyTestCase(unittest.TestCase):
         y = x.aggregate_time(1)
         self.assertIsNone(pandas.testing.assert_frame_equal(x._data_frame, y._data_frame))
 
+    @unittest.skip("Visual test/Graphic analysis")
     def test_second(self):
         data = Data()
         data.load("resources/workday_individual/results/")
@@ -31,10 +32,11 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(y["active_trips"].any(axis=None))
         self.assertFalse(z["active_trips"].any(axis=None))
         self.assertFalse(w["active_trips"].any(axis=None))
-        self.assertEqual(len(y.columns), 2)
-        self.assertEqual(len(z.columns), 2)
-        self.assertEqual(len(w.columns), 2)
+        self.assertEqual(len(y.columns), 3)
+        self.assertEqual(len(z.columns), 3)
+        self.assertEqual(len(w.columns), 3)
 
+    @unittest.skip("Visual test/Graphic analysis")
     def test_draw_all_together(self):
         data = Data()
         data.load("resources/example_config_load/results/")

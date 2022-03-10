@@ -18,6 +18,7 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(all(test.get_data_frame()["count"]) == 0)
         pandas.testing.assert_frame_equal(expected, travel_distance.get_data_frame())
 
+    @unittest.skip("Visual test/Graphic analysis")
     def test_draw_without_bonus_shenanigans(self):
         data = Data()
         data.load("resources/example_config_load/results/")

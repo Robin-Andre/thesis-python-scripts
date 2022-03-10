@@ -25,7 +25,7 @@ def _helper(x, d):
 """
 Fill this test case with all the convenience clicker tests to speed up the process
 """
-#@unittest.skip
+@unittest.skip
 class ConvenienceClickToExecute(unittest.TestCase):
 
 

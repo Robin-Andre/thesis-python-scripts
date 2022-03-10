@@ -83,7 +83,7 @@ class MyTestCase(unittest.TestCase):
         p = Parameter("asc_car_d_mu")
         self.assertAlmostEqual(data.get_modal_split_by_param(p), 0.5052792)
 
-    #@unittest.skip("Visual test/Graphic analysis")
+    @unittest.skip("Visual test/Graphic analysis")
     def test_draw(self):
         data = Data()
         data.load("resources/example_config_load/results/")
@@ -114,6 +114,7 @@ class MyTestCase(unittest.TestCase):
         #b.show()
         #c.show()
 
+    @unittest.skip("Visual test/Graphic analysis")
     def test_comparison(self):
         data = Data()
         data.load("resources/detailed_individual/results/")
@@ -128,25 +129,10 @@ class MyTestCase(unittest.TestCase):
         data2 = Data()
         data2.load("resources/example_config_load2/results/")
         c = Comparison(data, data2)
-        print(c)
-        print(c.mode_keys())
-        print(c.mode_vals())
-
-        print(c.statistic_keys())
-        print(c.statistic_vals())
         self.assertEqual(len(c.mode_metrics.keys()), 8 * 19) # 8 Metrics evaluated on 8 Data objects
         return
-        print(data.get_grouped_modal_split())
-        print(data2.get_grouped_modal_split())
-        print(c)
-        print(x)
 
-        wololo = help_difference_builder(data.traffic_demand, data2.traffic_demand, sum_squared_percent_error, "active_trips")
-        print(wololo)
-        print(mean_absolute_error(x))
-        print(sum_squared_error(x))
-        return
-
+    @unittest.skip("Visual test/Graphic analysis")
     def test_grouped_modal_split(self):
         data = Data()
         data.load("resources/even_more_detailed_individual/results/")
