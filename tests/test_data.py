@@ -74,7 +74,6 @@ class MyTestCase(unittest.TestCase):
     def test_extracting_data_with_higher_specification(self):
         data = Data()
         data.load("resources/even_more_detailed_individual/results/")
-        x = data.get_grouped_modal_split(["age", "gender"])
         p = Parameter("female_on_asc_bike")
         self.assertAlmostEqual(data.get_modal_split_by_param(p), 0.1749315)
 
@@ -131,6 +130,7 @@ class MyTestCase(unittest.TestCase):
         x = data.traffic_demand - data2.traffic_demand
 
         c = Comparison(data, data2)
+        self.assertEqual(len(c.metrics.keys()), 8 * 19) # 8 Metrics evaluated on 8 Data objects
         return
         print(data.get_grouped_modal_split())
         print(data2.get_grouped_modal_split())

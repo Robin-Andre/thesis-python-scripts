@@ -118,10 +118,11 @@ class Data:
         elif type(p) is int:
             return self._get_modal_split(specific_mode_num=p)
 
-    def _modsplit_help(self, df, mode_list=[0, 1, 2, 3, 4]):
+    def _modsplit_help(self, df, mode_list=[0, 1, 2, 3, 4], divide=True):
         x = df.groupby("tripMode").sum()["count"].to_frame()
         x = x.reindex(mode_list, fill_value=0)
-        x = x / x.sum()
+        if divide:
+            x = x / x.sum()
         return x
 
     def get_modal_split_by_param(self, param, mode_list=[0, 1, 2, 3, 4]):
@@ -143,7 +144,7 @@ class Data:
         else:
             return ret
 
-    def get_grouped_modal_split(self, column_names=None, mode_list=[0, 1, 2, 3, 4]):
+    def get_grouped_modal_split(self, column_names=None, mode_list=[0, 1, 2, 3, 4], divide=True):
         if column_names is None or column_names == []:
             return self._get_modal_split()
         assert "tripMode" not in column_names
@@ -151,7 +152,7 @@ class Data:
         temp = df.groupby(column_names)
         s_list = []
         for key, group in temp:
-            ret = self._modsplit_help(group, mode_list).squeeze()
+            ret = self._modsplit_help(group, mode_list, divide).squeeze()
             if type(key) is tuple:
                 ret.name = ",".join([str(x)[:1] for x in key])
             else:
@@ -159,6 +160,9 @@ class Data:
             s_list.append(ret)
         df = pandas.concat(s_list, axis=1, keys=[s.name for s in s_list])
         return df
+
+    def get_grouped_modal_count(self, column_names=None, mode_list=[0, 1, 2, 3, 4]):
+        return self.get_grouped_modal_split(column_names, mode_list, divide=False)
 
     def get_modal_split_based_by_time(self, precision, mode_list=[0, 1, 2, 3, 4]):
         agg = aggregate(self.travel_time.get_data_frame(), precision, "durationTrip")
@@ -189,7 +193,7 @@ def help_difference_builder_none(original, comparison, method, string):
     return method(diff[string], diff[string + "_original"], diff[string + "_comparison"])
 
 
-def help_modal_split(original, comparison, method, string):
+def help_modal_split(original, comparison, method):
     diff = original - comparison
     return method(diff.squeeze(), original.squeeze(), comparison.squeeze())
 
@@ -209,32 +213,36 @@ def sum_squared_percent_error(diff, original=None, comparison=None):
     frac.replace(numpy.inf, numpy.NaN, inplace=True)
     frac.dropna(inplace=True)
 
-    return (frac ** 2).sum()
+    return (frac ** 2).sum().sum()
 
 
 def mean_average_error(diff, original=None, comparison=None):
-    return diff.sum() / diff.size
+    return diff.sum().sum() / diff.size
 
 
 def mean_absolute_error(diff, original=None, comparison=None):
-    return numpy.abs(diff).sum() / diff.size
+    return numpy.abs(diff).sum().sum() / diff.size
 
 
 def sum_squared_error(diff, original=None, comparison=None):
     x = diff ** 2
     y = x.sum()
+    z = y.sum()
+    return z
 
-    return y
+
+def sum_cubed_error(diff, original=None, comparison=None):
+    return (numpy.abs(diff) ** 3).sum().sum()
 
 
 def mean_sum_squared_error(diff, original=None, comparison=None):
-    return (diff ** 2).sum() / diff.size
+    return (diff ** 2).sum().sum()  / diff.size
 
 
 def theils_inequality(diff, original=None, comparison=None):
-    nominator = (diff ** 2).sum() / diff.size
-    denominator1 = (original ** 2).sum() / original.size
-    denominator2 = (comparison ** 2).sum() / comparison.size
+    nominator = (diff ** 2).sum().sum()  / diff.size
+    denominator1 = (original ** 2).sum().sum()  / original.size
+    denominator2 = (comparison ** 2).sum().sum()  / comparison.size
 
     result = math.sqrt(nominator) / (math.sqrt(denominator1) + math.sqrt(denominator2))
     return result
@@ -260,7 +268,7 @@ def super_sse(original, comparison, string):
 
 FUNCTIONS = [sum_squared_error, mean_absolute_error, mean_average_error,
              root_mean_squared_error, theils_inequality, sum_squared_percent_error,
-             mean_sum_squared_error]
+             mean_sum_squared_error, sum_cubed_error]
 
 
 class Comparison:
@@ -277,7 +285,7 @@ class Comparison:
         self.apply_on_all_sub_methods(input_data.traffic_demand.aggregate_time(60), comparison_data.traffic_demand.aggregate_time(60), "TrafficDemand60min",
                                       "active_trips")
         self.do_all_modal_splits(input_data, comparison_data)
-        #self.apply_on_all_sub_methods(input_data._get_modal_split(), comparison_data._get_modal_split, "ModalSplit", "count")
+        self.do_all_modal_counts(input_data, comparison_data)
 
         if "tripMode" in input_data.columns():
             x = copy.deepcopy(input_data)
@@ -299,24 +307,32 @@ class Comparison:
 
         print(self.metrics)
 
-
-    def do_all_modal_splits(self, input_obj, comparison_obj):
+    def __helper2(self, input_obj, comparison_obj, funct, string):
         if len(input_obj.columns()) >= 2:
-            x = input_obj.columns()
-            x.remove("tripMode")
+            cols = list(input_obj.columns())
+            cols.remove("tripMode")
             for func in FUNCTIONS:
-                x = help_modal_split(input_obj.get_grouped_modal_split(), comparison_obj.get_grouped_modal_split(),
-                                     func, "EH")
-                self.metrics["MODALSPLITVERYDETAILED" + func.__name__] = x
+
+                x = help_modal_split(funct(input_obj, cols), funct(comparison_obj, cols),
+                                     func)
+                self.metrics["MODALSPLITVERYDETAILED" + string + func.__name__] = x
 
         else:
             for func in FUNCTIONS:
                 x = numpy.inf
-                self.metrics["MODALSPLITVERYDETAILED" + func.__name__] = x
+                self.metrics["MODALSPLITVERYDETAILED" + string + func.__name__] = x
 
         for func in FUNCTIONS:
-            x = help_modal_split(input_obj.get_grouped_modal_split(), comparison_obj.get_grouped_modal_split(), func, "EH")
-            self.metrics["MODALSPLIT" + func.__name__] = x
+            x = help_modal_split(funct(input_obj), funct(comparison_obj), func)
+            self.metrics["MODALSPLIT" + string + func.__name__] = x
+
+    def do_all_modal_splits(self, input_obj, comparison_obj):
+        self.__helper2(input_obj, comparison_obj, Data.get_grouped_modal_split, "Splits")
+
+    def do_all_modal_counts(self, input_obj, comparison_obj):
+        self.__helper2(input_obj, comparison_obj, Data.get_grouped_modal_count, "Counts")
+
+
 
     def apply_on_all_sub_methods(self, input_obj, comparison_obj, name, string):
         self.apply_all_metrics(input_obj, comparison_obj, name + "TripMode", string)
@@ -340,6 +356,8 @@ class Comparison:
 
     def sum_zones(self):
         return sum(list(self.zone_traffic))
+
+
 
     def __str__(self):
         return ", ".join([str(x) for x in [self.modal_split, self.travel_time, self.travel_demand, self.sum_zones()]])
