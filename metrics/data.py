@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy
 import pandas
+import scipy
 
 import visualization
 from configurations.parameter import Parameter, ActivityGroup
@@ -274,7 +275,7 @@ FUNCTIONS = [sum_squared_error, mean_absolute_error, mean_average_error,
 class Comparison:
 
     def __init__(self, input_data, comparison_data):
-        self.metrics = {}
+        self.mode_metrics = {}
         self.apply_on_all_sub_methods(input_data.travel_time, comparison_data.travel_time, "TravelTime", "count")
         self.apply_on_all_sub_methods(input_data.traffic_demand, comparison_data.traffic_demand, "TrafficDemand", "active_trips")
 
@@ -287,25 +288,18 @@ class Comparison:
         self.do_all_modal_splits(input_data, comparison_data)
         self.do_all_modal_counts(input_data, comparison_data)
 
-        if "tripMode" in input_data.columns():
-            x = copy.deepcopy(input_data)
+        self.statistic_tests = {}
 
-            y = copy.deepcopy(comparison_data)
-            #self.temp_val = sse(x.travel_time.get_data_frame(), y.travel_time.get_data_frame(), "count")
-            x.reduce(["tripMode"])
-            y.reduce(["tripMode"])
-            self.modal_split = sse(x._get_modal_split(), y._get_modal_split(), "count")
-            self.travel_time = sse(x.travel_time.get_data_frame(), y.travel_time.get_data_frame(), "count")
-            self.travel_demand = sse(x.traffic_demand, y.traffic_demand, "active_trips")
-        else:
-            self.modal_split = numpy.inf
-            self.travel_time = numpy.inf
-            self.travel_demand = numpy.inf
+        self.apply_statistic_tests(input_data.travel_time, comparison_data.travel_time, "time")
+        self.apply_statistic_tests(input_data.travel_distance, comparison_data.travel_distance, "distance")
+
+        self.modal_split = -self.mode_metrics["ModalSplit_Splits_sum_squared_error"]
+        self.travel_time = -self.mode_metrics["TravelTime_TripMode_sum_squared_error"]
+        self.travel_demand = -self.mode_metrics["TrafficDemand_TripMode_sum_squared_error"]
+
         self.zone_traffic = super_sse(input_data.zone_destination, comparison_data.zone_destination, "traffic")
         if self.zone_traffic is None:
             self.zone_traffic = (numpy.inf, numpy.inf)
-
-        print(self.metrics)
 
     def __helper2(self, input_obj, comparison_obj, funct, string):
         if len(input_obj.columns()) >= 2:
@@ -315,34 +309,43 @@ class Comparison:
 
                 x = help_modal_split(funct(input_obj, cols), funct(comparison_obj, cols),
                                      func)
-                self.metrics["MODALSPLITVERYDETAILED" + string + func.__name__] = x
+                self.mode_metrics["ModalSplit_Detailed" + string + func.__name__] = x
 
         else:
             for func in FUNCTIONS:
                 x = numpy.inf
-                self.metrics["MODALSPLITVERYDETAILED" + string + func.__name__] = x
+                self.mode_metrics["ModalSplit_Detailed" + string + func.__name__] = x
 
         for func in FUNCTIONS:
             x = help_modal_split(funct(input_obj), funct(comparison_obj), func)
-            self.metrics["MODALSPLIT" + string + func.__name__] = x
+            self.mode_metrics["ModalSplit" + string + func.__name__] = x
 
     def do_all_modal_splits(self, input_obj, comparison_obj):
-        self.__helper2(input_obj, comparison_obj, Data.get_grouped_modal_split, "Splits")
+        self.__helper2(input_obj, comparison_obj, Data.get_grouped_modal_split, "_Splits_")
 
     def do_all_modal_counts(self, input_obj, comparison_obj):
-        self.__helper2(input_obj, comparison_obj, Data.get_grouped_modal_count, "Counts")
+        self.__helper2(input_obj, comparison_obj, Data.get_grouped_modal_count, "_Counts_")
 
+    def apply_statistic_tests(self, input, comparison, name):
+        mode_list = {"all": -1, "bike": 0, "car": 1, "passenger":2, "pedestrian": 3, "public_transport": 4}
+        tests = {"ks": scipy.stats.kstest, "ttest": scipy.stats.ttest_ind, "ranksums": scipy.stats.ranksums}
+        for mode_name, x in mode_list.items():
+            inp = input.cdf(x)
+            comp = comparison.cdf(x)
+            for test_name, test in tests.items():
+                _, p_value = test(inp, comp)
+                self.statistic_tests[name + "_" + test_name + "_" + mode_name] = p_value
 
 
     def apply_on_all_sub_methods(self, input_obj, comparison_obj, name, string):
-        self.apply_all_metrics(input_obj, comparison_obj, name + "TripMode", string)
-        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "All", string)
-        self.apply_all_metrics_generic(input_obj, comparison_obj, name , string)
+        self.apply_all_metrics(input_obj, comparison_obj, name + "_TripMode_", string)
+        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "_All_", string)
+        self.apply_all_metrics_generic(input_obj, comparison_obj, name + "_None_", string)
 
     def __helper(self, input_obj, comparison_obj, name, metric_func, string):
         for func in FUNCTIONS:
             x = metric_func(input_obj, comparison_obj, func, string)
-            self.metrics[name + func.__name__] = x
+            self.mode_metrics[name + func.__name__] = x
 
     def apply_all_metrics_detailed(self, input_obj, comparison_obj, name, string):
         self.__helper(input_obj, comparison_obj, name, help_difference_builder_all, string)
@@ -357,7 +360,17 @@ class Comparison:
     def sum_zones(self):
         return sum(list(self.zone_traffic))
 
+    def mode_vals(self):
+        return ", ".join([str(x) for x in list(self.mode_metrics.values())])
 
+    def mode_keys(self, appendix):
+        return ", ".join([str(x) + appendix for x in list(self.mode_metrics.keys())])
+
+    def statistic_vals(self):
+        return ", ".join([str(x) for x in list(self.statistic_tests.values())])
+
+    def statistic_keys(self, appendix):
+        return ", ".join([str(x) + appendix for x in list(self.statistic_tests.keys())])
 
     def __str__(self):
         return ", ".join([str(x) for x in [self.modal_split, self.travel_time, self.travel_demand, self.sum_zones()]])

@@ -390,14 +390,14 @@ class ConvenienceClickToExecute(unittest.TestCase):
         modal_split2 = data2._get_modal_split()
         modal_split = modal_split / modal_split.sum()
         modal_split2 = modal_split2 / modal_split2.sum()
-        print(sklearn.metrics.mean_squared_error(modal_split, modal_split2))
+        print(sklearn.mode_metrics.mean_squared_error(modal_split, modal_split2))
 
         modal_split = data._get_modal_split()
         modal_split2 = data2._get_modal_split()
         modal_split = modal_split * 1000
         modal_split = modal_split / modal_split.sum()
         modal_split2 = modal_split2 / modal_split2.sum()
-        print(sklearn.metrics.mean_squared_error(modal_split, modal_split2))
+        print(sklearn.mode_metrics.mean_squared_error(modal_split, modal_split2))
 
     # TODO not a test
     def nontest_fitting_of_distribution(self):

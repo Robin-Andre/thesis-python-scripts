@@ -22,27 +22,55 @@ class Logger:
         self.new_time = time.time()
         self.iteration = 1
         self.csv = []
+        self.title_column = ""
 
     def log(self, population, current_individual=None):
         self.new_time = time.time()
+        c = Comparison(current_individual.data, population.target)
         if len(population.population) == 0 and current_individual is not None:
-            string = f"{Comparison(current_individual.data, population.target).__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, " \
-                     f"{Comparison(current_individual.data, population.target).__str__()}, {current_individual.yaml.get_seed()}"
+            string = f"{c.__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, " \
+                     f"{c.__str__()}, {current_individual.yaml.get_seed()}"
 
         elif current_individual is not None:
             string = f"{Comparison(population.best().data, population.target).__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, " \
-                  f"{Comparison(current_individual.data, population.target).__str__()}, {current_individual.yaml.get_seed()}"
+                f"{c.__str__()}, {current_individual.yaml.get_seed()}"
         else:
             string = f"{Comparison(population.best().data, population.target).__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, UNKNOWN, UNKNOWN"
         print(string)
         self.csv.append(string)
         self.old_time = time.time()
 
+
+    def log_detailed(self, population, current_individual=None):
+        self.new_time = time.time()
+        c = Comparison(current_individual.data, population.target)
+        self.title_column = self.detailed_column_description(c)
+        if len(population.population) == 0 and current_individual is not None:
+
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {c.mode_vals()}, {c.statistic_vals()}, {population.configuration()}, " \
+                     f"{c.mode_vals()}, {c.statistic_vals()}"
+
+        elif current_individual is not None:
+            best = Comparison(population.best().data, population.target)
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {best.mode_vals()}, {best.statistic_vals()}, {population.configuration()}, " \
+                f"{c.mode_vals()}, {c.statistic_vals()}"
+        else:
+            best = Comparison(population.best().data, population.target)
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {best.mode_vals()}, {best.statistic_vals()}, {population.configuration()}, UNKNOWN, UNKNOWN"
+        print(string)
+        self.csv.append(string)
+        self.old_time = time.time()
+
+    def detailed_column_description(self, comparison):
+        return f"iteration, time, seed, {comparison.mode_keys('_best')}, {comparison.statistic_keys('_best')}, combine_func, mutation_func, initialize_func, replace_func, selection_func, individual_constructor, " \
+        f"{comparison.mode_keys('_current')}, {comparison.statistic_keys('_current')}"
+
     def append_to_csv(self, string):
         self.csv = [s + string for s in self.csv]
 
     def print_csv(self):
-        return "\n".join(self.csv)
+
+        return "\n".join([self.title_column] + self.csv)
 
 
 class Population:
@@ -150,7 +178,7 @@ class Population:
     def _run(self, individual):
         assert self.data_requirements().issubset(set(individual.requirements))
         individual.run()
-        self.logger.log(self, individual)
+        self.logger.log_detailed(self, individual)
         self.logger.iteration += 1
         individual.set_fitness(self.target)
 

@@ -58,6 +58,16 @@ class TravelDistance(Metric):
             z.append(pdf)
         return visualization.draw_all_distributions(x, y, z)
 
+    def pdf(self, mode):
+        distribution = get_distribution(self._data_frame, "distanceInKm", group=mode)
+        return distribution
+
+    def cdf(self, mode):
+        temp = self.pdf(mode)
+        temp["x"] = temp["count"].cumsum()
+        return temp["x"]
+
+
     def approximations(self):
         return get_approximations(self._data_frame, "distanceInKm")
 

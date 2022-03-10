@@ -96,7 +96,7 @@ class MyTestCase(unittest.TestCase):
             print(x)
 
             y = scipy.stats.kstest(data.travel_time.cdf(x), data2.travel_time.cdf(x))
-            print(y)
+            print(y[1])
             y = scipy.stats.ttest_ind(data.travel_time.cdf(x), data2.travel_time.cdf(x))
             print(y)
             y = scipy.stats.ranksums(data.travel_time.cdf(x), data2.travel_time.cdf(x))
@@ -127,10 +127,14 @@ class MyTestCase(unittest.TestCase):
         data.load("resources/example_config_load/results/")
         data2 = Data()
         data2.load("resources/example_config_load2/results/")
-        x = data.traffic_demand - data2.traffic_demand
-
         c = Comparison(data, data2)
-        self.assertEqual(len(c.metrics.keys()), 8 * 19) # 8 Metrics evaluated on 8 Data objects
+        print(c)
+        print(c.mode_keys())
+        print(c.mode_vals())
+
+        print(c.statistic_keys())
+        print(c.statistic_vals())
+        self.assertEqual(len(c.mode_metrics.keys()), 8 * 19) # 8 Metrics evaluated on 8 Data objects
         return
         print(data.get_grouped_modal_split())
         print(data2.get_grouped_modal_split())
