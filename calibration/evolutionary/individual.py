@@ -29,6 +29,10 @@ class BaseIndividual(ABC):
     def __repr__(self):
         return f"{self.fitness}"
 
+    def fraction_of_pop(self):
+        return self.yaml.get_fraction_of_population()
+
+
     def __lt__(self, other):
         return self.fitness < other.fitness
 

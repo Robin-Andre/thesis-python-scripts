@@ -47,22 +47,22 @@ class Logger:
         self.title_column = self.detailed_column_description(c)
         if len(population.population) == 0 and current_individual is not None:
 
-            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {c.mode_vals()}, {c.statistic_vals()}, {population.configuration()}, " \
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {c.mode_vals()}, {c.statistic_vals()}, {population.configuration()}, " \
                      f"{c.mode_vals()}, {c.statistic_vals()}"
 
         elif current_individual is not None:
             best = Comparison(population.best().data, population.target)
-            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {best.mode_vals()}, {best.statistic_vals()}, {population.configuration()}, " \
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.mode_vals()}, {best.statistic_vals()}, {population.configuration()}, " \
                 f"{c.mode_vals()}, {c.statistic_vals()}"
         else:
             best = Comparison(population.best().data, population.target)
-            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {best.mode_vals()}, {best.statistic_vals()}, {population.configuration()}, UNKNOWN, UNKNOWN"
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.mode_vals()}, {best.statistic_vals()}, {population.configuration()}, UNKNOWN, UNKNOWN"
         print(string)
         self.csv.append(string)
         self.old_time = time.time()
 
     def detailed_column_description(self, comparison):
-        return f"iteration, time, seed, {comparison.mode_keys('_best')}, {comparison.statistic_keys('_best')}, combine_func, mutation_func, initialize_func, replace_func, selection_func, individual_constructor, " \
+        return f"iteration, time, seed, size, {comparison.mode_keys('_best')}, {comparison.statistic_keys('_best')}, combine_func, mutation_func, initialize_func, replace_func, selection_func, individual_constructor, " \
         f"{comparison.mode_keys('_current')}, {comparison.statistic_keys('_current')}"
 
     def append_to_csv(self, string):
@@ -76,7 +76,8 @@ class Logger:
 class Population:
     def __init__(self, target=None, seed=1, combine_func=combine.basic_combine, mutation_func=mutate.mutate
                  , initialize_func=initialization.basic_initialization, replace_func=replace.replace_worst_element,
-                 select_func=selection.tournament_selection, individual_constructor=Individual, param_vector=ACTIVE_PARAMETERS):
+                 select_func=selection.tournament_selection, individual_constructor=Individual, param_vector=ACTIVE_PARAMETERS,
+                 fraction_of_pop_size=0.02):
         self.target = target
         self.seed = seed
         self.combine_func = combine_func
@@ -88,6 +89,7 @@ class Population:
         self.population = []
         self.logger = Logger()
         self.active_parameters = param_vector
+        self.ind_size = fraction_of_pop_size
         pass
 
     def __getitem__(self, item):
@@ -123,15 +125,20 @@ class Population:
     def select(self):
         return self.selection_func(self)
 
+    def _help_constructor(self, seed=None):
+        if seed is None:
+            seed = self.seed
+        return self.individual_constructor(seed, self.active_parameters, self.ind_size)
+
     def combine(self, ind1, ind2):
-        child = self.combine_func(ind1, ind2, self.individual_constructor(self.seed, self.active_parameters), self.target, self.active_parameters)
+        child = self.combine_func(ind1, ind2, self._help_constructor(), self.target, self.active_parameters)
         self._run(child)
 
         #print(f"Parent fitness: {ind1.fitness} {ind2.fitness} -> {child.fitness}: {child.active_values()}")
         return child
 
     def mutate(self, ind1):
-        mutation = self.mutation_func(ind1, self.individual_constructor(self.seed, self.active_parameters), self.target)
+        mutation = self.mutation_func(ind1, self._help_constructor(), self.target)
         self._run(mutation)
 
         return mutation
@@ -148,13 +155,13 @@ class Population:
 
     def load(self, path):
         for x in Path(path).iterdir():
-            ind = self.individual_constructor(self.seed, self.active_parameters)
+            ind = self._help_constructor()
             ind.load(x)
             self.population.append(ind)
         self.fitness_for_all_individuals()
 
     def random_individual(self, make_basic=False):
-        individual = self.individual_constructor(self.seed, self.active_parameters)
+        individual = self._help_constructor()
         if make_basic:
             individual.make_basic(nullify_exponential_b_tt=True)
 
@@ -164,14 +171,14 @@ class Population:
         return individual
 
     def set_random_individual_as_target(self):
-        individual = self.individual_constructor(self.seed, self.active_parameters)
+        individual = self._help_constructor()
         individual.randomize()
         individual.run()
         self.set_target(individual.data)
         return individual
 
     def seed_individual(self, seed):
-        individual = self.individual_constructor(seed, self.active_parameters)
+        individual = self._help_constructor(seed=seed)
         self._run(individual)
         return individual
 

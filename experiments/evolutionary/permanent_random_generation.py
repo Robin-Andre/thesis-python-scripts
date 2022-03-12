@@ -15,7 +15,10 @@ def main():
     output = []
     repetitions = 50
     for seed in range(42, 52):
-        population = Population(replace_func=replace.replace_worst_non_forced, seed=101)
+        for i in range(repetitions):
+
+            population = Population(replace_func=replace.replace_worst_non_forced, seed=101)
+            ind = population.random_individual()
         result = run_experiment(seed, population, repetitions, strategy=evo_strategies.permanent_random_generation, load=False)
         write(result, "base" + start_time, seed, FOLDER)
 

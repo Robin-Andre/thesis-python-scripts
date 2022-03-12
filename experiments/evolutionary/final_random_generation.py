@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 
 from calibration.evolutionary.individual import Individual
 from calibration.evolutionary.population import Population
@@ -11,26 +12,30 @@ def plot(x):
 
 
 def run(frac_of_pop, name):
-    build_folders("random_seeds_final")
-    ind = Individual(fraction_of_pop=frac_of_pop)
-    ind.set_seed(1)
-    ind.set_requirements(["tripMode"])
-    ind.run()
-    ind.save(SPECS.EXP_PATH + "random_seeds_final/data/" + name + "/" + str(1))
-    p = Population(param_vector=["asc_car_d_mu"], fraction_of_pop_size=frac_of_pop)
-    p.set_target(ind.data)
+    experiment = "random_seeds_final"
+    build_folders(experiment)
 
-    for i in range(2, 21):
-        ind = p.seed_individual(i)
-        ind.save(SPECS.EXP_PATH + "random_seeds_final/data/" + name + "/" + str(i))
-    result = p.logger.print_csv()
-    write(result, name, "random_seeds_final")
+    for seed in range(1, 10):
+        pop_path = Path(SPECS.EXP_PATH + experiment + "/" + str(seed))
+        pop_path.mkdir(exist_ok=True)
+        ind = Individual(fraction_of_pop=frac_of_pop)
+        ind.set_requirements(["tripMode"])
+        ind.set_seed(seed)
+        ind.run()
+        ind.save(SPECS.EXP_PATH + experiment + "/" + str(seed) + "/data/" + name + "/" + str(0))
+        p = Population(param_vector=["asc_car_d_mu"], fraction_of_pop_size=frac_of_pop)
+        p.set_target(ind.data)
+
+        for i in range(1, 2):
+            ind = p.random_individual()
+            ind.save(SPECS.EXP_PATH + experiment + "/" + str(seed) + "/data/" + name + "/" + str(i))
+        result = p.logger.print_csv()
+        write(result, name, experiment)
 
 def main():
+    random.seed(42)
     run(0.02, "fraction_of_population_002")
     run(0.05, "fraction_of_population_005")
-    run(0.25, "fraction_of_population_025")
-    run(1, "fraction_of_population_100")
 
 
 def build_folders(folder):
