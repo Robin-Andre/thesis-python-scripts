@@ -59,10 +59,10 @@ if __name__ == "__main__":
     # now run the optimization, pass a=1 and b=100 as a tuple assigned to args
 
     cost, pos = optimizer.optimize(test, iters=10)
-    print(pos)#
+    print(pos)
     x = d.copy()
     x.set_list(pos)
-    x.run()#
+    x.run()
 
     a, b, c = x.draw(reference=data)
     a.show()

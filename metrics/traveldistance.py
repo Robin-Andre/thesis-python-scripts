@@ -4,12 +4,29 @@ from metrics import metric
 from metrics.metric import Metric, get_distribution, get_all_existing_modes, get_approximations, difference
 
 
+def subtract(df_self, df_other, keep_list=["tripMode"]):
+    x = metric.reduce(df_self, keep_list, "distanceInKm", "count")
+    x = x.set_index(keep_list + ["distanceInKm"])
+    y = metric.reduce(df_other, keep_list, "distanceInKm", "count")
+    y = y.set_index(keep_list + ["distanceInKm"])
+    q = x.join(y, how="outer", lsuffix='_original', rsuffix='_comparison')
+    q = q.fillna(0)
+    q["count"] = q["count_original"] - q["count_comparison"]
+    #q = q.drop(columns=["count_original", "count_comparison"])
+    return q
+
+
 class TravelDistance(Metric):
 
     def __sub__(self, other):
-        ret = TravelDistance()
-        ret._data_frame = super()._sub(other, "distanceInKm")
-        return ret
+        return subtract(self.get_data_frame(), other.get_data_frame())
+
+    def sub_all(self, other):
+        intersection = list(self.columns() & other.columns())
+        return subtract(self.get_data_frame(), other.get_data_frame(), intersection)
+
+    def sub_none(self, other):
+        return subtract(self.get_data_frame(), other.get_data_frame(), [])
 
     def columns(self):
         cols = list(self._data_frame.columns.values)
