@@ -276,6 +276,14 @@ class Comparison:
 
     def __init__(self, input_data, comparison_data):
         self.mode_metrics = {}
+        self.destination_metrics = {}
+
+        self.apply_on_all_sub_methods(input_data.travel_distance, comparison_data.travel_distance, "TravelDistance",
+                                      "count", use_dest_dict=True)
+        self.apply_on_all_sub_methods(input_data.zone_destination, comparison_data.zone_destination, "ZoneDemand", "traffic", use_dest_dict=True)
+
+
+
         self.apply_on_all_sub_methods(input_data.travel_time, comparison_data.travel_time, "TravelTime", "count")
         self.apply_on_all_sub_methods(input_data.traffic_demand, comparison_data.traffic_demand, "TrafficDemand", "active_trips")
 
@@ -289,13 +297,16 @@ class Comparison:
         self.do_all_modal_counts(input_data, comparison_data)
 
         self.statistic_tests = {}
-
+        self.apply_count_statistic(input_data.travel_time, comparison_data.travel_time, "TravelTime")
+        self.apply_count_statistic(input_data.traffic_demand, comparison_data.traffic_demand, "TrafficDemand")
+        self.apply_count_statistic(input_data.travel_distance, comparison_data.travel_distance, "TravelDistance")
+        self.apply_count_statistic(input_data.zone_destination, comparison_data.zone_destination, "Destinations")
         self.apply_statistic_tests(input_data.travel_time, comparison_data.travel_time, "time")
         self.apply_statistic_tests(input_data.travel_distance, comparison_data.travel_distance, "distance")
 
-        self.modal_split = -self.mode_metrics["ModalSplit_Splits_sum_squared_error"]
-        self.travel_time = -self.mode_metrics["TravelTime_TripMode_sum_squared_error"]
-        self.travel_demand = -self.mode_metrics["TrafficDemand_TripMode_sum_squared_error"]
+        self.modal_split = -self.mode_metrics["ModalSplit_Default_Splits_sum_squared_error"]
+        self.travel_time = -self.mode_metrics["TravelTime_Default_sum_squared_error"]
+        self.travel_demand = -self.mode_metrics["TrafficDemand_Default_sum_squared_error"]
 
         self.zone_traffic = super_sse(input_data.zone_destination, comparison_data.zone_destination, "traffic")
         if self.zone_traffic is None:
@@ -318,7 +329,7 @@ class Comparison:
 
         for func in FUNCTIONS:
             x = help_modal_split(funct(input_obj), funct(comparison_obj), func)
-            self.mode_metrics["ModalSplit" + string + func.__name__] = x
+            self.mode_metrics["ModalSplit_Default" + string + func.__name__] = x
 
     def do_all_modal_splits(self, input_obj, comparison_obj):
         self.__helper2(input_obj, comparison_obj, Data.get_grouped_modal_split, "_Splits_")
@@ -341,25 +352,49 @@ class Comparison:
                     _, p_value = test(inp, comp)
                     self.statistic_tests[name + "_" + test_name + "_" + mode_name] = p_value
 
+    def apply_count_statistic(self, input, comparison, name):
+        tests = {"wilcoxon": scipy.stats.wilcoxon, "ttest": scipy.stats.ttest_rel, "ks": scipy.stats.ks_2samp}
+        d_names = ["default", "aggegated_none", "all"]
+        if input is None or comparison is None:
+            for d_name in d_names:
+                for test_name in tests.keys():
+                    self.statistic_tests["CountComparisonStatisticTest_" + name + "_" + test_name + "_" + d_name] = numpy.inf
+            return
 
-    def apply_on_all_sub_methods(self, input_obj, comparison_obj, name, string):
-        self.apply_all_metrics(input_obj, comparison_obj, name + "_TripMode_", string)
-        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "_All_", string)
-        self.apply_all_metrics_generic(input_obj, comparison_obj, name + "_None_", string)
+        diff = input - comparison
+        diff2 = input.sub_none(comparison)
+        diff3 = input.sub_all(comparison)
+        for d_name, d in zip(d_names, [diff, diff2, diff3]):
+            for test_name, teste in tests.items():
+                _, p_value = teste(d[d.columns[0]], d[d.columns[1]])
+                self.statistic_tests["CountComparisonStatisticTest_" + name + "_" + test_name + "_" + d_name] = p_value
 
-    def __helper(self, input_obj, comparison_obj, name, metric_func, string):
+
+    def apply_on_all_sub_methods(self, input_obj, comparison_obj, name, string, use_dest_dict=False):
+        self.apply_all_metrics(input_obj, comparison_obj, name + "_Default_", string, use_dest_dict)
+        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "_All_", string, use_dest_dict)
+        self.apply_all_metrics_generic(input_obj, comparison_obj, name + "_None_", string, use_dest_dict)
+
+    def __helper(self, input_obj, comparison_obj, name, metric_func, string, use_dest_dict=False):
         for func in FUNCTIONS:
-            x = metric_func(input_obj, comparison_obj, func, string)
-            self.mode_metrics[name + func.__name__] = x
 
-    def apply_all_metrics_detailed(self, input_obj, comparison_obj, name, string):
-        self.__helper(input_obj, comparison_obj, name, help_difference_builder_all, string)
+            if input_obj is None or comparison_obj is None:
+                x = numpy.inf
+            else:
+                x = metric_func(input_obj, comparison_obj, func, string)
+            if use_dest_dict:
+                self.destination_metrics[name + func.__name__] = x
+            else:
+                self.mode_metrics[name + func.__name__] = x
 
-    def apply_all_metrics(self, input_obj, comparison_obj, name, string):
-        self.__helper(input_obj, comparison_obj, name, help_difference_builder, string)
+    def apply_all_metrics_detailed(self, input_obj, comparison_obj, name, string, use_dest_dict):
+        self.__helper(input_obj, comparison_obj, name, help_difference_builder_all, string, use_dest_dict)
 
-    def apply_all_metrics_generic(self, input_obj, comparison_obj, name, string):
-        self.__helper(input_obj, comparison_obj, name, help_difference_builder_none, string)
+    def apply_all_metrics(self, input_obj, comparison_obj, name, string, use_dest_dict):
+        self.__helper(input_obj, comparison_obj, name, help_difference_builder, string, use_dest_dict)
+
+    def apply_all_metrics_generic(self, input_obj, comparison_obj, name, string, use_dest_dict):
+        self.__helper(input_obj, comparison_obj, name, help_difference_builder_none, string, use_dest_dict)
 
 
     def sum_zones(self):
@@ -376,6 +411,18 @@ class Comparison:
 
     def statistic_keys(self, appendix):
         return ", ".join([str(x) + appendix for x in list(self.statistic_tests.keys())])
+
+    def destination_vals(self):
+        return ", ".join([str(x) for x in list(self.destination_metrics.values())])
+
+    def destination_keys(self, appendix):
+        return ", ".join([str(x) + appendix for x in list(self.destination_metrics.keys())])
+
+    def logger_vals(self):
+        return self.mode_vals() + ", " + self.statistic_vals() + ", " + self.destination_vals()
+
+    def logger_keys(self, appendix):
+        return self.mode_keys(appendix) + ", " + self.statistic_keys(appendix) + ", " + self.destination_keys(appendix)
 
     def __str__(self):
         return ", ".join([str(x) for x in [self.modal_split, self.travel_time, self.travel_demand, self.sum_zones()]])

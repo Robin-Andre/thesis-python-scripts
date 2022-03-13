@@ -130,7 +130,6 @@ class MyTestCase(unittest.TestCase):
         data2.load("resources/example_config_load2/results/")
         c = Comparison(data, data2)
         self.assertEqual(len(c.mode_metrics.keys()), 8 * 19) # 8 Metrics evaluated on 8 Data objects
-        return
 
     @unittest.skip("Visual test/Graphic analysis")
     def test_grouped_modal_split(self):

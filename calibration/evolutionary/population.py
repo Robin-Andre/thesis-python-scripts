@@ -47,23 +47,23 @@ class Logger:
         self.title_column = self.detailed_column_description(c)
         if len(population.population) == 0 and current_individual is not None:
 
-            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {c.mode_vals()}, {c.statistic_vals()}, {population.configuration()}, " \
-                     f"{c.mode_vals()}, {c.statistic_vals()}"
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {c.logger_vals()}, {population.configuration()}, " \
+                     f"{c.logger_vals()}"
 
         elif current_individual is not None:
             best = Comparison(population.best().data, population.target)
-            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.mode_vals()}, {best.statistic_vals()}, {population.configuration()}, " \
-                f"{c.mode_vals()}, {c.statistic_vals()}"
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.logger_vals()}, {population.configuration()}, " \
+                f"{c.logger_vals()}"
         else:
             best = Comparison(population.best().data, population.target)
-            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.mode_vals()}, {best.statistic_vals()}, {population.configuration()}, UNKNOWN, UNKNOWN"
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.logger_vals()}, {population.configuration()}, UNKNOWN, UNKNOWN"
         print(string)
         self.csv.append(string)
         self.old_time = time.time()
 
     def detailed_column_description(self, comparison):
-        return f"iteration, time, seed, size, {comparison.mode_keys('_best')}, {comparison.statistic_keys('_best')}, combine_func, mutation_func, initialize_func, replace_func, selection_func, individual_constructor, " \
-        f"{comparison.mode_keys('_current')}, {comparison.statistic_keys('_current')}"
+        return f"iteration, time, seed, size, {comparison.logger_keys('_best')}, combine_func, mutation_func, initialize_func, replace_func, selection_func, individual_constructor, " \
+        f"{comparison.logger_keys('_current')}"
 
     def append_to_csv(self, string):
         self.csv = [s + string for s in self.csv]

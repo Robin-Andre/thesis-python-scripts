@@ -4,6 +4,7 @@ import pygad
 
 import mobitopp_execution as simulation
 from calibration.evolutionary.individual import Individual, ModalSplitIndividual, DestinationIndividual
+from metrics.data import Comparison
 
 PARAM_LIST = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu"]
 INDIVIDUAL_CONSTRUCTOR = DestinationIndividual
@@ -17,6 +18,8 @@ def fitness_func_factory(data, param_list, ind_constructor):
         individual.set_list(solution)
 
         output = individual.run()
+        c = Comparison(individual.data, data)
+        c.mode_metrics["?"]
         fitness = individual.evaluate_fitness(data)
         a, b, c = individual.draw(reference=data)
         a.show()
