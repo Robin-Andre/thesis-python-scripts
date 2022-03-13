@@ -333,8 +333,13 @@ class Comparison:
             inp = input.cdf(x)
             comp = comparison.cdf(x)
             for test_name, test in tests.items():
-                _, p_value = test(inp, comp)
-                self.statistic_tests[name + "_" + test_name + "_" + mode_name] = p_value
+
+                if len(inp) == 0 or len(comp) == 0:
+                    self.statistic_tests[name + "_" + test_name + "_" + mode_name] = numpy.inf
+                else:
+
+                    _, p_value = test(inp, comp)
+                    self.statistic_tests[name + "_" + test_name + "_" + mode_name] = p_value
 
 
     def apply_on_all_sub_methods(self, input_obj, comparison_obj, name, string):
