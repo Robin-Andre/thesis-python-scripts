@@ -1,5 +1,7 @@
+import re
 import time
 import unittest
+from functools import reduce
 from pathlib import Path
 
 import numpy
@@ -11,7 +13,7 @@ import visualization
 
 import visualization as plot
 import yamlloader
-from configurations import parameter
+from configurations import parameter, SPECS
 from configurations.parameter import Mode
 from metrics.trafficdemand import TrafficDemand
 
@@ -27,6 +29,10 @@ class MyTestCase(unittest.TestCase):
         raw_data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         data_frame = evaluation.create_travel_distance_with_activity_type(raw_data)
         self.assertEqual(list(data_frame.columns.values), ["distanceInKm", "tripMode", "activityType", "amount"])
+
+    def test_readin_cost_and_time(self):
+        x = evaluation.read_in_cost_and_time()
+        self.assertIsNotNone(x)
 
     def test_household_extraction(self):
         raw_data_household = pandas.read_csv("resources/household.csv", sep=";")
@@ -75,11 +81,16 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue("relief" in data.columns)
         self.assertTrue(set(data["relief"]).issubset({False, True}))
 
+    def test_data_merge(self):
+        x = evaluation.default_test_merge()
+        evaluation.merge_costs(x)
+
     def test_zone_destination_data(self):
         data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
         parameter.group_activity(data)
         x = data.groupby(["sourceZone", "targetZone", "activityType"]).size()
         print(x)
+
 
 
 if __name__ == '__main__':

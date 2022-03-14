@@ -151,6 +151,10 @@ def merge_relief(data, zone_data):
     x["relief"] = x["relief"] >= 250
     return data.merge(x, left_on="targetZone", right_on="zoneId")
 
+def merge_costs(data):
+    temp = read_in_cost_and_time()
+    x = data.merge(temp, how='left', left_on=['sourceZone', 'targetZone'], right_on = ['sourceZone', 'targetZone'])
+    print(x)
 
 def merge_data(data, household, person, zone_properties):
     data = merge_relief(data, zone_properties)
@@ -183,6 +187,8 @@ def create_travel_distance_data(raw_data):
     temp_df.columns = ["distanceInKm", "tripMode", "amount"]
     return temp_df
 
+def read_in_cost_and_time():
+    return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/time_and_costs.csv")
 
 def create_travel_distance_with_activity_type(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode", "activityType", "previousActivityType"]].copy()

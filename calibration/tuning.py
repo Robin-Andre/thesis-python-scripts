@@ -36,8 +36,9 @@ def tune(individual: BaseIndividual, data_target: Data, parameter, epsilon=0.05,
         estimate_value = parameter.observe_detailed(copy_ind_2, copy_ind_1, data_target)
         copy_ind_2 = copy_ind_1.copy()
         copy_ind_1[parameter].set(estimate_value)
-        print(copy_ind_1[parameter])
         print(copy_ind_2[parameter])
+        print(copy_ind_1[parameter])
+
         __do_population_shenanigans(copy_ind_1, population, draw, mode=parameter.requirements["tripMode"])
 
         error = parameter.error(copy_ind_1, data_target)
