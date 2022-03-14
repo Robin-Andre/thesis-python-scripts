@@ -49,9 +49,9 @@ class BaseIndividual(ABC):
         self.data.reduce(keep_list)
 
     def errors(self, data):
-        errvals = {}
+        errvals = []
         for p in self.parameter_name_list:
-            errvals[p] = self[p].error(self, data)
+            errvals.append((p, self[p].error(self, data)))
 
         return errvals
 
@@ -131,6 +131,13 @@ class Individual(BaseIndividual):
 
         return l
 
+    def average_value_list(self):
+        l_average = []
+        for p in self.parameter_name_list:
+            l_average.append((self[p].upper_bound + self[p].lower_bound) / 2)
+
+        return l_average
+
     def pyswarms_bound_lists(self):
         l_lower = []
         l_upper = []
@@ -148,6 +155,10 @@ class Individual(BaseIndividual):
         for p, val in zip(self.parameter_name_list, new_val_list):
             print(f"{p} {val}")
             self[p].set(val)
+
+    def randomize_active_parameters(self):
+        for p in self.parameter_name_list:
+            self[p].randomize()
 
 
     def make_basic(self, nullify_exponential_b_tt=False):
