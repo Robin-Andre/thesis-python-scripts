@@ -30,6 +30,20 @@ def b_tt_exp(x):
 def b_tt_exp_inverse(y):
     return math.log(-y)
 
+
+class CostObservation(Observation):
+    pass
+
+
+class ElasticityObservation(Observation):
+    """
+    The elasticity parameters are cursed, trying to optimize them will only result in tears and broken bones.
+    If anyone reads this and does unironically attempt to implement an observation for elasticity parameters:
+    Godspeed
+    """
+    pass
+
+
 class TimeModeObservation(Observation):
 
     def __init__(self, function=lambda x: -math.exp(x), inverse_function=lambda x: math.log(-x)):
@@ -59,8 +73,8 @@ class TimeModeObservation(Observation):
         temp = time_df.groupby(["tripMode", "durationTrip"]).sum()["count"].to_frame()
         temp_target = target_df.groupby(["tripMode", "durationTrip"]).sum()["count"].to_frame()
 
-        wololo = temp.iloc[temp.index.get_level_values("tripMode") == 1]
-        target_wololo = temp_target.iloc[temp_target.index.get_level_values("tripMode") == 1]
+        wololo = temp.iloc[temp.index.get_level_values("tripMode") == parameter.requirements["tripMode"]]
+        target_wololo = temp_target.iloc[temp_target.index.get_level_values("tripMode") == parameter.requirements["tripMode"]]
 
         temp = target_wololo.join(wololo, how="left", lsuffix=lsuffix, rsuffix="_observation")
         temp = temp.fillna(0)

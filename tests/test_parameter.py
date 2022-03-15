@@ -31,6 +31,10 @@ class MyTestCase(unittest.TestCase):
         self.detailed_helper("b_arbwo_bike", {"tripMode": 0, "workday": True})
         self.detailed_helper("shift_carav_on_logsum_drive", {"eachAdultHasCar": True})
 
+    def test_elasticity(self):
+        self.detailed_helper("elasticity_parken", {"tripMode": 1, "parking": True})
+        self.detailed_helper("elasticity_acc_put", {"tripMode": 4, "access_time": True})
+
     @unittest.skip("Console print spam")
     def test_detailed_destination_config(self):
         conf = configloader.Config(Path("resources/example_config_load/configs/destination_choice_parameters_LEISURE.txt"))
