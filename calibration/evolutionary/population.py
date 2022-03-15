@@ -41,7 +41,7 @@ class Logger:
         self.old_time = time.time()
 
 
-    def log_detailed(self, population, current_individual=None):
+    def log_detailed(self, population, current_individual=None, increase_counter=False):
         self.new_time = time.time()
         c = Comparison(current_individual.data, population.target)
         self.title_column = self.detailed_column_description(c)
@@ -59,6 +59,8 @@ class Logger:
             string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.logger_vals()}, {population.configuration()}, UNKNOWN, UNKNOWN"
         print(string)
         self.csv.append(string)
+        if increase_counter:
+            self.iteration += 1
         self.old_time = time.time()
 
     def detailed_column_description(self, comparison):

@@ -37,9 +37,6 @@ def test(a):
 if __name__ == "__main__":
 
     yaml, data = simulation.load("../tests/resources/compare_individual")
-
-
-
     p_list = list(yaml.mode_config().get_main_parameters_name_only())
     #p_list = ["asc_car_d_mu"]
     ind_constructor = ModalSplitIndividual
