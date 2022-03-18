@@ -147,6 +147,11 @@ class Individual(BaseIndividual):
 
         return l_lower, l_upper
 
+    def spsa_bound_lists(self):
+        l_tuples = []
+        for p in self.parameter_name_list:
+            l_tuples.append((self[p].lower_bound, self[p].upper_bound))
+        return l_tuples
 
     def parameter_names(self):
         return self.yaml.mode_config().parameters.keys()

@@ -15,15 +15,23 @@ PARAM_LIST = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_b
 INDIVIDUAL_CONSTRUCTOR = DestinationIndividual
 
 
-def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_name="pygad_genetic_algorithm"):
+def get_gene_space(tuning_parameter_list):
+    individual = Individual(param_list=tuning_parameter_list)
+    return individual.pygad_bound_dict()
+
+
+def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_name="pygad_genetic_algorithm", descriptor=None):
 
     random.seed(seed)
+    numpy.random.seed(seed)
+    if descriptor is None:
+        descriptor = str(seed) + "_metric_" + metric + "/"
     build_folders(experiment_name)
-    individual = Individual(param_list=tuning_parameter_list)
-    gene_space = individual.pygad_bound_dict()
+    gene_space = get_gene_space(tuning_parameter_list)
     pop = Population(param_vector=tuning_parameter_list)
     pop.set_target(comparison_data)
-    fitness_function = fitness_func_factory(comparison_data, tuning_parameter_list, Individual, metric, pop, experiment_name, seed)
+
+    fitness_function = fitness_func_factory(comparison_data, tuning_parameter_list, Individual, metric, pop, experiment_name, descriptor)
 
     num_generations = 50
     num_parents_mating = 4
@@ -61,7 +69,9 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_na
     print(solution, solution_fitness, solution_idx)
 
     result = pop.logger.print_csv()
-    write(result, "DEFAULT", experiment_name)
+    return solution, result
+
+
 
 def build_folders(folder):
     folder_path = Path(SPECS.EXP_PATH + folder)
@@ -73,15 +83,21 @@ def build_folders(folder):
             x.mkdir()
 
 
-
 def write(result, experiment, folder):
-
     with open(SPECS.EXP_PATH + folder + f"/{experiment}.csv", "w+") as file:
         file.write(result)
 
-def fitness_func_factory(data, param_list, ind_constructor, metric, population, experiment_name, seed=-1):
-    p = Path(SPECS.EXP_PATH + experiment_name + "/data/seed_" + str(seed))
+
+def log_and_save_individual(individual, population, experiment_name, descriptor):
+    individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" +  str(population.logger.iteration))
+    population.append(individual)
+    population.logger.log_detailed(population, individual, increase_counter=True)
+
+
+def fitness_func_factory(data, param_list, ind_constructor, metric, population, experiment_name, descriptor):
+    p = Path(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor)
     p.mkdir(exist_ok=True)
+
     def fitness_func(solution, idx):
         print(param_list)
         individual = ind_constructor(param_list=param_list)
@@ -92,17 +108,10 @@ def fitness_func_factory(data, param_list, ind_constructor, metric, population, 
         value = c.mode_metrics[metric]
         individual.fitness = -value
 
-        individual.save(SPECS.EXP_PATH + experiment_name + "/data/seed_" + str(seed) + "/" + str(population.logger.iteration))
-
-        population.append(individual)
-        population.logger.log_detailed(population, individual, increase_counter=True)
+        log_and_save_individual(individual, population, experiment_name, descriptor)
 
         print(f"value is {value}")
-        #fitness = individual.evaluate_fitness(data)
-        #a, b, c = individual.draw(reference=data)
-        #a.show()
-        #        c.show()
-        #print(fitness)
+
         return -value
     return fitness_func
 

@@ -82,7 +82,8 @@ class TimeModeObservation(Observation):
         return tuple(popt)
 
     def error(self, ind_1, target_data, parameter):
-        return self._helper(ind_1, target_data, parameter)[1]
+        alpha = 100
+        return alpha * self._helper(ind_1, target_data, parameter)[1]
 
     def observe(self, ind_1, target_data, parameter):
         popt = self._helper(ind_1, target_data, parameter)
