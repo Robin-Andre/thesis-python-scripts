@@ -1,5 +1,8 @@
+import logging
 import math
 from abc import ABC, abstractmethod
+
+import numpy
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot as plt
@@ -48,21 +51,21 @@ class TimeModeObservation(Observation):
         for x in [-20, -10, -1, -0.01, 0, 0.01, 10, 20]:
             assert abs(self.f_inverse(self.f(x)) - x) < epsilon
 
-    def _helper(self, ind_1, target_data, parameter):
-        time_df = ind_1.data.travel_time.get_data_frame()
-        target_df = target_data.travel_time.get_data_frame()
+    def _generate_quantiles(self, frame):
+        quants = [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999]
+        cumulated_values = frame["count"].cumsum()
+        quantile_vals = cumulated_values.quantile(quants)
+        x = [(numpy.abs(cumulated_values - i)).argmin() for i in quantile_vals]
+        q = cumulated_values.index.values[x]
+        # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
+        assert frame.index.names[-1] == "durationTrip"
+        return [split_tuples[-1] for split_tuples in q]
 
+
+    def _generate_function_estimate(self, target, observation):
         lsuffix = "_target"
 
-        assert parameter.requirements.keys().__contains__("tripMode")
-
-        temp = time_df.groupby(["tripMode", "durationTrip"]).sum()["count"].to_frame()
-        temp_target = target_df.groupby(["tripMode", "durationTrip"]).sum()["count"].to_frame()
-
-        wololo = temp.iloc[temp.index.get_level_values("tripMode") == 1]
-        target_wololo = temp_target.iloc[temp_target.index.get_level_values("tripMode") == 1]
-
-        temp = target_wololo.join(wololo, how="left", lsuffix=lsuffix, rsuffix="_observation")
+        temp = target.join(observation, how="left", lsuffix=lsuffix, rsuffix="_observation")
         temp = temp.fillna(0)
 
         drop_threshold = 0.005
@@ -71,6 +74,7 @@ class TimeModeObservation(Observation):
 
         filtered_data = data.copy()
         filtered_data.loc[:, "relative_values"] = filtered_data["count_observation"] / filtered_data["count" + lsuffix]
+
         vals = filtered_data["relative_values"].values
         ind = filtered_data.index.get_level_values("durationTrip").values
         popt, pcov = scipy.optimize.curve_fit(expected_b_tt_func, list(ind), list(vals))
@@ -79,53 +83,110 @@ class TimeModeObservation(Observation):
         #plt.plot(ind, vals)
         #plt.show()
         #plt.close(fig)
+        print(popt)
         return tuple(popt)
 
+    def _get_data_subset(self, dataframe, parameter):
+        requirements = list(parameter.requirements.keys())
+        temp = dataframe.groupby(requirements + ["durationTrip"]).sum()["count"].to_frame()
+        for k, v in parameter.requirements.items():
+            temp = temp.iloc[temp.index.get_level_values(k) == parameter.requirements[k]]
+        return temp
+
+    def _helper(self, ind_1, target_data, parameter):
+        assert parameter.requirements.keys().__contains__("tripMode")
+
+        wololo = self._get_data_subset(ind_1.data.travel_time.get_data_frame(), parameter)
+        target_wololo = self._get_data_subset(target_data.travel_time.get_data_frame(), parameter)
+        #x = self._generate_quantiles(wololo)
+        #y = self._generate_quantiles(target_wololo)
+
+        #print(x)
+        #print(y)
+        #print([a_i - b_i for a_i, b_i in zip(x, y)])
+        #print(sum([a_i - b_i for a_i, b_i in zip(x, y)]))
+
+        estimate = self._generate_function_estimate(target_wololo, wololo)
+        #print(estimate)
+        return estimate
+
+    def _other_error_method(self, ind_1, target_data, parameter):
+        x = self._get_data_subset(ind_1.data.travel_time.get_data_frame(), parameter)
+        y = self._get_data_subset(target_data.travel_time.get_data_frame(), parameter)
+
+        a = self._generate_quantiles(x)
+        b = self._generate_quantiles(y)
+        #print(f"Param {parameter}")
+        #print([a_i - b_i for a_i, b_i in zip(a, b)])
+        z = sum([a_i - b_i for a_i, b_i in zip(a, b)])
+        #print(z)
+        return z
+
     def error(self, ind_1, target_data, parameter):
-        alpha = 100
-        return alpha * self._helper(ind_1, target_data, parameter)[1]
+        z = self._other_error_method(ind_1, target_data, parameter)
+        alpha = 0.01
+        return z * alpha
+        #return alpha * self._helper(ind_1, target_data, parameter)[1]
 
     def observe(self, ind_1, target_data, parameter):
-        popt = self._helper(ind_1, target_data, parameter)
+        #popt = self._helper(ind_1, target_data, parameter)
+        error = self.error(ind_1, target_data, parameter)
         # A positive value for popt[1] means that the time preference component has too much impact
         # In order to reduce it the -exp(x) function needs to return a smaller value (for all except b_tt_ped_mu)
         # So counterintuitively b_tt-* needs to be decreased to reduce the negative impact. For this reason
         # it is recommended to attach an inverse function to the specific parameter to gain a linear impact on the
         # time component.
 
-        alpha = 1
+        alpha = -0.1
 
         x_1 = ind_1[parameter].value  # x == -0.5
         y_1 = self.f(x_1)
-        y_new = y_1 + alpha * popt[1]
+        y_new = y_1 + alpha * error
+
+        #print(f"Debug{x_1} {y_1} {y_new} {error}")
+
         x_new = self.f_inverse(y_new)
-        print(f"Suggested Value: {x_new}")
+        #print(f"{x_1} {y_1}|  {y_new}")
+        #print(f"Suggested Value simple: {x_new}")
         return x_new
 
     def guess(self, x_1, y_1, x_2, y_2):
+        #print(f"The values are {x_1}, {y_1}  {x_2}, {y_2}")
         # Calculate m * x + c for a linear approximation
         m = (y_2 - y_1) / (x_2 - x_1)
         c = y_1 - m * x_1
 
-        # Calculate the where the approximation would be zero
-        x_new = -c / m
-        epsilon = 0.001
-        assert abs(y_1 - m * x_1 - c) < epsilon
-        assert abs(y_2 - m * x_2 - c) < epsilon
+        # This is a special case for the quantile approximation, since it is easily possible to generate two identical
+        # y_1 == y_2
+        if m == 0:
+            print(f"Special case has entered the chat")
+            # if y is positive that means that the b_tt value is too large and smaller travels should be preferred
+            step = -0.1 * numpy.sign(y_1)
+            x_new = x_1 + step
+        else:
+            assert m != 0
+            # Calculate the where the approximation would be zero
+            x_new = -c / m
+            epsilon = 0.001
+            assert abs(y_1 - m * x_1 - c) < epsilon
+            assert abs(y_2 - m * x_2 - c) < epsilon
+        #print(f"New x before inverse: {x_new}")
         return self.f_inverse(x_new)
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
-        popt1 = self._helper(ind_1, target_data, parameter)
-        popt2 = self._helper(ind_2, target_data, parameter)
-
+        #popt1 = self._helper(ind_1, target_data, parameter)
+        #popt2 = self._helper(ind_2, target_data, parameter)
+        error_1 = self.error(ind_1, target_data, parameter)
+        error_2 = self.error(ind_2, target_data, parameter)
+        #print(f"Errors: {error_1}  {error_2}")
         x_1 = ind_1[parameter].value
         y_1 = self.f(x_1)
 
         x_2 = ind_2[parameter].value
         y_2 = self.f(x_2)
 
-        new_x = self.guess(y_1, popt1[1], y_2, popt2[1])
-        print(f"Suggested Value: {new_x}")
+        new_x = self.guess(y_1, error_1, y_2, error_2)
+        #print(f"Suggested Value: {new_x}")
         return new_x
 
 
@@ -178,7 +239,8 @@ class ModalSplitObservation(Observation):
 
     def error(self, ind_1, target_data, parameter):
         x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
-        return abs(y_1 - y_target)
+        #print(f"Targets and stuff and so {x_1} {y_1} {y_target} {parameter.name}")
+        return y_1 - y_target
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
         x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
@@ -188,7 +250,13 @@ class ModalSplitObservation(Observation):
         z = g(y_target)
         z_1 = g(y_1)
         z_2 = g(y_2)
-        a = (z - z_1) / (z_2 - z_1)  # a is the linear scale factor based on the normalized parameters
+        #print(f"All the observed ladies: {x_1} {y_1} {y_target} {z} {z_1} {z_2}")
+
+        if abs(z_2 - z_1) < 0.000001:
+            logging.warning("Careful, low value ")
+            a = 0.5
+        else:
+            a = (z - z_1) / (z_2 - z_1)  # a is the linear scale factor based on the normalized parameters
         x_new = a * (x_2 - x_1) + x_1
         return x_new
 

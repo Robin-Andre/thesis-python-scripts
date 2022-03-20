@@ -1,6 +1,6 @@
 from calibration.evolutionary.individual import BaseIndividual
 from calibration.evolutionary.population import Population
-from metrics.data import Data
+from metrics.data import Data, Comparison
 
 
 def __do_population_shenanigans(copy_ind_1, population, draw, mode):
@@ -15,34 +15,85 @@ def __do_population_shenanigans(copy_ind_1, population, draw, mode):
         copy_ind_1.run()
 
 
-def tune(individual: BaseIndividual, data_target: Data, parameter, epsilon=0.05, population=None, draw=False):
+def log_and_save_individual(individual, population, experiment_name, descriptor):
+    #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" +  str(population.logger.iteration))
+    if population is None:
+        return
+    population.append(individual)
+    population.logger.log_detailed(population, individual, increase_counter=True)
 
-    print(f"Original Value {individual[parameter].value}")
+    draw(individual, population.target)
+
+
+def draw(ind, data):
+    ind.data.draw_modal_split(reference=data)
+    x = ind.data.travel_time.draw(reference=data.travel_time)
+
+    x.show()
+
+
+
+def run_and_set_fitness(individual, data, metric):
+    individual.run()
+    c = Comparison(individual.data, data)
+    value = c.mode_metrics[metric]
+    individual.fitness = -value
+
+
+
+def tune(individual: BaseIndividual, data_target: Data, parameter, epsilon=0.05, population=None, draw=False, metric="ModalSplit_Default_Splits_sum_squared_error"):
+
+    #print(f"Original Value {individual[parameter].value}")
+
     error = parameter.error(individual, data_target)
-    if error < epsilon:
+    l_errors = [(individual[parameter].value, error)]
+    #print(f"Errors {l_errors}")
+    if abs(error) < epsilon:
         print("Error too small. No optimization will be done")
         return individual
-    print(f"Error{error}")
+    #print(f"Error1 {error}")
     copy_ind_1 = individual.copy()
     copy_ind_2 = individual.copy()
-    estimate_value = parameter.observe(individual, data_target)
+    estimate_value = copy_ind_1[parameter].observe(individual, data_target)
     copy_ind_1[parameter].set(estimate_value)
-    __do_population_shenanigans(copy_ind_1, population, draw, mode=parameter.requirements["tripMode"])
+    run_and_set_fitness(copy_ind_1, data_target, metric)
+    #__do_population_shenanigans(copy_ind_1, population, draw, mode=parameter.requirements["tripMode"])
+    log_and_save_individual(copy_ind_1, population, "", "")
+    error = copy_ind_1[parameter].error(copy_ind_1, data_target)
 
-    error = parameter.error(copy_ind_1, data_target)
-    print(f"Error{error}")
-    while error > epsilon:
+    l_errors.append((copy_ind_1[parameter].value, error))
+    #print(f"Errors {l_errors}")
+    #print(f"Error2 {error}")
 
-        estimate_value = parameter.observe_detailed(copy_ind_2, copy_ind_1, data_target)
+    counter = 0
+    stop_criterion = 3
+    best_error = min([x[1] for x in l_errors])
+    while abs(error) > epsilon and counter < stop_criterion:
+        #print(f"Current counter {counter}")
+        counter += 1
+
+        estimate_value = copy_ind_1[parameter].observe_detailed(copy_ind_2, copy_ind_1, data_target)
         copy_ind_2 = copy_ind_1.copy()
         copy_ind_1[parameter].set(estimate_value)
-        print(copy_ind_2[parameter])
-        print(copy_ind_1[parameter])
+        #print(copy_ind_2[parameter])
+        #print(copy_ind_1[parameter])
 
-        __do_population_shenanigans(copy_ind_1, population, draw, mode=parameter.requirements["tripMode"])
+        run_and_set_fitness(copy_ind_1, data_target, metric)
+        log_and_save_individual(copy_ind_1, population, "", "")
+        temp_error = copy_ind_1[parameter].error(copy_ind_1, data_target)
+        if abs(temp_error) < abs(best_error):
+            #print("Improvement Found")
+            counter = 0
+            best_error = temp_error
+        error = temp_error
+        l_errors.append((copy_ind_1[parameter].value, error))
 
-        error = parameter.error(copy_ind_1, data_target)
-        print(f"Error{error}")
+        #print(f"Error3 {error}")
+    #print("The error list:")
+    print(l_errors)
+    best_result = min(l_errors, key=lambda t: abs(t[1]))
+    print(f"Best result: {best_result}")
+    copy_ind_1[parameter].set(best_result[0])
 
     return copy_ind_1
 

@@ -62,6 +62,53 @@ class MyTestCase(unittest.TestCase):
         temp.run()
         temp.data.traffic_demand.draw_smooth(reference=individual.data.traffic_demand).show()
 
+    def test_why_algo_fails(self):
+        PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+        d = Individual(param_list=PARAMS)
+        d.run()
+        data = d.data
+
+        individual = Individual(-1, PARAMS)
+        start_values = individual.average_value_list()
+        individual.set_list(start_values)
+        individual.run()
+
+        p = "b_tt_bike_mu"
+        tuning.tune(individual, data, individual[p])
+        """print(individual[p])
+        b = individual.data.travel_time.draw(reference=data.travel_time)
+        for x in ["b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]:
+            print(x)
+            individual[x].observe(individual, data)
+        b.show()
+        individual[p].set(-0.5)
+        individual.run()
+        individual[p].observe(individual, data)
+        individual[p].error(individual, data)
+        b = individual.data.travel_time.draw(reference=data.travel_time)
+        b.show()
+        individual[p].set(-0.75)
+        individual.run()
+        individual[p].observe(individual, data)
+        individual[p].error(individual, data)
+        b = individual.data.travel_time.draw(reference=data.travel_time)
+        b.show()
+        individual[p].set(-0)
+        individual.run()
+        individual[p].observe(individual, data)
+        individual[p].error(individual, data)
+        b = individual.data.travel_time.draw(reference=data.travel_time)
+        b.show()
+        individual[p].set(-10)
+        individual.run()
+        individual[p].observe(individual, data)
+        individual[p].error(individual, data)
+        b = individual.data.travel_time.draw(reference=data.travel_time)
+        b.show()"""
+
+
+
+
 
 
 if __name__ == '__main__':

@@ -349,13 +349,11 @@ def group_activity(df):
 
 
 def get_appropriate_observation_function(p_name):
-    if p_name.__contains__("b_tt") and p_name.__contains__("_mu"):
-        return TimeModeObservation()
-    elif p_name.__contains__("asc_") and p_name.__contains__("_mu"):
-        return ModalSplitObservation()
-    elif p_name == "b_tt_ped":
+    if p_name.__contains__("b_tt") and p_name.__contains__("_ped"):
         return TimeModeObservation(lambda x: x, lambda x: x)
-    else:
+    elif p_name.__contains__("b_tt") and not p_name.__contains__("_ped"):
+        return TimeModeObservation()
+    elif p_name.__contains__("asc_"):
         return ModalSplitObservation()
 
 
