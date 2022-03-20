@@ -77,6 +77,9 @@ def create_travel_time_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     return temp
 
 
+def create_travel_cost_data(almost_raw_data):
+    return merge_costs(almost_raw_data)
+
 def create_travel_distance_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["distanceInKm"] + vector].copy()
 
@@ -102,6 +105,12 @@ def read_in_data(yaml):
     zone_properties = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["zonePropertiesDataFile"], sep=";")
     return merge_data(data, data_household, data_person, zone_properties)
 
+
+def read_in_attractivities():
+    return pandas.read_csv(SPECS.CWD + "/data/rastatt/zoneproperties/analysis" + "/attractivities.csv", sep=";")
+
+def read_in_parking_facilities():
+    return pandas.read_csv(SPECS.CWD + "/data/rastatt/zoneproperties/analysis" + "/parkingFacilities.csv", sep=";")
 
 def default_test_merge():
     data_person = pandas.read_csv("resources/person.csv", sep=";")
@@ -152,9 +161,19 @@ def merge_relief(data, zone_data):
     return data.merge(x, left_on="targetZone", right_on="zoneId")
 
 def merge_costs(data):
-    temp = read_in_cost_and_time()
-    x = data.merge(temp, how='left', left_on=['sourceZone', 'targetZone'], right_on = ['sourceZone', 'targetZone'])
-    print(x)
+    """
+    Gives a dataframe containing the costs based on trip mode and economical status. Used for b_cost, b_inc and b_cost_put
+    """
+    temp = read_in_cost()
+    x = data.merge(temp, how='left', left_on=['sourceZone', 'targetZone', 'tripMode'], right_on=['sourceZone', 'targetZone', 'tripMode'])
+    y = x[["tripMode", "economicalStatus", "travel_cost"]].copy()
+    y["economicalStatus"] = y["economicalStatus"].replace(1, 3)
+    z = y.groupby(["tripMode", "economicalStatus", "travel_cost"]).size().to_frame()
+    z.rename(columns={0: 'count'}, inplace=True)
+    z = z.reset_index()
+    return z
+
+
 
 def merge_data(data, household, person, zone_properties):
     data = merge_relief(data, zone_properties)
@@ -189,6 +208,9 @@ def create_travel_distance_data(raw_data):
 
 def read_in_cost_and_time():
     return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/time_and_costs.csv")
+
+def read_in_cost():
+    return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/TRAVEL_COST.csv")
 
 def create_travel_distance_with_activity_type(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode", "activityType", "previousActivityType"]].copy()

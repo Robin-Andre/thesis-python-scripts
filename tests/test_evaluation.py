@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy
 import numpy as np
 import pandas
+from matplotlib import pyplot as plt
 
 import evaluation
 import visualization
@@ -33,6 +34,18 @@ class MyTestCase(unittest.TestCase):
     def test_readin_cost_and_time(self):
         x = evaluation.read_in_cost_and_time()
         self.assertIsNotNone(x)
+
+    def test_data_merge(self):
+        x = evaluation.default_test_merge()
+        y = evaluation.merge_costs(x)
+        self.assertIsNotNone(y)
+
+    def test_readin_attractivities(self):
+        x = evaluation.read_in_attractivities()
+        y = evaluation.read_in_parking_facilities()
+        z = x.merge(y, how="left", on="zoneId")
+        print(x)
+
 
     def test_household_extraction(self):
         raw_data_household = pandas.read_csv("resources/household.csv", sep=";")
@@ -81,9 +94,7 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue("relief" in data.columns)
         self.assertTrue(set(data["relief"]).issubset({False, True}))
 
-    def test_data_merge(self):
-        x = evaluation.default_test_merge()
-        evaluation.merge_costs(x)
+
 
     def test_zone_destination_data(self):
         data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")

@@ -20,7 +20,10 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(type(parameter.observer), ModalSplitObservation)
 
     def test_travel_time_parameter_observation(self):
-        parameter = self.x["b_tt_car_d_mu"]
+        ind = Individual(21, ["b_tt_car_d_mu"])
+        ind.load("resources/compare_individual")
+        parameter = self.x["b_tt_car_p_mu"]
+        parameter.observe(ind, ind.data)
         self.assertEqual(type(parameter.observer), TimeModeObservation)
 
     def test_multirequiring_parameter(self):

@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 import pandas
+import scipy
 from matplotlib import pyplot as plt
 
 import evaluation
@@ -20,13 +21,58 @@ def _helper(x, d):
     c.show()
     #x.data.zone_destination.draw(reference=d.data.zone_destination)
 
+def expected_b_tt_func(x, L, k):
+    return L / (1 * np.exp(k * x))
 
+def expected_linear_func(x, L, k):
+    return L - k * x
 
 """
 Fill this test case with all the convenience clicker tests to speed up the process
 """
-@unittest.skip
+#@unittest.skip
 class ConvenienceClickToExecute(unittest.TestCase):
+
+
+    def test_cost_calculation(self):
+        ind = Individual(21, ["b_cost"])
+        print(ind["b_cost"])
+        ind.run()
+        y = ind.data.travel_costs
+        for valetparking in [-0.15, -0.25, -0.5, -1, -2, -4, -8, -16]:
+            print(valetparking)
+            ind["b_cost"].set(valetparking)
+            ind.run()
+            y_1 = ind.data.travel_costs
+            z = y[(y["tripMode"] == 1) & (y["economicalStatus"] == 3)]
+            z_1 = y_1[(y_1["tripMode"] == 1) & (y_1["economicalStatus"] == 3)]
+            z = z.set_index(["tripMode", "economicalStatus", "travel_cost"])
+            z_1 = z_1.set_index(["tripMode", "economicalStatus", "travel_cost"])
+            wololo = z.join(z_1, how="outer", lsuffix="hello", rsuffix="world")
+            wololo = wololo.fillna(0)
+
+            drop_threshold = 0.005
+            sum_count = wololo["counthello"].sum()
+            wololo = wololo[wololo["counthello"] >= sum_count * drop_threshold]
+
+            wololo["diff"] = wololo["countworld"] / wololo["counthello"]
+            q = z_1 / z
+            z = z.reset_index()
+            z_1 = z_1.reset_index()
+            q = q.reset_index()
+            wololo = wololo.reset_index()
+            plt.plot(wololo["travel_cost"], wololo["diff"])
+            #plt.plot(z["travel_cost"], z["count"])
+            #plt.plot(z_1["travel_cost"], z_1["count"])
+            #plt.plot(q["travel_cost"], q["count"])
+            vals = wololo["diff"].values
+            indee = wololo["travel_cost"].values
+            popt, pcov = scipy.optimize.curve_fit(expected_b_tt_func, list(indee), list(vals))
+            #popt, pcov = scipy.optimize.curve_fit(expected_linear_func, list(ind), list(vals))
+            print(f"{popt}")
+            plt.plot(indee, expected_linear_func(indee, *popt))
+            plt.title(valetparking)
+            plt.show()
 
 
     @unittest.skip

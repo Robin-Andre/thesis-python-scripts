@@ -1,7 +1,7 @@
 import random
 from enum import Enum
 
-from configurations.observations import TimeModeObservation, Observation, ModalSplitObservation
+from configurations.observations import TimeModeObservation, Observation, ModalSplitObservation, CostObservation
 
 
 def get_relief_from_string(param):
@@ -104,6 +104,10 @@ def get_economical_group_from_string(param):
         return EconomicalGroup.POOR.value
     return None
 
+def get_cost_from_string(param):
+    if param.__contains__("cost"):
+        return True
+    return None
 
 def get_age_group_from_string(param):
     if param.__contains__("age_0_17") or param.__contains__("age_1_on"):
@@ -169,6 +173,19 @@ def get_distance_from_string(param):
         return 1
     return None
 
+
+def get_parking_from_string(param):
+    if param.__contains__("park"):
+        return True
+    return None
+
+
+def get_access_from_string(param):
+    if param.__contains__("acc"):
+        return True
+    return None
+
+
 """
 This vector contains the names of the requirements set to a parameter  
 """
@@ -186,6 +203,9 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("eachAdultHasCar", get_carav_from_string),
                      ("isIntrazonal", get_intrazonal_from_string),
                      ("relief", get_relief_from_string),
+                     ("cost", get_cost_from_string),
+                     ("parking", get_parking_from_string),
+                     ("access_time", get_access_from_string),
                      # TODO Disabled due to difficulties with distance("distanceInKm", get_distance_from_string),
 
                      # All of the following methods have yet to be extracted from the simulation output.
@@ -349,11 +369,19 @@ def group_activity(df):
 
 
 def get_appropriate_observation_function(p_name):
-    if p_name.__contains__("b_tt") and p_name.__contains__("_ped"):
-        return TimeModeObservation(lambda x: x, lambda x: x)
-    elif p_name.__contains__("b_tt") and not p_name.__contains__("_ped"):
+    """
+    All travel time parameters have an influence on the utility sifted by -e^x Except pedestrian travel which is linear
+    """
+    if p_name.__contains__("b_tt") and not p_name.__contains__("_ped"):
         return TimeModeObservation()
-    elif p_name.__contains__("asc_"):
+
+    elif p_name.__contains__("b_tt") and p_name.__contains__("_ped"):
+        return TimeModeObservation(lambda x: x, lambda x: x)
+    elif p_name.__contains__("_cost"):
+        return CostObservation()
+    elif p_name.__contains__("_cost"):
+        return ElasticityObservation()
+    else:
         return ModalSplitObservation()
 
 

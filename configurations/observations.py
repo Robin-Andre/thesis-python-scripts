@@ -33,6 +33,20 @@ def b_tt_exp(x):
 def b_tt_exp_inverse(y):
     return math.log(-y)
 
+
+class CostObservation(Observation):
+    pass
+
+
+class ElasticityObservation(Observation):
+    """
+    The elasticity parameters are cursed, trying to optimize them will only result in tears and broken bones.
+    If anyone reads this and does unironically attempt to implement an observation for elasticity parameters:
+    Godspeed
+    """
+    pass
+
+
 class TimeModeObservation(Observation):
 
     def __init__(self, function=lambda x: -math.exp(x), inverse_function=lambda x: math.log(-x)):

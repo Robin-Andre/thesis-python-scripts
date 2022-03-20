@@ -8,6 +8,7 @@ import numpy
 import pandas
 import scipy
 
+import evaluation
 import visualization
 from configurations.parameter import Parameter, ActivityGroup
 from metrics.metric import aggregate
@@ -24,12 +25,14 @@ class Data:
             self.travel_time = None
             self.travel_distance = None
             self.zone_destination = None
+            self.travel_costs = None
             return
 
         self.traffic_demand = TrafficDemand.from_raw_data(raw_data)
         self.travel_time = TravelTime.from_raw_data(raw_data)
         self.travel_distance = TravelDistance.from_raw_data(raw_data)
         self.zone_destination = ZoneDestinationTraffic.from_raw_data(raw_data)
+        self.travel_costs = evaluation.create_travel_cost_data(raw_data)
 
     def __eq__(self, other):
         return self.traffic_demand._data_frame.equals(other.traffic_demand._data_frame)\
