@@ -97,8 +97,8 @@ def experiment_pyswarms_target_has_same_seed(params):
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "age_0_17_on_b_tt_ped"]
     PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    experiment_pygad_target_has_same_seed(PARAMS)
-    exit(0)
+    #experiment_pygad_target_has_same_seed(PARAMS)
+    #exit(0)
 
     launch_my_algorithm(PARAMS, 2, "myalgo_10_parameters", descriptor="Diffseed2_2iters")
     launch_my_algorithm(PARAMS, 3, "myalgo_10_parameters", descriptor="Diffseed3_2Iters")
