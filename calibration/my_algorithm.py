@@ -117,7 +117,7 @@ def _unnamed_helper_function(params, individual, comparison_data, metric, popula
     temp_individual = individual.copy()
     temp_individual.parameter_name_list = params
     for i in range(num_iters):
-        errors = sorted_errors(individual, comparison_data)
+        errors = sorted_errors(temp_individual, comparison_data)
         max_tuple = errors[-1]
         min_tuple = errors[0]
         if abs(max_tuple[1]) > abs(min_tuple[1]):
