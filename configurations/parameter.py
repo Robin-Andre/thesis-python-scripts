@@ -1,7 +1,7 @@
 import random
 from enum import Enum
 
-from configurations.observations import TimeModeObservation, Observation, ModalSplitObservation, CostObservation
+from configurations.observations import TimeModeObservation, Observation, ModalSplitObservation, CostObservation, ElasticityObservation
 
 
 def get_relief_from_string(param):

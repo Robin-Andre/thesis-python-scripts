@@ -32,7 +32,7 @@ class Data:
         self.travel_time = TravelTime.from_raw_data(raw_data)
         self.travel_distance = TravelDistance.from_raw_data(raw_data)
         self.zone_destination = ZoneDestinationTraffic.from_raw_data(raw_data)
-        self.travel_costs = evaluation.create_travel_cost_data(raw_data)
+        #TODO disabled self.travel_costs = evaluation.create_travel_cost_data(raw_data)
 
     def __eq__(self, other):
         return self.traffic_demand._data_frame.equals(other.traffic_demand._data_frame)\
@@ -129,7 +129,7 @@ class Data:
             x = x / x.sum()
         return x
 
-    def get_modal_split_by_param(self, param, mode_list=[0, 1, 2, 3, 4]):
+    def get_modal_split_by_param(self, param, mode_list=[0, 1, 2, 3, 4], use_counts_instead=False):
         df = self.travel_time.get_data_frame()
         requirements_without_trip_mode = copy.deepcopy(param.requirements)
         assert set(param.requirements.keys()).issubset(set(self.columns())), "Underlying data lacks columns required for the parameter"
@@ -137,7 +137,7 @@ class Data:
 
         if len(requirements_without_trip_mode) > 0: # If a parameter does not work on a subset we don't need to build the subset
             df = df.loc[(df[list(requirements_without_trip_mode)] == pandas.Series(requirements_without_trip_mode)).all(axis=1)]
-        ret = self._modsplit_help(df, mode_list)
+        ret = self._modsplit_help(df, mode_list, divide=(not use_counts_instead))
         return ret.loc[param.requirements["tripMode"], "count"]
 
     def _get_modal_split(self, specific_mode_num=None, mode_list=[0, 1, 2, 3, 4]):

@@ -51,6 +51,17 @@ def launch_my_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descript
     d = Individual(seed=seed, param_list=param_list)
     d.run()
     data = d.data
+    pop, result = my_algorithm.tune(param_list, data, "ModalSplit_Default_Splits_sum_squared_error")
+    pop_save_helper(pop, seed, exname, descriptor)
+    print(pop.best())
+    write_helper(result, seed, exname, descriptor)
+
+def launch_my_other_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None):
+    random.seed(seed)
+    build_folders(exname)
+    d = Individual(seed=seed, param_list=param_list)
+    d.run()
+    data = d.data
     pop, result = my_algorithm.temp2tune(param_list, data, "ModalSplit_Default_Splits_sum_squared_error")
     pop_save_helper(pop, seed, exname, descriptor)
     print(pop.best())
@@ -75,10 +86,18 @@ def experiment_spsa_target_has_same_seed(params):
         launch_spsa(params, i, "spsa_10_parameters_target_has_same_seed")
 
 
+def experiment_pygad_target_has_same_seed(params):
+    for i in range(101, 106):
+        launch_pygad(params, i, "pygad_10_parameters_target_has_same_seed")
+
+def experiment_pyswarms_target_has_same_seed(params):
+    for i in range(101, 106):
+        launch_pyswarms(params, i, "pyswarms_10_parameters_target_has_same_seed")
+
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "age_0_17_on_b_tt_ped"]
     PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    experiment_spsa_target_has_same_seed(PARAMS)
+    experiment_pygad_target_has_same_seed(PARAMS)
     exit(0)
 
     launch_my_algorithm(PARAMS, 2, "myalgo_10_parameters", descriptor="Diffseed2_2iters")
@@ -95,5 +114,7 @@ if __name__ == "__main__":
     launch_pygad(PARAMS, 101, ex_name)
     launch_pygad(PARAMS, 102, ex_name)
     launch_pygad(PARAMS, 103, ex_name)
+    #experiment_pyswarms_target_has_same_seed(PARAMS)
+    #experiment_spsa_target_has_same_seed(PARAMS)
 
 
