@@ -4,16 +4,39 @@ from metrics import metric
 from metrics.metric import Metric, get_distribution, get_all_existing_modes, get_approximations, difference
 
 
+def subtract(df_self, df_other, keep_list=["tripMode"]):
+    x = metric.reduce(df_self, keep_list, "distanceInKm", "count")
+    x = x.set_index(keep_list + ["distanceInKm"])
+    y = metric.reduce(df_other, keep_list, "distanceInKm", "count")
+    y = y.set_index(keep_list + ["distanceInKm"])
+    q = x.join(y, how="outer", lsuffix='_original', rsuffix='_comparison')
+    q = q.fillna(0)
+    q["count"] = q["count_original"] - q["count_comparison"]
+    #q = q.drop(columns=["count_original", "count_comparison"])
+    return q
+
+
 class TravelDistance(Metric):
 
     def __sub__(self, other):
-        ret = TravelDistance()
-        ret._data_frame = super()._sub(other, "distanceInKm")
-        return ret
+        return subtract(self.get_data_frame(), other.get_data_frame())
+
+    def sub_all(self, other):
+        intersection = list(self.columns() & other.columns())
+        return subtract(self.get_data_frame(), other.get_data_frame(), intersection)
+
+    def sub_none(self, other):
+        return subtract(self.get_data_frame(), other.get_data_frame(), [])
+
+    def columns(self):
+        cols = list(self._data_frame.columns.values)
+        cols.remove("count")
+        cols.remove("distanceInKm")
+        return set(cols)
 
     def smoothen(self, smoothness_in_minutes):
         ret = TravelDistance()
-        ret._data_frame = super().smoothen(smoothness_in_minutes, "amount")
+        ret._data_frame = super().smoothen(smoothness_in_minutes, "count")
         return ret
 
     def read_from_raw_data_old(self, raw_data):
@@ -25,9 +48,14 @@ class TravelDistance(Metric):
     def reduce(self, keeper_list):
         self._data_frame = metric.reduce(self._data_frame, keeper_list, "distanceInKm", "count")
 
-    def draw(self, reference=None):
-        return visualization.draw_travel_distance_per_mode(self, reference_df=reference)
-        #print(visualization.draw_travel_distance(self._data_frame))
+    def draw(self, group="tripMode", reference=None):
+        return visualization.draw_travel_distance_without_modes(self, reference)
+        #temp = metric.reduce(self._data_frame, [], "distanceInKm", "count")
+        #temp2 = None
+        #if reference is not None:
+        #    temp2 = metric.reduce(reference._data_frame, [], "distanceInKm", "count")
+        #return visualization.generic_plot(temp, group, "count", "distanceInKm", reference_df=temp2)
+
 
     def get_mode_specific_data(self, mode_number):
         return super().get_mode_specific_data(mode_number, "distanceInKm")
@@ -46,6 +74,16 @@ class TravelDistance(Metric):
             y.append(i)
             z.append(pdf)
         return visualization.draw_all_distributions(x, y, z)
+
+    def pdf(self, mode):
+        distribution = get_distribution(self._data_frame, "distanceInKm", group=mode)
+        return distribution
+
+    def cdf(self, mode):
+        temp = self.pdf(mode)
+        temp["x"] = temp["count"].cumsum()
+        return temp["x"]
+
 
     def approximations(self):
         return get_approximations(self._data_frame, "distanceInKm")

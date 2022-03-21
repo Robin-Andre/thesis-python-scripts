@@ -4,7 +4,8 @@ from calibration.evolutionary import combine, mutate, initialization, replace, s
 
 import visualization
 from calibration.evolutionary.individual import Individual, BaseIndividual
-from metrics.data import Comparison
+from configurations.parameter import Parameter
+from metrics.data import Comparison, Data
 
 ACTIVE_PARAMETERS = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
                      "b_tt_put_mu", "b_tt_ped", "asc_bike_mu", "b_tt_bike_mu", "b_cost", "b_cost_put",
@@ -21,33 +22,64 @@ class Logger:
         self.new_time = time.time()
         self.iteration = 1
         self.csv = []
+        self.title_column = ""
 
     def log(self, population, current_individual=None):
         self.new_time = time.time()
+        c = Comparison(current_individual.data, population.target)
         if len(population.population) == 0 and current_individual is not None:
-            string = f"{Comparison(current_individual.data, population.target).__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, " \
-                     f"{Comparison(current_individual.data, population.target).__str__()}, {current_individual.yaml.get_seed()}"
+            string = f"{c.__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, " \
+                     f"{c.__str__()}, {current_individual.yaml.get_seed()}"
 
         elif current_individual is not None:
             string = f"{Comparison(population.best().data, population.target).__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, " \
-                  f"{Comparison(current_individual.data, population.target).__str__()}, {current_individual.yaml.get_seed()}"
+                f"{c.__str__()}, {current_individual.yaml.get_seed()}"
         else:
             string = f"{Comparison(population.best().data, population.target).__str__()}, {self.iteration}, {self.new_time - self.start_time}, {population.configuration()}, UNKNOWN, UNKNOWN"
         print(string)
         self.csv.append(string)
         self.old_time = time.time()
 
+
+    def log_detailed(self, population, current_individual=None, increase_counter=False):
+        self.new_time = time.time()
+        c = Comparison(current_individual.data, population.target)
+        self.title_column = self.detailed_column_description(c)
+        if len(population.population) == 0 and current_individual is not None:
+
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {c.logger_vals()}, {population.configuration()}, " \
+                     f"{c.logger_vals()}"
+
+        elif current_individual is not None:
+            best = Comparison(population.best().data, population.target)
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.logger_vals()}, {population.configuration()}, " \
+                f"{c.logger_vals()}"
+        else:
+            best = Comparison(population.best().data, population.target)
+            string = f"{self.iteration}, {self.new_time - self.start_time}, {current_individual.yaml.get_seed()}, {current_individual.fraction_of_pop()}, {best.logger_vals()}, {population.configuration()}, UNKNOWN, UNKNOWN"
+        print(string)
+        self.csv.append(string)
+        if increase_counter:
+            self.iteration += 1
+        self.old_time = time.time()
+
+    def detailed_column_description(self, comparison):
+        return f"iteration, time, seed, size, {comparison.logger_keys('_best')}, combine_func, mutation_func, initialize_func, replace_func, selection_func, individual_constructor, " \
+        f"{comparison.logger_keys('_current')}"
+
     def append_to_csv(self, string):
         self.csv = [s + string for s in self.csv]
 
     def print_csv(self):
-        return "\n".join(self.csv)
+
+        return "\n".join([self.title_column] + self.csv)
 
 
 class Population:
     def __init__(self, target=None, seed=1, combine_func=combine.basic_combine, mutation_func=mutate.mutate
                  , initialize_func=initialization.basic_initialization, replace_func=replace.replace_worst_element,
-                 select_func=selection.tournament_selection, individual_constructor=Individual, param_vector=ACTIVE_PARAMETERS):
+                 select_func=selection.tournament_selection, individual_constructor=Individual, param_vector=ACTIVE_PARAMETERS,
+                 fraction_of_pop_size=0.02):
         self.target = target
         self.seed = seed
         self.combine_func = combine_func
@@ -59,6 +91,7 @@ class Population:
         self.population = []
         self.logger = Logger()
         self.active_parameters = param_vector
+        self.ind_size = fraction_of_pop_size
         pass
 
     def __getitem__(self, item):
@@ -79,7 +112,13 @@ class Population:
     def best(self):
         return max(self.population)
 
-    def set_target(self, target):
+    def data_requirements(self):
+        all_requirements = set()
+        for p in self.active_parameters:
+            all_requirements = set.union(all_requirements, set(Parameter(p).requirements.keys()))
+        return all_requirements
+
+    def set_target(self, target: Data):
         self.target = target
 
     def initialize(self, size):
@@ -88,16 +127,21 @@ class Population:
     def select(self):
         return self.selection_func(self)
 
+    def _help_constructor(self, seed=None):
+        if seed is None:
+            seed = self.seed
+        return self.individual_constructor(seed, self.active_parameters, self.ind_size)
+
     def combine(self, ind1, ind2):
-        child = self.combine_func(ind1, ind2, self.individual_constructor(self.seed, self.active_parameters), self.target, self.active_parameters)
-        self.__run(child)
+        child = self.combine_func(ind1, ind2, self._help_constructor(), self.target, self.active_parameters)
+        self._run(child)
 
         #print(f"Parent fitness: {ind1.fitness} {ind2.fitness} -> {child.fitness}: {child.active_values()}")
         return child
 
     def mutate(self, ind1):
-        mutation = self.mutation_func(ind1, self.individual_constructor(self.seed, self.active_parameters), self.target)
-        self.__run(mutation)
+        mutation = self.mutation_func(ind1, self._help_constructor(), self.target)
+        self._run(mutation)
 
         return mutation
 
@@ -113,23 +157,37 @@ class Population:
 
     def load(self, path):
         for x in Path(path).iterdir():
-            ind = self.individual_constructor(self.seed, self.active_parameters)
+            ind = self._help_constructor()
             ind.load(x)
             self.population.append(ind)
+        self.fitness_for_all_individuals()
 
     def random_individual(self, make_basic=False):
-        individual = Individual(self.seed, self.active_parameters)
+        individual = self._help_constructor()
         if make_basic:
             individual.make_basic(nullify_exponential_b_tt=True)
 
         individual.randomize()
-        self.__run(individual)
+        self._run(individual)
 
         return individual
 
-    def __run(self, individual):
+    def set_random_individual_as_target(self):
+        individual = self._help_constructor()
+        individual.randomize()
         individual.run()
-        self.logger.log(self, individual)
+        self.set_target(individual.data)
+        return individual
+
+    def seed_individual(self, seed):
+        individual = self._help_constructor(seed=seed)
+        self._run(individual)
+        return individual
+
+    def _run(self, individual):
+        assert self.data_requirements().issubset(set(individual.requirements))
+        individual.run()
+        self.logger.log_detailed(self, individual)
         self.logger.iteration += 1
         individual.set_fitness(self.target)
 
@@ -174,8 +232,6 @@ class Population:
         big = big[["min", "max"]]
         big["target"] = self.target.travel_time.get_data_frame().set_index(["tripMode", "durationTrip"])
         big["best"] = self.best().data.travel_time.get_data_frame().set_index(["tripMode", "durationTrip"])
-        #big = big.fillna(0)
-        #big = big.rolling(60, center=True, min_periods=1).mean()
         big = big.reset_index()
         visualization.generic_min_max_best_travel_time(big, "tripMode")
 

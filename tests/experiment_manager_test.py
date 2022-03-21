@@ -62,7 +62,6 @@ class MyTestCase(unittest.TestCase):
             experiment_manager.plot_data(temp + x)
 
     def test_make_plots(self):
-        #Path("C:/Users\Admin\Desktop\master-thesis\neural_network_data\change_only_one_parameter_mode\asc_bike_mu\iteration0000)
         _, data = simulation.load(SPECS.EXP_PATH + "/baseline")
         for x in Path(SPECS.EXP_PATH + "/change_only_one_parameter_destination").iterdir():
             print(x)

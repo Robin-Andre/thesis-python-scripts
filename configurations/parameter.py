@@ -1,6 +1,8 @@
 import random
 from enum import Enum
 
+from configurations.observations import TimeModeObservation, Observation, ModalSplitObservation, CostObservation, ElasticityObservation
+
 
 def get_relief_from_string(param):
     if param.__contains__("relief_high"):
@@ -16,7 +18,7 @@ def get_workday_from_string(param):
 
 def get_gender_from_string(param):
     if param.__contains__("female"):
-        return True
+        return "FEMALE"
     return None
 
 
@@ -45,7 +47,13 @@ def get_commuter_ticket_from_string(param):
 
 def get_prev_mode_from_string(param):
     if param.__contains__("mode_bef"):
-        return True
+        if param.__contains__("ped"):
+            return Mode.PEDESTRIAN.value
+        elif param.__contains__("put"):
+            return Mode.PUBLIC_TRANSPORT.value
+        elif param.__contains__("bike"):
+            return Mode.BIKE.value
+
     return None
 
 
@@ -74,6 +82,11 @@ def get_household_size_from_string(param):
         return HouseholdSize.SIZE_3_OR_BIGGER.value
     return None
 
+def get_intrazonal_from_string(param):
+    if param.__contains__("intrazonal"):
+        return True
+    return None
+
 
 def get_umland_from_string(param):
     if param.__contains__("_uml_"):
@@ -91,6 +104,10 @@ def get_economical_group_from_string(param):
         return EconomicalGroup.POOR.value
     return None
 
+def get_cost_from_string(param):
+    if param.__contains__("cost"):
+        return True
+    return None
 
 def get_age_group_from_string(param):
     if param.__contains__("age_0_17") or param.__contains__("age_1_on"):
@@ -149,6 +166,29 @@ def get_mode_from_string(string):
     return None
 
 
+def get_distance_from_string(param):
+    if param == "b_0_1":
+        return 0
+    elif param == "b_1_2":
+        return 1
+    return None
+
+
+def get_parking_from_string(param):
+    if param.__contains__("park"):
+        return True
+    return None
+
+
+def get_access_from_string(param):
+    if param.__contains__("acc"):
+        return True
+    return None
+
+
+"""
+This vector contains the names of the requirements set to a parameter  
+"""
 mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("activityType", get_activity_from_string),
                      ("age", get_age_group_from_string),
@@ -157,14 +197,20 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("hasCommuterTicket", get_commuter_ticket_from_string),
                      ("economicalStatus", get_economical_group_from_string),
                      ("totalNumberOfCars", get_number_of_cars_from_string),
-
                      ("nominalSize", get_household_size_from_string),
+                     ("workday", get_workday_from_string),  # Weekday
+                     ("previousMode", get_prev_mode_from_string),
+                     ("eachAdultHasCar", get_carav_from_string),
+                     ("isIntrazonal", get_intrazonal_from_string),
+                     ("relief", get_relief_from_string),
+                     ("cost", get_cost_from_string),
+                     ("parking", get_parking_from_string),
+                     ("access_time", get_access_from_string),
+                     # TODO Disabled due to difficulties with distance("distanceInKm", get_distance_from_string),
 
                      # All of the following methods have yet to be extracted from the simulation output.
-                     ("workdayNotImplemented", get_workday_from_string),  # Weekday
-                     ("reliefNotImplemented", get_relief_from_string),
-                     ("PreviousTripNotImplemented", get_prev_mode_from_string),
-                     ("CarsPerAdultNotImplemented", get_carav_from_string),
+
+
                      ("HasEBikeNotImplemented", get_ebike_from_string),
                      ("HasCSMembershipNotImplemented", get_cs_membership_from_string),
                      ("isUmlandNotImplemented", get_umland_from_string)
@@ -179,12 +225,16 @@ def get_all_parameter_limitations(param):
     return ret_dict
 
 
+def group_weekday(df):
+    group_list(df, "tripBeginDay", ["Mo.", "Di.", "Mi.", "Do.", "Fr."], "WORKDAY")
+    group_list(df, "tripBeginDay", ["Sa.", "So."], "WEEKEND")
+
+
 def group_employment(df):
     group_list(df, "employment", ['STUDENT_PRIMARY',  'STUDENT_SECONDARY', 'STUDENT_TERTIARY', 'EDUCATION'], "STUDENT")
     group_list(df, "employment", ['FULLTIME', 'PARTTIME', "MARGINAL"], "EMPLOYED")
     group_list(df, "employment", ['UNEMPLOYED', 'HOMEKEEPER'], "HOME")
     group_list(df, "employment", ["INFANT", "RETIRED", "UNKNOWN"], "UNSPECIFIED")
-
 
 
 class Employment(Enum):
@@ -264,8 +314,9 @@ def group(df, colname, valfrom, valto, target=None):
         target = valfrom
     df.loc[(df[colname] >= valfrom) & (df[colname] <= valto), [colname]] = target
 
-def group_list(df, colname, list, target):
-    df.loc[df[colname].isin(list), [colname]] = target
+
+def group_list(df, colname, glist, target):
+    df.loc[df[colname].isin(glist), [colname]] = target
 
 def group_age(df):
     group(df, "age", 0, 17)
@@ -317,6 +368,23 @@ def group_activity(df):
     group(df, "activityType", 11, 11, target=ActivityGroup.SHOPPING.value)  # Is this correct?
 
 
+def get_appropriate_observation_function(p_name):
+    """
+    All travel time parameters have an influence on the utility sifted by -e^x Except pedestrian travel which is linear
+    """
+    if p_name.__contains__("b_tt") and not p_name.__contains__("_ped"):
+        return TimeModeObservation()
+
+    elif p_name.__contains__("b_tt") and p_name.__contains__("_ped"):
+        return TimeModeObservation(lambda x: x, lambda x: x)
+    elif p_name.__contains__("_cost"):
+        return CostObservation()
+    elif p_name.__contains__("_cost"):
+        return ElasticityObservation()
+    else:
+        return ModalSplitObservation()
+
+
 class ActivityGroup(Enum):
     WORK = 1
     BUSINESS = 2
@@ -360,8 +428,9 @@ class Parameter:
     def __init__(self, name, value=0):
         self.name = name
         self.value = value
-        self.lower_bound, self.upper_bound = None, None
+        self.lower_bound, self.upper_bound = -1, 1
         self.requirements = get_all_parameter_limitations(name)
+        self.observer = get_appropriate_observation_function(name)
 
     def __str__(self):
         return f"{self.name}, {self.value} [{self.lower_bound}, {self.upper_bound}], {self.requirements}"
@@ -369,6 +438,15 @@ class Parameter:
     def initialize_bounds(self, bounds):
         if bounds.get(self.name):
             self.lower_bound, self.upper_bound = bounds.get(self.name)
+
+    def observe(self, ind_1, data_target):
+        return self.observer.observe(ind_1, data_target, self)
+
+    def observe_detailed(self, ind_1, ind_2, data_target):
+        return self.observer.observe_detailed(ind_1, ind_2, data_target, self)
+
+    def error(self, ind_1, data_target):
+        return self.observer.error(ind_1, data_target, self)
 
     def set(self, value):
         self.value = value

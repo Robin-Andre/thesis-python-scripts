@@ -128,7 +128,7 @@ def save(yaml, data, relative_path):
 
 def results(yaml=default_yaml()):
 
-    return metrics.data.Data(evaluation.extract_data(yaml))
+    return metrics.data.Data(evaluation.read_in_data(yaml))
 
 
 def restore_default_yaml():

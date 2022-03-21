@@ -8,37 +8,12 @@ from configurations.parameter import Parameter, Employment, Mode, EconomicalGrou
 
 
 class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
-        temp = mc_c.parameters.items()
-        for key, param in temp:
-            print(param)
-            #print([x[0] for x in p.requirements])
-           # if key in mc_c.get_main_parameters(active_mode_numerical=[0, 1, 2, 3, 4, 7, 9001, 9002, 9003]):
-           #     self.assertEqual(len(p.requirements), 1)
-            #else:
-            #    self.assertGreater(len(p.requirements), 1)
-
     def helper(self, parameter_name, expected_factors):
         p = Parameter(parameter_name)
         self.assertEqual(list(p.requirements.keys()), expected_factors)
 
     def detailed_helper(self, parameter_name, expected_factors):
         self.assertEqual(Parameter(parameter_name).requirements, expected_factors)
-
-    def test_something_else(self):
-        mc_d = configloader.DestinationChoiceConfig(Path("resources/example_config_load/configs/destination_choice_utility_calculation_parameters.txt"))
-        temp = mc_d.parameters.keys()
-        for key in temp:
-            p = Parameter(key)
-            print(p)
-            #x = mc_d.get_main_parameters(active_mode_numerical=[0, 1, 2, 3, 4, 7, 9001, 9002, 9003])
-            #print(x)
-            #if key in mc_d.get_main_parameters(active_mode_numerical=[0, 1, 2, 3, 4, 7, 9001, 9002, 9003]):
-            #    self.assertEqual(len(p.requirements), 1)
-            #else:
-            #    self.assertGreater(len(p.requirements), 1)
-
 
     def test_random_parameters(self):
         self.helper("asc_car_d", ["tripMode"])
@@ -53,15 +28,18 @@ class MyTestCase(unittest.TestCase):
         self.detailed_helper("b_home_car_p", {"tripMode": Mode.PASSENGER.value, "activityType": Activity.HOME.value})
         self.detailed_helper("shift_home_on_logsum_pt_fix", {"employment": Employment.HOME.value})
         self.detailed_helper("shift_high_inc_on_logsum_pt", {"economicalStatus": Economics.RICH.value})
+        self.detailed_helper("b_arbwo_bike", {"tripMode": 0, "workday": True})
+        self.detailed_helper("shift_carav_on_logsum_drive", {"eachAdultHasCar": True})
 
+    def test_elasticity(self):
+        self.detailed_helper("elasticity_parken", {"tripMode": 1, "parking": True})
+        self.detailed_helper("elasticity_acc_put", {"tripMode": 4, "access_time": True})
+
+    @unittest.skip("Console print spam")
     def test_detailed_destination_config(self):
         conf = configloader.Config(Path("resources/example_config_load/configs/destination_choice_parameters_LEISURE.txt"))
-        for name in conf.parameters:
-            print(conf.parameters[name])
-        return
         for key in conf.parameters.keys():
-            p = Parameter(key)
-            print(p)
+            print(conf.parameters[key])
         self.helper("shift_age_78_on_logsum_attr", ["age"])
 
 

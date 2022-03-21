@@ -3,6 +3,7 @@ import time
 from math import radians, cos, sin, asin, sqrt
 from pathlib import Path
 
+import numpy
 import pandas
 import pandas as pd
 import numpy as np
@@ -37,9 +38,13 @@ def create_plot_data(raw_data):
     return temp
 
 
-def create_traffic_demand_data(almost_raw_data, vector=["tripMode", "activityType", "age", "employment", "gender",
-                                                        "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
-                                                        "nominalSize"]):
+DEFAULT_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
+                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone", "isIntrazonal"]
+ADAPTED_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
+                  "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar", "isIntrazonal"]
+
+
+def create_traffic_demand_data(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["tripBegin"] + vector].copy()
 
     temp["counts_begin"] = 1
@@ -63,11 +68,7 @@ def create_traffic_demand_data(almost_raw_data, vector=["tripMode", "activityTyp
     return z
 
 
-def create_travel_time_data_new(almost_raw_data, vector=None):
-    if vector is None:
-        vector = ["tripMode", "activityType", "age", "employment", "gender",
-                  "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
-                  "nominalSize"]
+def create_travel_time_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["durationTrip"] + vector].copy()
 
     temp = temp.groupby(vector + ["durationTrip"]).agg({"durationTrip": "count"})
@@ -76,48 +77,47 @@ def create_travel_time_data_new(almost_raw_data, vector=None):
     return temp
 
 
-def create_travel_distance_data_new(almost_raw_data, vector=["tripMode", "activityType", "age", "employment", "gender",
-                                                             "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
-                                                             "nominalSize"]):
+def create_travel_cost_data(almost_raw_data):
+    return merge_costs(almost_raw_data)
+
+def create_travel_distance_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["distanceInKm"] + vector].copy()
 
     temp["distanceInKm"] = 1000 * temp["distanceInKm"]
     temp["distanceInKm"] = temp["distanceInKm"].apply(np.ceil)
-
 
     temp = temp.groupby(vector + ["distanceInKm"]).agg({"distanceInKm": "count"})
     temp = temp.rename(columns={"distanceInKm": "count"})
     temp = temp.reset_index()
     return temp
 
+def create_zone_destination_traffic_data(almost_raw_data):
+    temp = almost_raw_data[["sourceZone", "targetZone", "activityType"]].copy()
+    temp = temp.groupby(["sourceZone", "targetZone", "activityType"]).size().to_frame("traffic")
+    return temp
 
-def extract_data(yaml):
+
+def read_in_data(yaml):
     data = pandas.read_csv(SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv", sep=";")
-    data_household = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["demandDataFolder"] + "/household.csv", sep=";")
+    data_household = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["demandDataFolder"] + "/household.csv",
+                                     sep=";")
     data_person = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["demandDataFolder"] + "/person.csv", sep=";")
-    return merge_data(data, data_household, data_person)
+    zone_properties = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["zonePropertiesDataFile"], sep=";")
+    return merge_data(data, data_household, data_person, zone_properties)
 
+
+def read_in_attractivities():
+    return pandas.read_csv(SPECS.CWD + "/data/rastatt/zoneproperties/analysis" + "/attractivities.csv", sep=";")
+
+def read_in_parking_facilities():
+    return pandas.read_csv(SPECS.CWD + "/data/rastatt/zoneproperties/analysis" + "/parkingFacilities.csv", sep=";")
 
 def default_test_merge():
     data_person = pandas.read_csv("resources/person.csv", sep=";")
     data_household = pandas.read_csv("resources/household.csv", sep=";")
     data = pandas.read_csv("resources/demandsimulationResult.csv", sep=";")
-    return merge_data(data, data_household, data_person)
-
-def group_data2(x):
-    """
-    Some Values such as age or occupation are only accessed as a group by calibration parameters, this method
-    groups the values accordingly
-    :param x:
-    :return:
-    """
-    x.age = x.age.apply(parameter.AgeGroup.int_to_group)
-    x.employment = x.employment.apply(parameter.Employment.get_employment_from_int)
-    x.economicalStatus = x.economicalStatus.apply(parameter.EconomicalGroup.get_eco_group_from_int)
-    x.totalNumberOfCars = x.totalNumberOfCars.apply(parameter.NumberOfCars.get_num_cars_from_int)
-    x.activityType = x.activityType.apply(parameter.ActivityGroup.activity_int_to_mode)
-    x.nominalSize = x.nominalSize.apply(parameter.HouseholdSize.get_hh_size_from_int)
-    return x
+    zone_data = pandas.read_csv("resources/zone_properties.csv", sep=";")
+    return merge_data(data, data_household, data_person, zone_data)
 
 
 def group_data(x):
@@ -127,17 +127,66 @@ def group_data(x):
     parameter.group_employment(x)
     parameter.group_household_size(x)
     parameter.group_number_of_cars(x)
+    parameter.group_weekday(x)
 
     return x
 
 
-def merge_data(data, household, person):
+def extract_previous_trip(x):
+    """
+    The current mobiTopp output format does not contain a column for the previous mode which is required by
+    certain tuning parameters. This method adds the previous mode column.
+    """
+    x = x.sort_values(["personOid", "tripId"])
+    x["previousMode"] = x["tripMode"].shift(1)
+    x.loc[~x["personOid"].duplicated(), "previousMode"] = -1
+    x.sort_index(inplace=True)
+    return x
+
+
+def extract_big_car_fleet(household_df):
+    household_df["eachAdultHasCar"] = (household_df["nominalSize"] - household_df["numberOfMinors"] \
+                                     - household_df["numberOfNotSimulatedChildren"]) <= household_df["totalNumberOfCars"]
+
+
+def extract_intrazonal(df):
+    df["isIntrazonal"] = df["sourceZone"] == df["targetZone"]
+
+
+def merge_relief(data, zone_data):
+    x = zone_data[["zoneId", "relief"]].copy()
+    x["relief"] = x["relief"].apply(lambda a: a.replace(",", "."))
+    x["relief"] = pandas.to_numeric(x["relief"])
+    x["relief"] = x["relief"] >= 250
+    return data.merge(x, left_on="targetZone", right_on="zoneId")
+
+def merge_costs(data):
+    """
+    Gives a dataframe containing the costs based on trip mode and economical status. Used for b_cost, b_inc and b_cost_put
+    """
+    temp = read_in_cost()
+    x = data.merge(temp, how='left', left_on=['sourceZone', 'targetZone', 'tripMode'], right_on=['sourceZone', 'targetZone', 'tripMode'])
+    y = x[["tripMode", "economicalStatus", "travel_cost"]].copy()
+    y["economicalStatus"] = y["economicalStatus"].replace(1, 3)
+    z = y.groupby(["tripMode", "economicalStatus", "travel_cost"]).size().to_frame()
+    z.rename(columns={0: 'count'}, inplace=True)
+    z = z.reset_index()
+    return z
+
+
+
+def merge_data(data, household, person, zone_properties):
+    data = merge_relief(data, zone_properties)
+    extract_intrazonal(data)
+    data = extract_previous_trip(data)
+    extract_big_car_fleet(household)
+
     x = data.merge(person, how="left", left_on="personOid", right_on="personId")
     x = x.merge(household, how="left", left_on="householdOid", right_on="householdId")
-    x = x[["tripMode", "activityType", "age",
-          "employment", "gender", "hasCommuterTicket", "economicalStatus", "totalNumberOfCars",
-          "nominalSize", "tripBegin", "tripEnd", "durationTrip", "distanceInKm"]]
+
+    x = x[DEFAULT_VECTOR + ["tripBegin", "tripEnd", "durationTrip", "distanceInKm"]]
     x = group_data(x)
+    x.rename(columns={"tripBeginDay": "workday"}, inplace=True)
     return x
 
 
@@ -150,22 +199,26 @@ def create_travel_time_data(raw_data):
 
 # TODO fix that there are journeys with distance 0
 def create_travel_distance_data(raw_data):
-    temp_df = raw_data[["distanceInKm", "tripMode"]]
+    temp_df = raw_data[["distanceInKm", "tripMode"]].copy()
     temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000)  # MobiTopp has an incorrect column
     temp_df = temp_df.groupby(["distanceInKm", "tripMode"]).size()
     temp_df = temp_df.reset_index()
     temp_df.columns = ["distanceInKm", "tripMode", "amount"]
     return temp_df
 
+def read_in_cost_and_time():
+    return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/time_and_costs.csv")
+
+def read_in_cost():
+    return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/TRAVEL_COST.csv")
 
 def create_travel_distance_with_activity_type(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode", "activityType", "previousActivityType"]].copy()
-    temp_df.loc[temp_df["activityType"] == 7, "activityType"] = temp_df[temp_df["activityType"] == 7]["previousActivityType"]
+    temp_df.loc[temp_df["activityType"] == 7, "activityType"] = temp_df[temp_df["activityType"] == 7][
+        "previousActivityType"]
     temp_df.loc[:, "distanceInKm"] = round(temp_df["distanceInKm"] * 1000)
 
-    print(temp_df[temp_df["activityType"] == 7])
     temp_df["actual_activity"] = temp_df["activityType"]
-
 
     temp_df["distanceInKm"] = round(temp_df["distanceInKm"] * 1000)  # MobiTopp has an incorrect column
     temp_df = temp_df.groupby(["distanceInKm", "tripMode", "activityType"]).size()
@@ -174,12 +227,10 @@ def create_travel_distance_with_activity_type(raw_data):
     return temp_df
 
 
-
 def check_data(raw_data):  # TODO move to experimental??
     temp = raw_data[["fromX", "fromY", "toX", "toY", "distanceInKm"]]
     temp["haversine"] = temp.apply(haversine, axis=1)
     temp["distanceInKm"] = temp["distanceInKm"] * 1000
-    print(temp)
 
 
 def haversine(row):

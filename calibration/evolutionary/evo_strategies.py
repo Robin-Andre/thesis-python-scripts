@@ -8,11 +8,12 @@ def temp_rename2(population):
 def simple_combine(population):
     ind1, ind2 = population.select()
     child = population.combine(ind1, ind2)
+    print(f"The child has fitness: {child.fitness}")
     population.insert(child)
-    if child.fitness == population.best().fitness:
-        population.draw_boundaries()
-        population.draw_boundaries_traveltime()
-        population.draw_boundaries_modal_split()
+    #if child.fitness == population.best().fitness:
+        #population.draw_boundaries()
+        #population.draw_boundaries_traveltime()
+        #population.draw_boundaries_modal_split()
 
 
 def simple_repeated_mutation(population):
@@ -20,13 +21,22 @@ def simple_repeated_mutation(population):
     ind1 = population.random_individual()
     population.append(ind1)
 
-
     mutation = population.mutate(ind1)
+
     while mutation.fitness > ind1.fitness:
         population.insert(mutation)
         ind1 = mutation
         mutation = population.mutate(ind1)
 
+
+def mutate_random_element(population):
+    ind1, ind2 = population.select()
+    mutation = population.mutate(ind1)
+    print(f"Mutation fit: {mutation.fitness} :ind fit: {ind1.fitness}")
+    while mutation.fitness > ind1.fitness:
+        population.insert(mutation)
+        ind1 = mutation
+        mutation = population.mutate(ind1)
 
 def permanent_random_generation(population):
     ind1 = population.random_individual()

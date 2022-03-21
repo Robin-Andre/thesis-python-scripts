@@ -5,8 +5,10 @@ import numpy
 
 def tournament_selection(self):
     a, b = random.sample(self.population, 2)
-    return a if a.fitness > b.fitness else b
-
+    c, d = random.sample(self.population, 2)
+    wombo =  a if a.fitness > b.fitness else b
+    combo =  c if c.fitness > d.fitness else d
+    return wombo, combo
 
 def double_tournament_selection(self):
     x = random.sample(self.population, 4)

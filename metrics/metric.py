@@ -25,14 +25,17 @@ def roll_trips(df, rolling_minutes, string):
 
 
 def reduce(data, keep, string1, string2):
+    listtype = list(keep)
     assert string1, string2 not in keep
-    temp = data.groupby(keep + [string1]).sum()
+    temp = data.groupby(listtype + [string1]).sum()
     temp = temp.reset_index()
-    temp = temp[keep + [string1, string2]]
-    temp = temp.set_index(keep + [string1])
+    temp = temp[listtype + [string1, string2]]
+    temp = temp.set_index(listtype + [string1])
     temp.sort_index()
     temp = temp.reset_index()
     return temp
+
+
 
 
 class Metric:
@@ -47,6 +50,7 @@ class Metric:
         temp = self._data_frame.set_index(["tripMode", string])
         temp2 = other._data_frame.set_index(["tripMode", string])
         return temp.sub(temp2, fill_value=0).reset_index()
+
 
     def get_mode_specific_data(self, mode_number, string):
         """
@@ -69,7 +73,10 @@ class Metric:
     @classmethod
     def from_file(cls, file_path):
         obj = cls()
-        obj._data_frame = pandas.read_csv(file_path)
+        try:
+            obj._data_frame = pandas.read_csv(file_path)
+        except FileNotFoundError:
+            return None
         return obj
 
     @classmethod
@@ -110,8 +117,8 @@ def get_counts(data_frame, value, group=-1, resolution=1, quantile=1.0):
     """
     This method takes a subset of the dataframe by the group parameter and returns the count of how often
     the values has been observed in the simulation.
-    Requires: a dataframe containing a column named "Amount"
-    :param data_frame: The Data Frame containing both a column named amount and an observation parameter
+    Requires: a dataframe containing a column named "count"
+    :param data_frame: The Data Frame containing both a column named count and an observation parameter
     :param value: The name of the observation used to differentiate between travel time and travel distance
     dataframes
     :param group: which trip mode shall be returned (-1 for all trip modes together)
@@ -133,8 +140,8 @@ def get_counts(data_frame, value, group=-1, resolution=1, quantile=1.0):
     temp[value] = temp[value] * resolution
 
     temp = temp.groupby([value]).sum()
-    sum_of_all = temp["amount"].sum()
-    temp["cumsum"] = temp["amount"].cumsum()
+    sum_of_all = temp["count"].sum()
+    temp["cumsum"] = temp["count"].cumsum()
     temp = temp[temp["cumsum"] <= quantile * sum_of_all]
     # Neither the cumulative sum nor trip mode are required to be held
     temp = temp.drop(columns=["tripMode", "cumsum"])
@@ -154,7 +161,7 @@ def get_distribution(data_frame, value, group=-1, resolution=1, quantile=1.0):
     :return:
     """
     temp = get_counts(data_frame, value, group, resolution, quantile)
-    temp["amount"] = temp["amount"] / temp["amount"].sum()
+    temp["count"] = temp["count"] / temp["count"].sum()
     return temp
 
 
@@ -183,13 +190,13 @@ def fit_distribution_to_data_frame(data_frame, distribution_name="gamma"):
     # Reduces the sample size by integer division of the rounding value (large simulations contain
     # unreasonably large sample sizes)
     # TODO fix and test this
-    if temp["amount"].sum() > 0:
-        rounding = pow(10, max(math.ceil(math.log10(temp["amount"].sum()) - 4), 0))
+    if temp["count"].sum() > 0:
+        rounding = pow(10, max(math.ceil(math.log10(temp["count"].sum()) - 4), 0))
     else:
         return [0, 0, 0]
 
-    temp["amount"] = temp["amount"] // rounding
-    temp_ys = temp["amount"].values
+    temp["count"] = temp["count"] // rounding
+    temp_ys = temp["count"].values
     assert any(temp_ys > 0)
     x = np.arange(len(temp.index))
     y = temp_ys
@@ -240,7 +247,7 @@ def get_fit_and_error_from_dataframe(data_frame, aggregation_string, mode_identi
     if pdf_calc[0] > 1:
         pdf_calc[0] = 0
 
-    sse = np.sum(np.power(savess["amount"] - pdf_calc, 2.0))
+    sse = np.sum(np.power(savess["count"] - pdf_calc, 2.0))
     # TODO plot precision needs to be set externally
     pdf = dist_name_to_pdf(result, np.linspace(0.05, int(savess.index.max()), 10 * int(savess.index.max())), dist_name=dist_name)
     #sse = 0

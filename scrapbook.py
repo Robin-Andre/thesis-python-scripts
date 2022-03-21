@@ -16,7 +16,7 @@ class MyTestCase(unittest.TestCase):
             p.set_target(target)
 
             vals = []
-            modal_split_df = target.get_modal_split()
+            modal_split_df = target._get_modal_split()
             for i in range(25, 75):
                 x = Individual(9001, [string_val])
 
@@ -31,8 +31,8 @@ class MyTestCase(unittest.TestCase):
                 print(x[string_val].value)
                 x.run()
                 x.set_fitness(target)
-                y = x.data.get_modal_split().loc[3, "count"]
-                cur_modal_split = x.data.get_modal_split()
+                y = x.data._get_modal_split().loc[3, "count"]
+                cur_modal_split = x.data._get_modal_split()
                 cur_modal_split.rename(columns={"count": "count" + str(i)}, inplace=True)
                 modal_split_df = modal_split_df.join(cur_modal_split, how="left")
                 p.append(x)
@@ -51,7 +51,7 @@ class MyTestCase(unittest.TestCase):
             target = default_ind.data
             p.set_target(target)
 
-            modal_split_df = target.get_modal_split()
+            modal_split_df = target._get_modal_split()
             for i in i_values:
                 x = Individual(9001, [string_val], fraction_of_pop)
 
@@ -67,7 +67,7 @@ class MyTestCase(unittest.TestCase):
                 x.run()
                 x.set_fitness(target)
 
-                cur_modal_split = x.data.get_modal_split()
+                cur_modal_split = x.data._get_modal_split()
                 cur_modal_split.rename(columns={"count": "count" + str(i)}, inplace=True)
                 modal_split_df = modal_split_df.join(cur_modal_split, how="left")
                 p.append(x)

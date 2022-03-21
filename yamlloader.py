@@ -15,7 +15,7 @@ V2Loader.add_constructor(
     u'!file',
     V2Loader.let_v2_through)
 
-#TODO make one liner class method for reading in yaml
+
 class YAML:
 
     def __init__(self, yaml_file_path):
@@ -34,6 +34,9 @@ class YAML:
         return [item.name for item in self.configs]
 
     def set_configs(self, configs):
+        cur_dir = "/".join(self.data["modeChoice"]["main"].split("/")[:-1]) + "/"
+        for config in configs:
+            config.path = SPECS.CWD + cur_dir + config.name
         self.configs = configs
 
     def mode_config(self):
@@ -45,6 +48,13 @@ class YAML:
     def destination_config(self):
         for config in self.configs:
             if config.name == "destination_choice_utility_calculation_parameters.txt":
+                return config
+        return None
+
+    def activity_destination_config(self, activity):
+        assert activity.lower() in ["business", "leisure", "service", "shopping"]
+        for config in self.configs:
+            if config.name.lower().__contains__(activity.lower()) and config.name.__contains__("destination"):
                 return config
         return None
 
@@ -94,7 +104,7 @@ class YAML:
         if self.configs is not None:
             for c in self.configs:
                 c.write()
-    # TODO remove deepcopy
+
     def reset(self):
         print("Restoring Original")
         self.data = deepcopy(self.original)

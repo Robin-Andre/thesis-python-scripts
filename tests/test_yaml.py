@@ -3,11 +3,10 @@ import unittest
 from pathlib import Path
 
 import configurations.configloader
+import utils.check_parameters_from_gen_files
 import yamlloader
 from configurations import SPECS
 import mobitopp_execution as simulation
-
-
 
 
 def temp(path, compare_keys):
@@ -17,26 +16,16 @@ def temp(path, compare_keys):
     for x in compare_keys:
         l = text.strip().split(x + " ")[1:]
         if l:
-            #print(f"Splitting on {x}")
             ele = l[0]
-            #print(ele)
             ele = re.split("\n|\t", ele)[0]
-            #print(ele)
             if ele.__contains__("[") and ele.__contains__("]"):
                 fin = ele.split("[")[1].split("]")[0]
-                #print("[" + fin + "]")
                 test.append("[" + fin + "]")
 
     return test
 
 
 class MyTestCase(unittest.TestCase):
-
-    # TODO this should be in main, not a unit test
-    #def test_calibration_folder_exists(self):
-    #    cal_dir = cwd + "calibration/"
-    #    self.assertTrue(os.path.exists(cal_dir))
-    #    self.assertTrue(os.path.isdir(cal_dir))
 
     def test_existing_yaml_file_can_be_loaded(self):
         yaml_path = Path("resources/example_config_load/launch.yaml")
@@ -74,26 +63,23 @@ class MyTestCase(unittest.TestCase):
         d = yaml.destination_config()
         self.assertEqual(type(d), configurations.configloader.DestinationChoiceConfig)
 
-# TODO this is not a test but a stub to extract the details for the config and should be removed when finished
-    def test_extract_config_prelims(self):
-        path_mode1 = Path(SPECS.CWD + "config/choice-models/mode_choice_mixed_logit.gen")
-        path_mode2 = Path(SPECS.CWD + "config/choice-models/mode_choice_mixed_logit_mode_preference.gen")
-        path_mode3 = Path(SPECS.CWD + "config/choice-models/mode_choice_mixed_logit_time_sensitivity.gen")
-        path_dest = Path(SPECS.CWD + "config/choice-models/destination-choice.gen")
-        compare_keys = simulation.default_yaml().mode_config().parameters.keys()
-        compare_dest_keys = simulation.default_yaml().configs[3].parameters.keys()
+    def test_util_yaml_checker(self):
+        simulation.restore_experimental_configs()
+        yaml = simulation.default_yaml()
+        utils.check_parameters_from_gen_files.check_yaml(yaml, remove_invalid_parameters=True)
+        # Warning there is a parameter "b_ausb_put" which is obviously misspelled in the gen file, once fixed this
+        # test will fail so increase the number of expected parameters to 217 (the other 11 parameters are for car
+        # sharing which will not be in this model)
+        self.assertEqual(len(yaml.mode_config().parameters), 228 - 12 - 1)
+        self.assertEqual(len(yaml.destination_config().parameters), 23 - 5 - 5)
+        self.assertTrue("elasticity_acc_put" not in yaml.destination_config().parameters.keys())
+        self.assertEqual(len(yaml.activity_destination_config("business").parameters), 66 - 7 - 5 - 1) # -1 because maxAttractivity is not part of the tuning process
 
-        woohoo = []
-        for x in [path_mode1, path_mode2, path_mode3]:
-            pass
-            woohoo.append(temp(x, compare_keys))
-        woohoo.append(temp(path_dest, compare_dest_keys))
-        z = list(set([x for y in woohoo for x in y]))
-        print(sorted(z))
-        print("\n".join(z))
-        #print(set(woohoo))
-
-
+    #@unittest.skip("Just a print, not a test")
+    def test_print_all_params(self):
+        yaml = simulation.default_yaml()
+        config = yaml.activity_destination_config("leisure")
+        print(config)
 
 if __name__ == '__main__':
     unittest.main()
