@@ -48,7 +48,7 @@ class TravelTime(Metric):
         temp2 = None
         if reference is not None:
             temp2 = metric.reduce(reference._data_frame, [group], "durationTrip", "count")
-        return visualization.generic_plot(temp, group, "count", "durationTrip", reference_df=temp2)
+        return visualization.generic_plot(temp, group, "count", "durationTrip", reference_df=temp2, color_seperator="tripMode", sharex=False)
 
     def reduce(self, keeper_list):
         self._data_frame = metric.reduce(self._data_frame, keeper_list, "durationTrip", "count")

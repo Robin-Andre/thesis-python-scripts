@@ -65,15 +65,39 @@ class TimeModeObservation(Observation):
         for x in [-20, -10, -1, -0.01, 0, 0.01, 10, 20]:
             assert abs(self.f_inverse(self.f(x)) - x) < epsilon
 
+    def _interpolate(self, x_1, y_1, x_2, y_2, y_target):
+        assert y_1 != y_2
+        a = (y_target - y_1) / (y_2 - y_1)
+        return a * (x_2 - x_1) + x_1
+
     def _generate_quantiles(self, frame):
+        # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
+        assert frame.index.names[-1] == "durationTrip"
         quants = [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999]
         cumulated_values = frame["count"].cumsum()
         quantile_vals = cumulated_values.quantile(quants)
+
         x = [(numpy.abs(cumulated_values - i)).argmin() for i in quantile_vals]
+
+        x_1_index = [numpy.where(cumulated_values < i)[0][-1] for i in quantile_vals]
+        x_2_index = [i + 1 for i in x_1_index]
+
+        t_1 = cumulated_values.take(x_1_index)
+        t_2 = cumulated_values.take(x_2_index)
+
+        y_1 = t_1.values
+        y_2 = t_2.values
+
+        x_1 = t_1.index.get_level_values(-1).values
+        x_2 = t_2.index.get_level_values(-1).values
+
+        y_target = quantile_vals.values
+        assert len(x_1) == len(x_2) == len(y_1) == len(y_2) == len(quants)
+        better_results = [self._interpolate(a, b, c, d, e) for a, b, c, d, e in zip(x_1, y_1, x_2, y_2, y_target)]
+        print(f"Better Interpolation: {better_results}")
         q = cumulated_values.index.values[x]
-        # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
-        assert frame.index.names[-1] == "durationTrip"
-        return [split_tuples[-1] for split_tuples in q]
+        return better_results
+        #return [split_tuples[-1] for split_tuples in q] OLD RETURN WITH FIXED VALUEs
 
 
     def _generate_function_estimate(self, target, observation):
@@ -131,9 +155,9 @@ class TimeModeObservation(Observation):
         a = self._generate_quantiles(x)
         b = self._generate_quantiles(y)
         #print(f"Param {parameter}")
-        #print([a_i - b_i for a_i, b_i in zip(a, b)])
+        print([a_i - b_i for a_i, b_i in zip(a, b)])
         z = sum([a_i - b_i for a_i, b_i in zip(a, b)])
-        #print(z)
+        print(z)
         return z
 
     def error(self, ind_1, target_data, parameter):
@@ -172,7 +196,7 @@ class TimeModeObservation(Observation):
 
         # This is a special case for the quantile approximation, since it is easily possible to generate two identical
         # y_1 == y_2
-        if m == 0:
+        if m == 0 or abs(y_2 - y_1) < 0.001:
             print(f"Special case has entered the chat")
             # if y is positive that means that the b_tt value is too large and smaller travels should be preferred
             step = -0.1 * numpy.sign(y_1)
@@ -185,6 +209,8 @@ class TimeModeObservation(Observation):
             assert abs(y_1 - m * x_1 - c) < epsilon
             assert abs(y_2 - m * x_2 - c) < epsilon
         #print(f"New x before inverse: {x_new}")
+        if x_new >= 0:
+            x_new = -0.0000001
         return self.f_inverse(x_new)
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):

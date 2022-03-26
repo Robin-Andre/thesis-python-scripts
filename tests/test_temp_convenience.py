@@ -265,15 +265,15 @@ class ConvenienceClickToExecute(unittest.TestCase):
         visualization.draw_grouped_modal_split(d)
         return
 
-    @unittest.skip("convenience click method, not a test")
+    #@unittest.skip("convenience click method, not a test")
     def test_run(self):
         x = Individual(21, [])
         x.load("resources/example_config_load")
-        x.yaml.set_fraction_of_population(0.02)
-        x.set_requirements(["tripMode", "workday"])
+        x.yaml.set_fraction_of_population(1)
+        x.set_requirements(["tripMode", "activityType"])
         x.run()
-        x.save("resources/workday_individual")
-
+        #x.save("resources/workday_individual")
+        x.save("resources/example_config_load_new")
 
     def test_detailed_ind(self):
         x = Individual(21, [])

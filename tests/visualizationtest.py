@@ -5,6 +5,7 @@ import pandas
 from matplotlib import pyplot as plt
 
 import metrics.data
+from calibration.evolutionary.individual import Individual
 from metrics import metric
 import visualization
 import visualization as plot
@@ -15,8 +16,8 @@ class VisualizationTestCase(unittest.TestCase):
     def test_modal_split_plot(self):
         data = metrics.data.Data()
         data2 = metrics.data.Data()
-        data.load("resources/example_config_load/results/")
-        data2.load("resources/example_config_load2/results/")
+        data.load("resources/example_config_load_new/results/")
+        data2.load("resources/example_config_load_new2/results/")
 
         modal_split = data._get_modal_split()
         modal_split2 = data2._get_modal_split()
@@ -48,17 +49,33 @@ class VisualizationTestCase(unittest.TestCase):
 
     def test_traffic_demand(self):
         data = metrics.data.Data()
-        data.load("resources/example_config_load/results/")
+        data.load("resources/example_config_load_new/results/")
         visualization.draw_travel_demand(data.traffic_demand.get_mode_specific_data(-1))
         visualization.draw_travel_demand(data.traffic_demand.get_mode_specific_data(1))
 
-
+    def test_detailed_ind(self):
+        x = Individual(21, [])
+        x_d = Individual(22, [])
+        x.load("resources/detailed_individual")
+        x_d.load("resources/even_more_detailed_individual")
+        #y = x.data.travel_time.get_data_frame()
+        #visualization.two_level_travel_time(y, "gender")
+        d = x_d.data.get_grouped_modal_split(["age", "gender"])
+        visualization.draw_grouped_modal_split(d, reference=d)
 
 
     def test_traffic_demand_mode(self):
         data = metrics.data.Data()
-        data.load("resources/example_config_load/results/")
-        visualization.draw_travel_demand_by_mode(data.traffic_demand)
+        data.load("resources/example_config_load_new/results/")
+        data2 = metrics.data.Data()
+        data2.load("resources/example_config_load_new2/results/")
+        #fig = data.traffic_demand.draw()
+        #fig.savefig("../plots/example_traffic.svg", format="svg")
+        fig2 = data.traffic_demand.draw_smooth(reference=data2.traffic_demand, smoothness_factor=15)
+        fig2.show()
+        fig2 = data.travel_time.draw(reference=data2.travel_time)
+        fig2.show()
+        #data.travel_time.draw_distribution()
 
     def test_pedestal(self):
         data = metrics.data.Data()
