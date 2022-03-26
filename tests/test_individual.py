@@ -101,8 +101,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.x["asc_car_d_mu"].value, 34)
 
     def test_error_calculation(self):
-        for v in self.x.errors(self.x.data).values():
-            self.assertAlmostEqual(v, 0)
+        for v in self.x.errors(self.x.data):
+            self.assertAlmostEqual(v[1], 0)
 
     def test_individual_parameter_extraction(self):
         r = Individual(9, ["shift_carav_on_logsum_drive", "b_mode_bef_ped", "b_arbwo_car_p"])

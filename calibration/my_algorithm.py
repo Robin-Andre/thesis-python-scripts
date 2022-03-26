@@ -57,6 +57,38 @@ def tune(tuning_parameter_list, comparison_data, metric):
     print(result)
     return pop, result
 
+def tune_new(tuning_parameter_list, comparison_data, metric):
+    pop = Population()
+    pop.set_target(comparison_data)
+    individual = Individual(-1, tuning_parameter_list)
+    start_values = individual.average_value_list()
+    individual.set_list(start_values)
+    individual.run()
+    set_fitness(individual, comparison_data, metric)
+    log_and_save_individual(individual, pop, "", "")
+    individual = tune_travel_time_parameters_new(tuning_parameter_list, individual, comparison_data, metric, pop)
+    individual.parameter_name_list = tuning_parameter_list
+    print(">>>>>>>>>>>>>>>>>>")
+    print(individual)
+    print(">>>>>>>>>>>>>>>>>>")
+
+#log_and_save_individual(individual, pop, "", "")
+    errors = sorted_errors(individual, comparison_data)
+    individual = tune_asc_parameters_new(tuning_parameter_list, individual, comparison_data, metric, pop)
+    individual.parameter_name_list = tuning_parameter_list
+    print(">>>>>>>>>>>>>>>>>>")
+    print(individual)
+    print(">>>>>>>>>>>>>>>>>>")
+
+#log_and_save_individual(individual, pop, "", "")
+    result = pop.logger.print_csv()
+
+    print(result)
+    return pop, result
+
+
+
+
 
 def temp2tune(tuning_parameter_list, comparison_data, metric):
     pop = Population()
@@ -68,7 +100,6 @@ def temp2tune(tuning_parameter_list, comparison_data, metric):
     set_fitness(individual, comparison_data, metric)
     log_and_save_individual(individual, pop, "", "")
     individual = tune_travel_time_parameters(tuning_parameter_list, individual, comparison_data, metric, pop)
-    individual.parameter_name_list = tuning_parameter_list
     print(">>>>>>>>>>>>>>>>>>")
     print(individual)
     print(">>>>>>>>>>>>>>>>>>")
@@ -76,19 +107,16 @@ def temp2tune(tuning_parameter_list, comparison_data, metric):
     #log_and_save_individual(individual, pop, "", "")
     errors = sorted_errors(individual, comparison_data)
     individual = tune_asc_parameters(tuning_parameter_list, individual, comparison_data, metric, pop)
-    individual.parameter_name_list = tuning_parameter_list
     print(">>>>>>>>>>>>>>>>>>")
     print(individual)
     print(">>>>>>>>>>>>>>>>>>")
 
     individual = tune_travel_time_parameters(tuning_parameter_list, individual, comparison_data, metric, pop, num_iters=2, epsilon=0.01)
-    individual.parameter_name_list = tuning_parameter_list
     print(">>>>>>>>>>>>>>>>>>")
     print(individual)
     print(">>>>>>>>>>>>>>>>>>")
 
     individual = tune_asc_parameters(tuning_parameter_list, individual, comparison_data, metric, pop, num_iters=2, epsilon=0.005)
-    individual.parameter_name_list = tuning_parameter_list
     print(">>>>>>>>>>>>>>>>>>")
     print(individual)
     print(">>>>>>>>>>>>>>>>>>")
@@ -104,13 +132,38 @@ def tune_travel_time_parameters(tuning_parameter_list, individual, comparison_da
     params = list(filter(lambda x: 'b_tt' in x, tuning_parameter_list))
     assert len(params) >= 1
     print(params)
-    return _unnamed_helper_function(params, individual, comparison_data, metric, population, num_iters, epsilon)
+    ind = _unnamed_helper_function(params, individual, comparison_data, metric, population, num_iters, epsilon)
+    ind.parameter_name_list = tuning_parameter_list
+    return ind
 
 
 def tune_asc_parameters(tuning_parameter_list, individual, comparison_data, metric, population=None, num_iters=5, epsilon=0.02):
     params = list(filter(lambda x: 'b_tt' not in x, tuning_parameter_list))
     assert len(params) >= 1
-    return _unnamed_helper_function(params, individual, comparison_data, metric, population, num_iters, epsilon)
+    ind = _unnamed_helper_function(params, individual, comparison_data, metric, population, num_iters, epsilon)
+    ind.parameter_name_list = tuning_parameter_list
+    return ind
+
+
+def tune_travel_time_parameters_new(tuning_parameter_list, individual, comparison_data, metric, population=None, num_iters=5, epsilon=0.02):
+    params = list(filter(lambda x: 'b_tt' in x, tuning_parameter_list))
+    assert len(params) >= 1
+    print(params)
+    ind = _each_parameter_is_tuned_once(params, individual, comparison_data, metric, population, num_iters, epsilon)
+    ind.parameter_name_list = tuning_parameter_list
+    return ind
+
+
+def tune_asc_parameters_new(tuning_parameter_list, individual, comparison_data, metric, population=None, num_iters=5, epsilon=0.02):
+    params = list(filter(lambda x: 'b_tt' not in x, tuning_parameter_list))
+    assert len(params) >= 1
+    ind = _each_parameter_is_tuned_once(params, individual, comparison_data, metric, population, num_iters, epsilon)
+    ind.parameter_name_list = tuning_parameter_list
+    return ind
+
+
+
+
 
 
 def _unnamed_helper_function(params, individual, comparison_data, metric, population=None, num_iters=5, epsilon=0.02):
@@ -127,4 +180,26 @@ def _unnamed_helper_function(params, individual, comparison_data, metric, popula
         print(f"The Name of the parameter SI: {p_name}")
         temp_individual = tuning.tune(temp_individual, comparison_data, individual[p_name], epsilon=epsilon, population=population, metric=metric)
         draw(temp_individual, comparison_data)
+    return temp_individual
+
+
+def _each_parameter_is_tuned_once(params, individual, comparison_data, metric, population=None, num_iters=5, epsilon=0.02):
+    temp_individual = individual.copy()
+    params_copy = params.copy()
+    temp_individual.parameter_name_list = params_copy
+    while params_copy:
+        errors = sorted_errors(temp_individual, comparison_data)
+        print(errors)
+        max_tuple = errors[-1]
+        min_tuple = errors[0]
+        if abs(max_tuple[1]) > abs(min_tuple[1]):
+            p_name = max_tuple[0]
+        else:
+            p_name = min_tuple[0]
+        print(f"The Name of the parameter IS: {p_name}")
+        temp_individual = tuning.tune(temp_individual, comparison_data, individual[p_name], epsilon=epsilon, population=population, metric=metric)
+        draw(temp_individual, comparison_data)
+        params_copy.remove(p_name)
+        temp_individual.parameter_name_list = params_copy
+        print(temp_individual.parameter_name_list)
     return temp_individual

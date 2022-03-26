@@ -369,7 +369,12 @@ class Comparison:
         diff3 = input.sub_all(comparison)
         for d_name, d in zip(d_names, [diff, diff2, diff3]):
             for test_name, teste in tests.items():
-                _, p_value = teste(d[d.columns[0]], d[d.columns[1]])
+                temp = d[d.columns[2]] == 0
+                if temp.all():
+                    p_value = 1
+                else:
+                    x, p_value = teste(d[d.columns[0]], d[d.columns[1]])
+
                 self.statistic_tests["CountComparisonStatisticTest_" + name + "_" + test_name + "_" + d_name] = p_value
 
 

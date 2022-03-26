@@ -60,6 +60,22 @@ def launch_my_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descript
     print(pop.best())
     write_helper(result, seed, exname, descriptor)
 
+
+def launch_my_algorithm_new(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None):
+    random.seed(seed)
+    build_folders(exname)
+    if d is None:
+        d = Individual(seed=individual_seed, param_list=param_list)
+        d.run()
+    data = d.data
+    pop, result = my_algorithm.tune_new(param_list, data, "ModalSplit_Default_Splits_sum_squared_error")
+    pop_save_helper(pop, seed, exname, descriptor)
+    print(pop.best())
+    write_helper(result, seed, exname, descriptor)
+
+
+
+
 def launch_my_other_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None):
     random.seed(seed)
     build_folders(exname)
@@ -150,12 +166,12 @@ if __name__ == "__main__":
     PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
     #experiment_pygad_target_has_same_seed_time_metric(PARAMS)
     #experiment_pyswarms_target_has_same_seed_time_metric(PARAMS)
-    experiment_random_target_individual(PARAMS)
-    further_Exp(PARAMS)
-    exit(0)
+    #experiment_random_target_individual(PARAMS)
+    #further_Exp(PARAMS)
+    #exit(0)
 
-    launch_my_algorithm(PARAMS, 2, "myalgo_10_parameters", descriptor="Diffseed2_2iters")
-    launch_my_algorithm(PARAMS, 3, "myalgo_10_parameters", descriptor="Diffseed3_2Iters")
+    launch_my_algorithm_new(PARAMS, 2, "myalgo_10_parameters", descriptor="Diffseed2_2iters")
+    #launch_my_algorithm(PARAMS, 3, "myalgo_10_parameters", descriptor="Diffseed3_2Iters")
     exit(0)
 
     launch_pyswarms(PARAMS, 103, "pyswarms")

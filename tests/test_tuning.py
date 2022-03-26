@@ -23,7 +23,7 @@ class MyTestCase(unittest.TestCase):
         individual.run()
         data = individual.data
         p_list = ["asc_car_d_mu", "female_on_asc_car_d"]
-        my_algorithm.tune(p_list, data, "Lolcat")
+        my_algorithm.tune(p_list, data, "TravelTime_Default_sum_squared_error")
 
     #@unittest.skip("Not a test but a convenience run")
     def test_something(self):
@@ -62,6 +62,7 @@ class MyTestCase(unittest.TestCase):
         temp.run()
         temp.data.traffic_demand.draw_smooth(reference=individual.data.traffic_demand).show()
 
+    @unittest.skip("THis is a manual test")
     def test_why_algo_fails(self):
         PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
         d = Individual(param_list=PARAMS)

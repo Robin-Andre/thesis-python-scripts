@@ -70,7 +70,7 @@ class TimeModeObservation(Observation):
         a = (y_target - y_1) / (y_2 - y_1)
         return a * (x_2 - x_1) + x_1
 
-    def _generate_quantiles(self, frame):
+    def _generate_quantiles(self, frame, variable_quantile_calculation=False):
         # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
         assert frame.index.names[-1] == "durationTrip"
         quants = [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999]
@@ -96,8 +96,10 @@ class TimeModeObservation(Observation):
         better_results = [self._interpolate(a, b, c, d, e) for a, b, c, d, e in zip(x_1, y_1, x_2, y_2, y_target)]
         print(f"Better Interpolation: {better_results}")
         q = cumulated_values.index.values[x]
-        return better_results
-        #return [split_tuples[-1] for split_tuples in q] OLD RETURN WITH FIXED VALUEs
+        if variable_quantile_calculation:
+            return better_results
+        else:
+            return [split_tuples[-1] for split_tuples in q]
 
 
     def _generate_function_estimate(self, target, observation):
@@ -136,9 +138,6 @@ class TimeModeObservation(Observation):
 
         wololo = self._get_data_subset(ind_1.data.travel_time.get_data_frame(), parameter)
         target_wololo = self._get_data_subset(target_data.travel_time.get_data_frame(), parameter)
-        #x = self._generate_quantiles(wololo)
-        #y = self._generate_quantiles(target_wololo)
-
         #print(x)
         #print(y)
         #print([a_i - b_i for a_i, b_i in zip(x, y)])
@@ -148,27 +147,27 @@ class TimeModeObservation(Observation):
         #print(estimate)
         return estimate
 
-    def _other_error_method(self, ind_1, target_data, parameter):
+    def _other_error_method(self, ind_1, target_data, parameter, variable_quantiles=False):
         x = self._get_data_subset(ind_1.data.travel_time.get_data_frame(), parameter)
         y = self._get_data_subset(target_data.travel_time.get_data_frame(), parameter)
 
-        a = self._generate_quantiles(x)
-        b = self._generate_quantiles(y)
+        a = self._generate_quantiles(x, variable_quantiles)
+        b = self._generate_quantiles(y, variable_quantiles)
         #print(f"Param {parameter}")
         #print([a_i - b_i for a_i, b_i in zip(a, b)])
         z = sum([a_i - b_i for a_i, b_i in zip(a, b)])
         #print(z)
         return z
 
-    def error(self, ind_1, target_data, parameter):
-        z = self._other_error_method(ind_1, target_data, parameter)
+    def error(self, ind_1, target_data, parameter, variable_quantiles=False):
+        z = self._other_error_method(ind_1, target_data, parameter, variable_quantiles)
         alpha = 0.01
         return z * alpha
         #return alpha * self._helper(ind_1, target_data, parameter)[1]
 
-    def observe(self, ind_1, target_data, parameter):
+    def observe(self, ind_1, target_data, parameter, variable_quantiles=False):
         #popt = self._helper(ind_1, target_data, parameter)
-        error = self.error(ind_1, target_data, parameter)
+        error = self.error(ind_1, target_data, parameter, variable_quantiles)
         # A positive value for popt[1] means that the time preference component has too much impact
         # In order to reduce it the -exp(x) function needs to return a smaller value (for all except b_tt_ped_mu)
         # So counterintuitively b_tt-* needs to be decreased to reduce the negative impact. For this reason
@@ -215,11 +214,11 @@ class TimeModeObservation(Observation):
             x_new = -0.0001
         return self.f_inverse(x_new)
 
-    def observe_detailed(self, ind_1, ind_2, target_data, parameter):
+    def observe_detailed(self, ind_1, ind_2, target_data, parameter, variable_quantiles=False):
         #popt1 = self._helper(ind_1, target_data, parameter)
         #popt2 = self._helper(ind_2, target_data, parameter)
-        error_1 = self.error(ind_1, target_data, parameter)
-        error_2 = self.error(ind_2, target_data, parameter)
+        error_1 = self.error(ind_1, target_data, parameter, variable_quantiles)
+        error_2 = self.error(ind_2, target_data, parameter, variable_quantiles)
         #print(f"Errors: {error_1}  {error_2}")
         x_1 = ind_1[parameter].value
         y_1 = self.f(x_1)

@@ -28,7 +28,6 @@ def log_and_save_individual(individual, population, experiment_name, descriptor)
 def draw(ind, data):
     ind.data.draw_modal_split(reference=data)
     x = ind.data.travel_time.draw(reference=data.travel_time)
-
     x.show()
 
 
