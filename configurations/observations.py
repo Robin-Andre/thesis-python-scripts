@@ -167,6 +167,8 @@ class TimeModeObservation(Observation):
     def guess(self, x_1, y_1, x_2, y_2):
         #print(f"The values are {x_1}, {y_1}  {x_2}, {y_2}")
         # Calculate m * x + c for a linear approximation
+        if abs(x_2 - x_1) < 0.001:
+            return self.f_inverse((x_2 + x_1) / 2)
         m = (y_2 - y_1) / (x_2 - x_1)
         c = y_1 - m * x_1
 
@@ -185,6 +187,8 @@ class TimeModeObservation(Observation):
             assert abs(y_1 - m * x_1 - c) < epsilon
             assert abs(y_2 - m * x_2 - c) < epsilon
         #print(f"New x before inverse: {x_new}")
+        if x_new >= 0:
+            x_new = -0.0001
         return self.f_inverse(x_new)
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
@@ -222,7 +226,10 @@ def default_logit(y, limit=1):
 
 
 def inv_log_func(y,  k, x_0, L):
-    return (math.log((L / y) - 1) / -k) + x_0
+    x = (L / y) - 1
+    if x <= 0:
+        x = 0.01
+    return (math.log(x) / -k) + x_0
 
 
 def car_logit(x):

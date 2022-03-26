@@ -110,7 +110,26 @@ def experiment_pyswarms_target_has_same_seed_time_metric(params):
 
 def experiment_random_target_individual(params):
 
-    for seed in [43, 44 ,45]:
+    for seed in [43, 45, 47]:
+
+        random.seed(seed)
+        target = Individual(seed=seed, param_list=params)
+        target.randomize_active_parameters()
+
+        target.run()
+
+        exp_name = "random_target_10_parameters_time_metric"
+        build_folders(exp_name)
+        target.save(SPECS.EXP_PATH + exp_name + "/data/target/" + str(seed))
+
+        #launch_pygad(params, seed, exp_name, descriptor="pygad_seed" + str(seed), d=target, metric="TravelTime_Default_sum_squared_error")
+        #launch_pyswarms(params, seed, exp_name, descriptor="pyswarms_seed" + str(seed), d=target, metric="TravelTime_Default_sum_squared_error")
+        #launch_spsa(params, seed, exp_name, descriptor="spsa_seed" + str(seed), d=target, metric="TravelTime_Default_sum_squared_error")
+        launch_my_algorithm(params, seed, exp_name, descriptor="myalgorithm_seed" + str(seed), d=target)
+
+
+def further_Exp(params):
+    for seed in [48, 49, 50]:
 
         random.seed(seed)
         target = Individual(seed=seed, param_list=params)
@@ -126,13 +145,13 @@ def experiment_random_target_individual(params):
         launch_spsa(params, seed, exp_name, descriptor="spsa_seed" + str(seed), d=target, metric="TravelTime_Default_sum_squared_error")
         launch_my_algorithm(params, seed, exp_name, descriptor="myalgorithm_seed" + str(seed), d=target)
 
-
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "age_0_17_on_b_tt_ped"]
     PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
     #experiment_pygad_target_has_same_seed_time_metric(PARAMS)
     #experiment_pyswarms_target_has_same_seed_time_metric(PARAMS)
     experiment_random_target_individual(PARAMS)
+    further_Exp(PARAMS)
     exit(0)
 
     launch_my_algorithm(PARAMS, 2, "myalgo_10_parameters", descriptor="Diffseed2_2iters")
