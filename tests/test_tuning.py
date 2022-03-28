@@ -4,6 +4,7 @@ import visualization
 from calibration import tuning, my_algorithm
 from calibration.evolutionary.individual import Individual
 from calibration.evolutionary.population import Population
+from configurations.observations import ObserverOptions
 from configurations.parameter import Parameter
 from metrics.data import Data
 
@@ -17,13 +18,31 @@ def helper(data, title, ref=None):
 class MyTestCase(unittest.TestCase):
 
     def test_tuning_algo(self):
-        individual = Individual(param_list=["asc_car_d_mu", "female_on_asc_car_d"])
-        individual.randomize_active_parameters()
+        PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+                  "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+
+        individual = Individual(param_list=PARAMS)
+        #individual.randomize_active_parameters()
         print(individual)
         individual.run()
         data = individual.data
         p_list = ["asc_car_d_mu", "female_on_asc_car_d"]
-        my_algorithm.tune(p_list, data, "TravelTime_Default_sum_squared_error")
+        my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error")
+        my_algorithm.tune(PARAMS, data, "TravelTime_Default_sum_squared_error")
+
+    def test_advanced_param_tuning(self):
+        PARAMS = ["asc_car_d_mu", "female_on_asc_car_d"]
+
+        individual = Individual(param_list=PARAMS)
+        individual["asc_car_d_mu"].set(0)
+        individual["female_on_asc_car_d"].set(4)
+        #individual.randomize_active_parameters()
+        print(individual)
+        individual.run()
+        data = individual.data
+        my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error")
+        my_algorithm.tune(PARAMS, data, "TravelTime_Default_sum_squared_error")
+
 
     #@unittest.skip("Not a test but a convenience run")
     def test_something(self):
@@ -73,7 +92,9 @@ class MyTestCase(unittest.TestCase):
         start_values = individual.average_value_list()
         individual.set_list(start_values)
         individual.run()
-
+        opt = ObserverOptions()
+        opt.use_better_travel_method = True
+        individual.change_observer_options(opt)
         p = "b_tt_bike_mu"
         tuning.tune(individual, data, individual[p])
         """print(individual[p])

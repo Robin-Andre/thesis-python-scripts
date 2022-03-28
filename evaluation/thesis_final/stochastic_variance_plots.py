@@ -45,6 +45,79 @@ def make_all_box_plots(csv):
     #make_statistic_box_plot(csv, "_wilcoxon_")
     #make_statistic_box_plot(csv, "_ttest_")
 
+
+def temp_box_plot_of_ordered_frame(df, title="E", subspace=(3, 2)):
+
+    fig, ax = plt.subplots(subspace[0], subspace[1], sharex=True, sharey=True)
+    fig.suptitle(title)
+    plt.tight_layout()
+    axes = ax.flatten()
+
+    for i, a in enumerate(axes):
+        a.set_xticks([2.5, 6.5, 10.5])
+        a.set_xticklabels(["KS-Test", "Wilcoxon", "T-Test"],  rotation=0)
+        a.axvline(x=4.5, linestyle="--", alpha=0.4, color="gray")
+        a.axvline(x=8.5, linestyle="--", alpha=0.4, color="gray")
+        a.boxplot(df.iloc[:, i * 12: (i + 1) * 12], manage_ticks=False,  showfliers=False, medianprops=dict(color="red"))
+    return fig
+
+def make_dist_plots(csv, csv_5, csv_25, csv_full):
+    x1 = subset_dist_stats(csv)
+    x2 = subset_dist_stats(csv_5)
+    x_3 = subset_dist_stats(csv_25)
+    x_4 = subset_dist_stats(csv_full)
+    test = x1.join(x2, lsuffix="002", rsuffix="005")
+    test = test.join(x_3, rsuffix="025")
+    test = test.join(x_4, rsuffix="100")
+    sort_vector = []
+    for i in range(36):
+        sort_vector = sort_vector + [i + j * 36 for j in range(4)]
+
+    temp = test.iloc[:, sort_vector]  # REorder the large dataframe to be more suited to the application
+    travel_time_plot = temp_box_plot_of_ordered_frame(temp.iloc[:, :72], title="Travel Time Distribution")
+    travel_time_plot.show()
+    travel_time_plot.savefig("../../plots/travel_time_plot.svg", format="svg")
+    travel_dist_plot = temp_box_plot_of_ordered_frame(temp.iloc[:, 72:], title="Travel Distance Distribution")
+    travel_dist_plot.show()
+    travel_dist_plot.savefig("../../plots/travel_dist_plot.svg", format="svg")
+
+
+
+def make_count_plots(csv, csv_5, csv_25, csv_full):
+    x1 = subset_count_stats(csv)
+    x2 = subset_count_stats(csv_5)
+    x_3 = subset_count_stats(csv_25)
+    x_4 = subset_count_stats(csv_full)
+    test = x1.join(x2, lsuffix="002", rsuffix="005")
+    test = test.join(x_3, rsuffix="025")
+    test = test.join(x_4, rsuffix="100")
+    sort_vector = []
+    for i in range(36):
+        sort_vector = sort_vector + [i + j * 36 for j in range(4)] # Group by ascending csvs
+    temp = test.iloc[:, sort_vector] # REorder the large dataframe to be more suited to the application
+    sort_vector = []
+    for j in range(12): # Restructure so that the tests are in order of ks wilx ttest
+        i = j * 12
+        sort_vector = sort_vector + list(range(i + 8, i + 12)) + list(range(i + 0, i + 4)) + list(range(i + 4, i + 8))
+    temp = temp.iloc[:, sort_vector]
+
+    sort_vector = []
+    for j in range(4): # Drop the last 12 data elements because the test data is weird
+        i = j * 36
+        sort_vector = sort_vector + list(range(i, i + 24))
+    temp = temp.iloc[:, sort_vector]
+
+
+    travel_time_plot = temp_box_plot_of_ordered_frame(temp, title="Sample Stochastic Tests", subspace=(4,2))
+    travel_time_plot.show()
+
+    travel_time_plot.savefig("../../plots/count_stochastics.svg", format="svg")
+    #travel_dist_plot = temp_box_plot_of_ordered_frame(temp.iloc[:, 72:], title="Travel Distance Ea", subspace=(4,2))
+    #travel_dist_plot.show()
+    #travel_dist_plot.savefig("../../plots/travel_dist_plot.svg", format="svg")
+
+
+
 def main():
     csv = pandas.read_csv(SPECS.EXP_PATH + "data_random/002.csv")
     csv_5 = pandas.read_csv(SPECS.EXP_PATH + "data_random/005.csv")
@@ -60,12 +133,9 @@ def main():
     #make_all_box_plots(csv_5)
     #make_all_box_plots(csv_25)
     #make_all_box_plots(csv_full)
-    x1 = subset_dist_stats(csv)
-    x2 = subset_dist_stats(csv_5)
-    test = x1.join(x2, lsuffix="002", rsuffix="005")
-    fig, ax = plt.subplots()
-    ax.boxplot(test,  showfliers=False)
-    fig.show()
+
+    make_count_plots(csv, csv_5, csv_25, csv_full)
+    #make_dist_plots(csv, csv_5, csv_25, csv_full)
     exit()
     make_all_distri_plots(csv)
     make_all_distri_plots(csv_5)
