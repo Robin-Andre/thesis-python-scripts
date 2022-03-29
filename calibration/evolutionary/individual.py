@@ -219,6 +219,11 @@ class DestinationIndividual(Individual):
                 self[p].value = self[p].value + delta
 
 
+    def active_values(self):
+        return [(self[x].name, self[x].value) for x in
+                self.parameter_name_list]
+
+
     def evaluate_fitness(self, compare_data):
 
         difference = Comparison(self.data, compare_data)

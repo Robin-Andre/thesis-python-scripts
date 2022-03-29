@@ -1,8 +1,9 @@
 from pathlib import Path
 from calibration import pygad_genetic_algorithm, stochastic_perturbation_algorithm, pyswarms_algorithm, my_algorithm
-from calibration.evolutionary.individual import Individual
+from calibration.evolutionary.individual import Individual, DestinationIndividual
 from configurations import SPECS
 import random
+import mobitopp_execution as simulation
 
 
 def write(result, experiment, folder):
@@ -21,32 +22,43 @@ def build_folders(folder):
 
 
 
-def launch_pygad(param_list, seed, exname="genetic_Unnamed", descriptor=None, metric="ModalSplit_Default_Splits_sum_squared_error", individual_seed=-1, d=None):
+def _help_launcher(param_list, seed, exname, descriptor, metric, individual_seed, d, algorithm, ind_constructor=Individual):
     build_folders(exname)
     if d is None:
-        d = Individual(seed=individual_seed, param_list=param_list)
+        d = ind_constructor(seed=individual_seed, param_list=param_list)
         d.run()
     data = d.data
-    p, result = pygad_genetic_algorithm.tune(param_list, data, metric, seed, experiment_name=exname, descriptor=descriptor)
+    p, result = algorithm(param_list, data, metric, seed, experiment_name=exname, descriptor=descriptor, individual_constructor=ind_constructor)
     write_helper(result, seed, exname, descriptor)
 
-def launch_spsa(param_list, seed, exname="spsa_Unnamed", descriptor=None, metric="ModalSplit_Default_Splits_sum_squared_error", individual_seed=-1, d=None):
-    build_folders(exname)
-    if d is None:
-        d = Individual(seed=individual_seed, param_list=param_list)
-        d.run()
-    data = d.data
-    p, result = stochastic_perturbation_algorithm.tune(param_list, data, metric, seed, experiment_name=exname, descriptor=descriptor)
-    write_helper(result, seed, exname, descriptor)
+def launch_pygad(param_list, seed, exname="genetic_Unnamed", descriptor=None, metric="ModalSplit_Default_Splits_sum_squared_error", individual_seed=-1, d=None, individual_constructor=Individual):
+    algorithm = pygad_genetic_algorithm.tune
+    _help_launcher(param_list, seed, exname, descriptor, metric, individual_seed, d, algorithm=algorithm, ind_constructor=individual_constructor)
 
-def launch_pyswarms(param_list, seed, exname="pyswarms_Unnamed", descriptor=None, metric="ModalSplit_Default_Splits_sum_squared_error", individual_seed=-1, d=None):
-    build_folders(exname)
-    if d is None:
-        d = Individual(seed=individual_seed, param_list=param_list)
-        d.run()
-    data = d.data
-    p, result = pyswarms_algorithm.tune(param_list, data, metric, seed, experiment_name=exname, descriptor=descriptor)
-    write_helper(result, seed, exname, descriptor)
+
+
+def launch_spsa(param_list, seed, exname="spsa_Unnamed", descriptor=None, metric="ModalSplit_Default_Splits_sum_squared_error", individual_seed=-1, d=None, individual_constructor=Individual):
+    algorithm = stochastic_perturbation_algorithm.tune
+    _help_launcher(param_list, seed, exname, descriptor, metric, individual_seed, d, algorithm=algorithm, ind_constructor=individual_constructor)
+
+
+
+def launch_pyswarms(param_list, seed, exname="pyswarms_Unnamed", descriptor=None, metric="ModalSplit_Default_Splits_sum_squared_error", individual_seed=-1, d=None, individual_constructor=Individual):
+    algorithm = pyswarms_algorithm.tune
+    _help_launcher(param_list, seed, exname, descriptor, metric, individual_seed, d, algorithm=algorithm, ind_constructor=individual_constructor)
+
+
+def launch_pygad_destination(param_list, seed, exname="genetic_Unnamed_destination", descriptor=None, metric="TravelDistance_Default_sum_squared_error", individual_seed=-1, d=None):
+    launch_pygad(param_list, seed, exname, descriptor, metric, individual_seed, d, individual_constructor=DestinationIndividual)
+
+
+def launch_spsa_destination(param_list, seed, exname="spsa_Unnamed_destination", descriptor=None, metric="TravelDistance_Default_sum_squared_error", individual_seed=-1, d=None):
+    launch_spsa(param_list, seed, exname, descriptor, metric, individual_seed, d, individual_constructor=DestinationIndividual)
+
+
+def launch_pyswarms_destination(param_list, seed, exname="pyswarms_Unnamed_destination", descriptor=None, metric="TravelDistance_Default_sum_squared_error", individual_seed=-1, d=None):
+    launch_pyswarms(param_list, seed, exname, descriptor, metric, individual_seed, d, individual_constructor=DestinationIndividual)
+
 
 def launch_my_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None):
     random.seed(seed)
@@ -108,19 +120,19 @@ def experiment_spsa_target_has_same_seed(params):
 
 
 def experiment_pygad_target_has_same_seed(params):
-    for i in range(101, 106):
+    for i in range(106, 111):
         launch_pygad(params, i, "pygad_10_parameters_target_has_same_seed")
 
 def experiment_pygad_target_has_same_seed_time_metric(params):
-    for i in range(101, 106):
+    for i in range(106, 111):
         launch_pygad(params, i, "pygad_10_parameters_target_has_same_seed_time_metric", metric="TravelTime_Default_sum_squared_error")
 
 def experiment_pyswarms_target_has_same_seed(params):
-    for i in range(101, 106):
+    for i in range(106, 111):
         launch_pyswarms(params, i, "pyswarms_10_parameters_target_has_same_seed")
 
 def experiment_pyswarms_target_has_same_seed_time_metric(params):
-    for i in range(101, 106):
+    for i in range(106, 111):
         launch_pyswarms(params, i, "pyswarms_10_parameters_target_has_same_seed_time_metric", metric="TravelTime_Default_sum_squared_error")
 
 
@@ -164,9 +176,21 @@ def further_Exp(params):
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "age_0_17_on_b_tt_ped"]
     PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    #experiment_pygad_target_has_same_seed_time_metric(PARAMS)
+    yaml = simulation.default_yaml()
+    print(yaml.mode_config().get_all_parameter_names_on_requirements(["tripMode", "age", "gender"]))
+
+    print(yaml.destination_config().get_all_parameter_names_on_requirements(["age", "gender"]))
+    #exit(0)
+    PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped", "female_on_asc_ped", "age_18_29_on_b_tt_car_d"]
+    #experiment_pyswarms_target_has_same_seed(PARAMS)
     #experiment_pyswarms_target_has_same_seed_time_metric(PARAMS)
-    #experiment_random_target_individual(PARAMS)
+    launch_pyswarms(PARAMS, 52, "Detailed_test", descriptor="pyswarms_seed_detailedtest", metric="TravelTime_Default_sum_squared_error")
+
+
+#experiment_pygad_target_has_same_seed_time_metric(PARAMS)
+    #experiment_pygad_target_has_same_seed(PARAMS)
+    exit(0)
+#experiment_random_target_individual(PARAMS)
     #further_Exp(PARAMS)
     #exit(0)
 

@@ -47,6 +47,13 @@ class ElasticityObservation(Observation):
     pass
 
 
+class TransferTimeObservation(Observation):
+    """
+    The underlying example model does not support transfer time as an analysis
+    """
+    pass
+
+
 class TimeModeObservation(Observation):
 
     def __init__(self, function=lambda x: -math.exp(x), inverse_function=lambda x: math.log(-x)):

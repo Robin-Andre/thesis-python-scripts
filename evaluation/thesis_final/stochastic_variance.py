@@ -11,7 +11,7 @@ def main():
     fractions = ["002", "005", "025", "100"]
     for fraction in fractions:
         data_list = []
-        for file in Path(SPECS.EXP_PATH + "data_random/data/fraction_of_population_" + fraction).iterdir():
+        for file in Path(SPECS.EXP_PATH + "random_seeds_final/data/fraction_of_population_" + fraction).iterdir():
             #i = Individual()
             data = Data()
             data.load(str(file) + "/results/")
@@ -30,8 +30,7 @@ def main():
                 comp_list.append(temp)
 
         df = pandas.DataFrame(comp_list, columns=["runID", "secondrunID"] + list(c.mode_metrics.keys()) + list(c.destination_metrics.keys()) + list(c.statistic_tests.keys()))
-        df.to_csv(SPECS.EXP_PATH + "data_random/" + fraction + ".csv", index=False)
-
+        df.to_csv(SPECS.EXP_PATH + "random_seeds_final/" + fraction + ".csv", index=False)
 
 
 if __name__ == "__main__":

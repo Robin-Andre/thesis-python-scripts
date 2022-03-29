@@ -16,13 +16,13 @@ def log_and_save_individual(individual, population, experiment_name, descriptor)
     population.logger.log_detailed(population, individual, increase_counter=True)
 
 
-def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_name="stochastic_perturbation", descriptor=None):
+def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_name="stochastic_perturbation", descriptor=None, individual_constructor=Individual):
     numpy.random.seed(seed)
     pop = Population(param_vector=tuning_parameter_list)
     if descriptor is None:
         descriptor = str(seed) + "_metric_" + metric + "/"
-    loss_func = loss_factory(tuning_parameter_list, metric, comparison_data, pop, experiment_name, descriptor)
-    individual = Individual(param_list=tuning_parameter_list)
+    loss_func = loss_factory(tuning_parameter_list, metric, comparison_data, pop, experiment_name, descriptor, individual_constructor)
+    individual = individual_constructor(param_list=tuning_parameter_list)
     pop.set_target(comparison_data)
     second_order = False
     initial_points = individual.average_value_list()
@@ -36,10 +36,10 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_na
     return params_optimized, result
 
 
-def loss_factory(p_list, metric, data, population, experiment_name, descriptor):
+def loss_factory(p_list, metric, data, population, experiment_name, descriptor, individual_constructor):
 
     def loss(x):
-        ind = Individual(param_list=p_list)
+        ind = individual_constructor(param_list=p_list)
         print(list(x))
         ind.set_list(list(x))
         ind.run()

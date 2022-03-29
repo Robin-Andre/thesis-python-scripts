@@ -12,7 +12,7 @@ from configurations import SPECS
 from metrics.data import Comparison
 
 
-def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_name="pyswarms_algorithm", descriptor=None):
+def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_name="pyswarms_algorithm", descriptor=None, individual_constructor=Individual):
     random.seed(seed)
     numpy.random.seed(seed)
     if descriptor is None:
@@ -20,7 +20,7 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_na
     pop = Population(param_vector=tuning_parameter_list)
     pop.set_target(comparison_data)
     loss_function = loss_factory(tuning_parameter_list, comparison_data, metric, pop, experiment_name, descriptor)
-    individual = Individual(param_list=tuning_parameter_list)
+    individual = individual_constructor(param_list=tuning_parameter_list)
     bounds = individual.pyswarms_bound_lists()
 
     options = {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
