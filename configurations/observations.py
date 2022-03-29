@@ -8,10 +8,17 @@ import scipy.optimize
 from matplotlib import pyplot as plt
 
 
+class ObserverOptions:
+    def __init__(self):
+        self.use_better_travel_method = False
+        self.quantiles = [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999]
+
+
 class Observation(ABC):
     def __init__(self, function=lambda x: x, function_inverse=lambda x: x):
         self.f = function
         self.f_inverse = function_inverse
+        self.options = ObserverOptions()
 
     def observe(self, ind_1, target_data, parameter):
         return 0
@@ -65,6 +72,7 @@ class TimeModeObservation(Observation):
         self.f = function
         self.f_inverse = inverse_function
         self.verify_functions()
+        self.options = ObserverOptions()
 
     def verify_functions(self):
         epsilon = 0.0001
@@ -77,12 +85,12 @@ class TimeModeObservation(Observation):
         a = (y_target - y_1) / (y_2 - y_1)
         return a * (x_2 - x_1) + x_1
 
-    def _generate_quantiles(self, frame, variable_quantile_calculation=False):
+    def _generate_quantiles(self, frame):
         # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
         assert frame.index.names[-1] == "durationTrip"
-        quants = [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999]
+
         cumulated_values = frame["count"].cumsum()
-        quantile_vals = cumulated_values.quantile(quants)
+        quantile_vals = cumulated_values.quantile(self.options.quantiles)
 
         x = [(numpy.abs(cumulated_values - i)).argmin() for i in quantile_vals]
 
@@ -101,11 +109,14 @@ class TimeModeObservation(Observation):
         y_target = quantile_vals.values
         assert len(x_1) == len(x_2) == len(y_1) == len(y_2) == len(quants)
         better_results = [self._interpolate(a, b, c, d, e) for a, b, c, d, e in zip(x_1, y_1, x_2, y_2, y_target)]
-        print(f"Better Interpolation: {better_results}")
+        #(f"Better Interpolation: {better_results}")
         q = cumulated_values.index.values[x]
-        if variable_quantile_calculation:
+        #print(self.options.use_better_travel_method)
+        if self.options.use_better_travel_method:
+            print("Using optimized quantile")
             return better_results
         else:
+            print("Using default quantile")
             return [split_tuples[-1] for split_tuples in q]
 
 
@@ -154,27 +165,27 @@ class TimeModeObservation(Observation):
         #print(estimate)
         return estimate
 
-    def _other_error_method(self, ind_1, target_data, parameter, variable_quantiles=False):
+    def _other_error_method(self, ind_1, target_data, parameter):
         x = self._get_data_subset(ind_1.data.travel_time.get_data_frame(), parameter)
         y = self._get_data_subset(target_data.travel_time.get_data_frame(), parameter)
 
-        a = self._generate_quantiles(x, variable_quantiles)
-        b = self._generate_quantiles(y, variable_quantiles)
+        a = self._generate_quantiles(x)
+        b = self._generate_quantiles(y)
         #print(f"Param {parameter}")
         #print([a_i - b_i for a_i, b_i in zip(a, b)])
         z = sum([a_i - b_i for a_i, b_i in zip(a, b)])
         #print(z)
         return z
 
-    def error(self, ind_1, target_data, parameter, variable_quantiles=False):
-        z = self._other_error_method(ind_1, target_data, parameter, variable_quantiles)
+    def error(self, ind_1, target_data, parameter):
+        z = self._other_error_method(ind_1, target_data, parameter)
         alpha = 0.01
         return z * alpha
         #return alpha * self._helper(ind_1, target_data, parameter)[1]
 
-    def observe(self, ind_1, target_data, parameter, variable_quantiles=False):
+    def observe(self, ind_1, target_data, parameter):
         #popt = self._helper(ind_1, target_data, parameter)
-        error = self.error(ind_1, target_data, parameter, variable_quantiles)
+        error = self.error(ind_1, target_data, parameter)
         # A positive value for popt[1] means that the time preference component has too much impact
         # In order to reduce it the -exp(x) function needs to return a smaller value (for all except b_tt_ped_mu)
         # So counterintuitively b_tt-* needs to be decreased to reduce the negative impact. For this reason
@@ -221,11 +232,11 @@ class TimeModeObservation(Observation):
             x_new = -0.0001
         return self.f_inverse(x_new)
 
-    def observe_detailed(self, ind_1, ind_2, target_data, parameter, variable_quantiles=False):
+    def observe_detailed(self, ind_1, ind_2, target_data, parameter):
         #popt1 = self._helper(ind_1, target_data, parameter)
         #popt2 = self._helper(ind_2, target_data, parameter)
-        error_1 = self.error(ind_1, target_data, parameter, variable_quantiles)
-        error_2 = self.error(ind_2, target_data, parameter, variable_quantiles)
+        error_1 = self.error(ind_1, target_data, parameter)
+        error_2 = self.error(ind_2, target_data, parameter)
         #print(f"Errors: {error_1}  {error_2}")
         x_1 = ind_1[parameter].value
         y_1 = self.f(x_1)

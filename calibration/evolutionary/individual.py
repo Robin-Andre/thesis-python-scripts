@@ -164,6 +164,9 @@ class Individual(BaseIndividual):
         for p in self.parameter_name_list:
             self[p].randomize()
 
+    def change_observer_options(self, options):
+        for p in self.parameter_name_list:
+            self[p].observer.options = options
 
     def make_basic(self, nullify_exponential_b_tt=False):
         for param in self.yaml.mode_config().parameters.values():

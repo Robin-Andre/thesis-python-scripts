@@ -2,6 +2,12 @@ from calibration.evolutionary.individual import BaseIndividual
 from calibration.evolutionary.population import Population
 from metrics.data import Data, Comparison
 
+class TuningOptions:
+    def __init__(self):
+        self.num_steps_soft_limit = 3
+        self.num_steps_hard_limit = 5
+        self.epsilon = 0.05
+
 
 def __do_population_shenanigans(copy_ind_1, population, draw, mode):
     if population is not None:
@@ -39,15 +45,14 @@ def run_and_set_fitness(individual, data, metric):
     individual.fitness = -value
 
 
-
-def tune(individual: BaseIndividual, data_target: Data, parameter, epsilon=0.05, population=None, draw=False, metric="ModalSplit_Default_Splits_sum_squared_error"):
+def tune(individual: BaseIndividual, data_target: Data, parameter, options=TuningOptions(), population=None, metric="ModalSplit_Default_Splits_sum_squared_error"):
 
     #print(f"Original Value {individual[parameter].value}")
 
     error = parameter.error(individual, data_target)
     l_errors = [(individual[parameter].value, error)]
-    #print(f"Errors {l_errors}")
-    if abs(error) < epsilon:
+    print(f"Errors {l_errors}")
+    if abs(error) < options.epsilon:
         print("Error too small. No optimization will be done")
         return individual
     #print(f"Error1 {error}")
@@ -61,16 +66,16 @@ def tune(individual: BaseIndividual, data_target: Data, parameter, epsilon=0.05,
     error = copy_ind_1[parameter].error(copy_ind_1, data_target)
 
     l_errors.append((copy_ind_1[parameter].value, error))
-    #print(f"Errors {l_errors}")
+    print(f"Errors {l_errors}")
     #print(f"Error2 {error}")
 
-    counter = 0
-    stop_criterion = 3
+    soft_counter = 0
+    hard_counter = 0
     best_error = min([x[1] for x in l_errors])
-    while abs(error) > epsilon and counter < stop_criterion:
+    while abs(error) > options.epsilon and soft_counter < options.num_steps_soft_limit and hard_counter < options.num_steps_hard_limit:
         #print(f"Current counter {counter}")
-        counter += 1
-
+        soft_counter += 1
+        hard_counter += 1
         estimate_value = copy_ind_1[parameter].observe_detailed(copy_ind_2, copy_ind_1, data_target)
         copy_ind_2 = copy_ind_1.copy()
         copy_ind_1[parameter].set(estimate_value)
@@ -82,10 +87,11 @@ def tune(individual: BaseIndividual, data_target: Data, parameter, epsilon=0.05,
         temp_error = copy_ind_1[parameter].error(copy_ind_1, data_target)
         if abs(temp_error) < abs(best_error):
             #print("Improvement Found")
-            counter = 0
+            soft_counter = 0
             best_error = temp_error
         error = temp_error
         l_errors.append((copy_ind_1[parameter].value, error))
+        print(l_errors)
 
         #print(f"Error3 {error}")
     #print("The error list:")
