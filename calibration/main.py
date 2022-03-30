@@ -136,7 +136,10 @@ def experiment_pyswarms_target_has_same_seed_time_metric(params):
         launch_pyswarms(params, i, "pyswarms_10_parameters_target_has_same_seed_time_metric", metric="TravelTime_Default_sum_squared_error")
 
 
-def experiment_meta_heuristics_destination_same_seed(params):
+def experiment_meta_heuristics_destination_same_seed():
+    params = simulation.default_yaml().get_all_dest_parameters_name([])
+    params.remove('b_cost')
+    params.remove('b_tt_acc_put')
     for i in [108, 109, 110]:
 
         launch_pygad_destination(params, i, "pygad_main_destination_same_seed")
@@ -144,6 +147,24 @@ def experiment_meta_heuristics_destination_same_seed(params):
         launch_pyswarms_destination(params, i, "pyswarms_main_destination_same_seed")
     for i in [107, 108,109, 110]:
         launch_spsa_destination(params, i, "spsa_main_destination_same_seed")
+
+
+def experiment_meta_heuristics_destination_same_seed_with_business():
+    params = simulation.default_yaml().get_all_dest_parameters_name(["business"])
+    params.remove('b_cost')
+    params.remove('b_tt_acc_put')
+    print(params)
+    metrict = "TravelDistance_All_sum_squared_error"
+
+    for i in [106, 107, 108]: #, 109, 110]:
+
+        launch_pygad_destination(params, i, "pygad_main_destination_same_seed_plus_business", metric=metrict)
+
+        launch_pyswarms_destination(params, i, "pyswarms_main_destination_same_seed_plus_business", metric=metrict)
+    for i in [106, 107, 108]:
+        launch_spsa_destination(params, i, "spsa_main_destination_same_seed_plus_business", metric=metrict)
+
+
 
 def experiment_random_target_individual(params):
 
@@ -183,11 +204,10 @@ def further_Exp(params):
         launch_my_algorithm(params, seed, exp_name, descriptor="myalgorithm_seed" + str(seed), d=target)
 
 if __name__ == "__main__":
-    x = simulation.default_yaml().get_all_dest_parameters_name([])
-    x.remove('b_cost' )
-    x.remove('b_tt_acc_put')
-    print(x)
-    experiment_meta_heuristics_destination_same_seed(x)
+
+    experiment_meta_heuristics_destination_same_seed_with_business()
+    exit()
+    experiment_meta_heuristics_destination_same_seed()
 
     #PARAMS = ["asc_car_d_mu", "age_0_17_on_b_tt_ped"]
    # PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu", "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
