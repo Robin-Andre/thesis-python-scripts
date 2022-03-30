@@ -1,4 +1,5 @@
 import math
+import os
 import time
 from math import radians, cos, sin, asin, sqrt
 from pathlib import Path
@@ -9,6 +10,7 @@ import pandas as pd
 import numpy as np
 
 from configurations import parameter, SPECS
+from definitions import ROOT_DIR
 
 
 def __make_unique_df(raw_data, selection_vector):
@@ -39,9 +41,9 @@ def create_plot_data(raw_data):
 
 
 DEFAULT_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone", "isIntrazonal", "travel_cost"]
+                  "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone", "isIntrazonal"]
 ADAPTED_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar", "isIntrazonal", "cost"]
+                  "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone", "isIntrazonal"]
 
 
 def create_traffic_demand_data(almost_raw_data, vector=ADAPTED_VECTOR):
@@ -184,7 +186,7 @@ def merge_travel_costs(data):
 
 def merge_data(data, household, person, zone_properties):
     data = merge_relief(data, zone_properties)
-    data = merge_travel_costs(data)
+    #data = merge_travel_costs(data)
     extract_intrazonal(data)
     data = extract_previous_trip(data)
     extract_big_car_fleet(household)
@@ -218,7 +220,7 @@ def read_in_cost_and_time():
     return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/time_and_costs.csv")
 
 def read_in_cost():
-    return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/TRAVEL_COST.csv")
+    return pandas.read_csv(ROOT_DIR + "/tests/resources/TRAVEL_COST.csv")
 
 def create_travel_distance_with_activity_type(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode", "activityType", "previousActivityType"]].copy()

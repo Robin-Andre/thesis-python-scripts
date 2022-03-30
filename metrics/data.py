@@ -13,6 +13,7 @@ import visualization
 from configurations.parameter import Parameter, ActivityGroup
 from metrics.metric import aggregate
 from metrics.trafficdemand import TrafficDemand
+from metrics.travelcost import TravelCost
 from metrics.traveldistance import TravelDistance
 from metrics.traveltime import TravelTime
 from metrics.zone_destination_traffic import ZoneDestinationTraffic
@@ -32,13 +33,14 @@ class Data:
         self.travel_time = TravelTime.from_raw_data(raw_data)
         self.travel_distance = TravelDistance.from_raw_data(raw_data)
         self.zone_destination = ZoneDestinationTraffic.from_raw_data(raw_data)
-        self.travel_costs = evaluation.create_travel_cost_data(raw_data)
+        self.travel_costs = TravelCost.from_raw_data(raw_data)
 
     def __eq__(self, other):
         return self.traffic_demand._data_frame.equals(other.traffic_demand._data_frame)\
                and self.travel_time._data_frame.equals(other.travel_time._data_frame) \
                and self.travel_distance._data_frame.equals(other.travel_distance._data_frame) \
-               and self.zone_destination._data_frame.equals(other.zone_destination._data_frame)
+               and self.zone_destination._data_frame.equals(other.zone_destination._data_frame) \
+               and self.travel_costs._data_frame.equals(other.travel_costs._data_frame)
 
     def empty(self):
         return all(v is None for v in [self.traffic_demand, self.travel_time, self.travel_distance])
@@ -48,6 +50,7 @@ class Data:
         self.safe_write(self.travel_time, path + "Time.csv")
         self.safe_write(self.travel_distance, path + "Distance.csv")
         self.safe_write(self.zone_destination, path + "ZoneDestination.csv")
+        self.safe_write(self.travel_costs, path + "TravelCosts.csv")
 
     def safe_write(self, write_object, path):
         if write_object is None:
@@ -60,6 +63,7 @@ class Data:
         self.travel_time = self.safe_load(TravelTime, path + "Time.csv")
         self.travel_distance = self.safe_load(TravelDistance, path + "Distance.csv")
         self.zone_destination = self.safe_load(ZoneDestinationTraffic, path + "ZoneDestination.csv")
+        self.travel_costs = self.safe_load(TravelCost, path + "ZoneDestination.csv")
 
     def safe_load(self, load_object_class, path):
         if not Path(path).exists():
@@ -72,6 +76,7 @@ class Data:
         self.travel_time.print()
         self.travel_distance.print()
         self.zone_destination.print()
+        self.travel_costs.print()
 
     def columns(self):
         return self.travel_time.columns()

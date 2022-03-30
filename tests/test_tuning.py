@@ -17,6 +17,12 @@ def helper(data, title, ref=None):
 
 class MyTestCase(unittest.TestCase):
 
+    def test_proper_main_parameter_getter(self):
+        self.assertEqual(my_algorithm.get_appropriate_string_from_mode_and_effect(1, "beta_cost"), "b_cost")
+        self.assertEqual(my_algorithm.get_appropriate_string_from_mode_and_effect(4, "beta_cost"), "b_cost_put")
+        self.assertEqual(my_algorithm.get_appropriate_string_from_mode_and_effect(3, "alpha"), "asc_ped_mu")
+        self.assertEqual(my_algorithm.get_appropriate_string_from_mode_and_effect(3, "beta_time"), "b_tt_ped")
+
     def test_tuning_algo(self):
         PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
                   "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
@@ -32,9 +38,9 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_cost_tuning(self):
-        PARAMS = ["b_cost"]
+        PARAMS = ["b_cost", "b_cost_put", "b_inc_high_on_b_cost_put", "b_inc_high_on_b_cost"]
         individual = Individual(param_list=PARAMS)
-        print(individual["b_cost"])
+        print(individual["b_inc_high_on_b_cost_put"])
         individual.run()
         data = individual.data
         my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error")
