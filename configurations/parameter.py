@@ -213,7 +213,7 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("eachAdultHasCar", get_carav_from_string),
                      ("isIntrazonal", get_intrazonal_from_string),
                      ("relief", get_relief_from_string),
-                     ("cost", get_cost_from_string),
+                     #TODO issue ("cost", get_cost_from_string),
                      ("parking", get_parking_from_string),
                      ("access_time", get_access_from_string),
                      ("sigma", get_sigma_from_string),
@@ -309,7 +309,7 @@ def group_economical_status(df):
 
 class EconomicalGroup(Enum):
     POOR = 1
-    RICH = 5
+    RICH = 4
     UNSPECIFIED = 3
 
     @classmethod

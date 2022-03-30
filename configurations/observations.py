@@ -12,6 +12,21 @@ class ObserverOptions:
     def __init__(self):
         self.use_better_travel_method = False
         self.quantiles = [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999]
+        self.alpha_error_dict = {
+            "b_cost": 10,
+            "b_cost_put": 0.5,
+            "b_inc_high_on_b_cost": 10,
+            "b_inc_high_on_b_cost_put": 0.5,
+        }
+        self.alpha_scaling_dict = {
+
+        }
+    def get_error_scaling(self, parameter):
+        x = self.alpha_error_dict.get(parameter.name, 0.01)
+        return x
+
+    def get_observation_scaling(self, p_name):
+        return self.alpha_scaling_dict.get(p_name, -0.1)
 
 
 class Observation(ABC):
@@ -41,8 +56,6 @@ def b_tt_exp_inverse(y):
     return math.log(-y)
 
 
-class CostObservation(Observation):
-    pass
 
 
 class ElasticityObservation(Observation):
@@ -177,7 +190,7 @@ class TimeModeObservation(Observation):
 
     def error(self, ind_1, target_data, parameter):
         z = self._other_error_method(ind_1, target_data, parameter)
-        alpha = 0.01
+        alpha = self.options.get_error_scaling(parameter)
         return z * alpha
         #return alpha * self._helper(ind_1, target_data, parameter)[1]
 
@@ -190,7 +203,7 @@ class TimeModeObservation(Observation):
         # it is recommended to attach an inverse function to the specific parameter to gain a linear impact on the
         # time component.
 
-        alpha = -0.1
+        alpha = self.options.get_observation_scaling(parameter)
 
         x_1 = ind_1[parameter].value  # x == -0.5
         y_1 = self.f(x_1)
@@ -319,4 +332,66 @@ class ModalSplitObservation(Observation):
             a = (z - z_1) / (z_2 - z_1)  # a is the linear scale factor based on the normalized parameters
         x_new = a * (x_2 - x_1) + x_1
         return x_new
+
+
+class CostObservation(TimeModeObservation):
+    def __init__(self):
+        self.f = lambda x: x
+        self.f_inverse = lambda x: x
+        self.verify_functions()
+        self.options = ObserverOptions()
+
+    def _get_data_subset(self, dataframe, parameter):
+        requirements = list(parameter.requirements.keys())
+        temp = dataframe.groupby(requirements + ["travel_cost"]).sum()["count"].to_frame()
+        for k, v in parameter.requirements.items():
+            temp = temp.iloc[temp.index.get_level_values(k) == parameter.requirements[k]]
+        return temp
+
+
+    def _other_error_method(self, ind_1, target_data, parameter):
+        x = self._get_data_subset(ind_1.data.travel_costs.get_data_frame(), parameter)
+        y = self._get_data_subset(target_data.travel_costs.get_data_frame(), parameter)
+
+        a = self._generate_quantiles(x)
+        b = self._generate_quantiles(y)
+        # print(f"Param {parameter}")
+        # print([a_i - b_i for a_i, b_i in zip(a, b)])
+        z = sum([a_i - b_i for a_i, b_i in zip(a, b)])
+        # print(z)
+        return z
+
+
+    def _generate_quantiles(self, frame):
+        # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
+        assert frame.index.names[-1] == "travel_cost"
+
+        cumulated_values = frame["count"].cumsum()
+        quantile_vals = cumulated_values.quantile(self.options.quantiles)
+
+        x = [(numpy.abs(cumulated_values - i)).argmin() for i in quantile_vals]
+
+        x_1_index = [numpy.where(cumulated_values < i)[0][-1] for i in quantile_vals]
+        x_2_index = [i + 1 for i in x_1_index]
+
+        t_1 = cumulated_values.take(x_1_index)
+        t_2 = cumulated_values.take(x_2_index)
+
+        y_1 = t_1.values
+        y_2 = t_2.values
+
+        x_1 = t_1.index.get_level_values(-1).values
+        x_2 = t_2.index.get_level_values(-1).values
+
+        y_target = quantile_vals.values
+        assert len(x_1) == len(x_2) == len(y_1) == len(y_2) == len(self.options.quantiles)
+        better_results = [self._interpolate(a, b, c, d, e) for a, b, c, d, e in zip(x_1, y_1, x_2, y_2, y_target)]
+        #(f"Better Interpolation: {better_results}")
+        q = cumulated_values.index.values[x]
+        #print(self.options.use_better_travel_method)
+        if self.options.use_better_travel_method:
+            return better_results
+        else:
+            return [split_tuples[-1] for split_tuples in q]
+
 

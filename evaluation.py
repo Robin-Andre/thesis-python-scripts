@@ -1,4 +1,5 @@
 import math
+import os
 import time
 from math import radians, cos, sin, asin, sqrt
 from pathlib import Path
@@ -9,6 +10,7 @@ import pandas as pd
 import numpy as np
 
 from configurations import parameter, SPECS
+from definitions import ROOT_DIR
 
 
 def __make_unique_df(raw_data, selection_vector):
@@ -41,7 +43,7 @@ def create_plot_data(raw_data):
 DEFAULT_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
                   "totalNumberOfCars", "nominalSize", "tripBeginDay", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone", "isIntrazonal"]
 ADAPTED_VECTOR = ["tripMode", "activityType", "age", "employment", "gender", "hasCommuterTicket", "economicalStatus",
-                  "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar", "isIntrazonal"]
+                  "totalNumberOfCars", "nominalSize", "workday", "previousMode", "eachAdultHasCar", "sourceZone", "targetZone", "isIntrazonal"]
 
 
 def create_traffic_demand_data(almost_raw_data, vector=ADAPTED_VECTOR):
@@ -78,7 +80,7 @@ def create_travel_time_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
 
 
 def create_travel_cost_data(almost_raw_data):
-    return merge_costs(almost_raw_data)
+    return get_travel_costs(almost_raw_data)
 
 def create_travel_distance_data_new(almost_raw_data, vector=ADAPTED_VECTOR):
     temp = almost_raw_data[["distanceInKm"] + vector].copy()
@@ -160,7 +162,7 @@ def merge_relief(data, zone_data):
     x["relief"] = x["relief"] >= 250
     return data.merge(x, left_on="targetZone", right_on="zoneId")
 
-def merge_costs(data):
+def get_travel_costs(data):
     """
     Gives a dataframe containing the costs based on trip mode and economical status. Used for b_cost, b_inc and b_cost_put
     """
@@ -174,9 +176,17 @@ def merge_costs(data):
     return z
 
 
+def merge_travel_costs(data):
+    """Merges Travel Cost onto data"""
+    temp = read_in_cost()
+    x = data.merge(temp, how='left', left_on=['sourceZone', 'targetZone', 'tripMode'], right_on=['sourceZone', 'targetZone', 'tripMode'])
+    #x.rename(columns={"travel_cost": 'cost'}, inplace=True)
+    return x
+
 
 def merge_data(data, household, person, zone_properties):
     data = merge_relief(data, zone_properties)
+    #data = merge_travel_costs(data)
     extract_intrazonal(data)
     data = extract_previous_trip(data)
     extract_big_car_fleet(household)
@@ -186,7 +196,7 @@ def merge_data(data, household, person, zone_properties):
 
     x = x[DEFAULT_VECTOR + ["tripBegin", "tripEnd", "durationTrip", "distanceInKm"]]
     x = group_data(x)
-    x.rename(columns={"tripBeginDay": "workday"}, inplace=True)
+    x.rename(columns={"tripBeginDay": "workday", "travel_cost": "cost"}, inplace=True)
     return x
 
 
@@ -210,7 +220,7 @@ def read_in_cost_and_time():
     return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/time_and_costs.csv")
 
 def read_in_cost():
-    return pandas.read_csv(SPECS.CWD + "data/rastatt/useable_matrices/TRAVEL_COST.csv")
+    return pandas.read_csv(ROOT_DIR + "/tests/resources/TRAVEL_COST.csv")
 
 def create_travel_distance_with_activity_type(raw_data):
     temp_df = raw_data[["distanceInKm", "tripMode", "activityType", "previousActivityType"]].copy()

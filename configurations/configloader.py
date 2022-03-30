@@ -173,11 +173,12 @@ class ModeChoiceConfig(Config):
 
         return param_list
 
+
     def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []
         for parameter in self.parameters.values():
             # Mode choice parameters always require a mode so checking for length 1 is sufficient
-            if len(parameter.requirements) == 1 and parameter.requirements["tripMode"] in requested_modes:
+            if len(parameter.requirements) == 1 and parameter.requirements["tripMode"] in requested_modes and not parameter.__contains__("_cost"):
                 param_list.append(parameter)
 
         return param_list
