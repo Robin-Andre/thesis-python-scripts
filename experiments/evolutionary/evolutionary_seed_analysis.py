@@ -20,16 +20,16 @@ def run(frac_of_pop, name):
     p = Population(param_vector=["asc_car_d_mu"], fraction_of_pop_size=frac_of_pop)
     p.set_target(ind.data)
 
-    for i in range(2, 51):
+    for i in range(49, 51):
         ind = p.seed_individual(i)
         ind.save(SPECS.EXP_PATH + "random_seeds_final/data/" + name + "/" + str(i))
     result = p.logger.print_csv()
     write(result, name, "random_seeds_final")
 
 def main():
-    run(0.02, "fraction_of_population_002")
-    run(0.05, "fraction_of_population_005")
-    run(0.25, "fraction_of_population_025")
+    #run(0.02, "fraction_of_population_002")
+    #run(0.05, "fraction_of_population_005")
+    #run(0.25, "fraction_of_population_025")
     run(1, "fraction_of_population_100")
 
 

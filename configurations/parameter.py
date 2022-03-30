@@ -1,7 +1,8 @@
 import random
 from enum import Enum
 
-from configurations.observations import TimeModeObservation, Observation, ModalSplitObservation, CostObservation, ElasticityObservation
+from configurations.observations import TimeModeObservation, Observation, ModalSplitObservation, CostObservation, \
+    ElasticityObservation, TransferTimeObservation
 
 
 def get_relief_from_string(param):
@@ -185,7 +186,16 @@ def get_access_from_string(param):
         return True
     return None
 
+def get_sigma_from_string(param):
+    if param.__contains__("_sig"):
+        return True
+    return None
 
+
+def get_transfer_from_string(param):
+    if param == "b_u_put":
+        return True
+    return None
 """
 This vector contains the names of the requirements set to a parameter  
 """
@@ -206,6 +216,8 @@ mode_and_decipher = [("tripMode", get_mode_from_string),
                      ("cost", get_cost_from_string),
                      ("parking", get_parking_from_string),
                      ("access_time", get_access_from_string),
+                     ("sigma", get_sigma_from_string),
+                     ("transfer", get_transfer_from_string),
                      # TODO Disabled due to difficulties with distance("distanceInKm", get_distance_from_string),
 
                      # All of the following methods have yet to be extracted from the simulation output.
@@ -379,8 +391,10 @@ def get_appropriate_observation_function(p_name):
         return TimeModeObservation(lambda x: x, lambda x: x)
     elif p_name.__contains__("_cost"):
         return CostObservation()
-    elif p_name.__contains__("_cost"):
+    elif p_name.__contains__("elasticity") or p_name == "b_park_car_d" or p_name == "b_logsum_acc_put":
         return ElasticityObservation()
+    elif p_name == "b_u_put":
+        return TransferTimeObservation()
     else:
         return ModalSplitObservation()
 

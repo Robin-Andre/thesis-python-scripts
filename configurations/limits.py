@@ -260,7 +260,11 @@ DESTINATION_CHOICE_LIMITS = {
 }
 
 DEFAULT_DICT = {
-
+    "b_logsum_pt": (0, 2),
+    "b_logsum_drive": (0, 2),
+    "b_logsum_pt_fix": (0, 2),
+    "b_logsum_drive_fix": (0, 2),
+    "b_attr": (0, 2)
 }
 
 

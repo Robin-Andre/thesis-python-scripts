@@ -4,5 +4,5 @@ other specifics
 """
 CWD = "C:/Users/bo5742/mobitopp-example-rastatt/"
 TEMP = "C:\\Users\\Admin\\Desktop\\master-thesis\\mobitopp-example-rastatt\\"
-EXP_PATH = "C:\\Users\\bo5742\\Desktop\\thesis-experiments\\"
+EXP_PATH = "D:\\master_thesis_final_results\\"
 NUMPY = "C:\\Users\\Admin\\Desktop\\master-thesis\\numpy_results\\"

@@ -182,7 +182,16 @@ class ModeChoiceConfig(Config):
 
         return param_list
 
+    def get_all_parameter_names_on_requirements(self, attribute_list, requested_modes=[0, 1, 2, 3, 4]):
+        param_list = []
+        assert "tripMode" in attribute_list
+        for parameter in self.parameters.values():
+            # Mode choice parameters always require a mode so checking for length 1 is sufficient
+            all_requirements_satisfied = set(parameter.requirements).issubset(set(attribute_list))
+            if all_requirements_satisfied and parameter.requirements["tripMode"] in requested_modes:
+                param_list.append(parameter.name)
 
+        return param_list
 
 
 class DestinationChoiceConfig(Config):
@@ -201,5 +210,14 @@ class DestinationChoiceConfig(Config):
 
         return param_list
 
+    def get_all_parameter_names_on_requirements(self, attribute_list, requested_modes=[0, 1, 2, 3, 4]):
+        param_list = []
+        for parameter in self.parameters.values():
+            # Mode choice parameters always require a mode so checking for length 1 is sufficient
+            all_requirements_satisfied = set(parameter.requirements).issubset(set(attribute_list))
+            if all_requirements_satisfied:
+                param_list.append(parameter.name)
+
+        return param_list
 
 

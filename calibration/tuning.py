@@ -7,6 +7,7 @@ class TuningOptions:
         self.num_steps_soft_limit = 3
         self.num_steps_hard_limit = 5
         self.epsilon = 0.05
+        self.number_iterations = 5
 
 
 def __do_population_shenanigans(copy_ind_1, population, draw, mode):

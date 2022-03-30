@@ -104,8 +104,11 @@ class ConfigTestCase(unittest.TestCase):
 
     def test_get_main_params(self):
         mc_c = configloader.ModeChoiceConfig(Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
+        print([x.name for x in mc_c.get_all_parameter_names_on_requirements(["tripMode", "age"])])
+        print([x.name for x in mc_c.get_all_parameter_names_on_requirements(["tripMode", "gender"])])
+        print([x.name for x in mc_c.get_all_parameter_names_on_requirements(["tripMode", "gender", "age"])])
         self.assertEqual(mc_c.get_main_parameters_name_only(requested_modes=[]), [])
-        self.assertEqual(mc_c.get_main_parameters_name_only(requested_modes=[0]), ["asc_bike_mu", "asc_bike_sig", "b_tt_bike_mu", "b_tt_bike_sig"])
+        self.assertEqual(mc_c.get_main_parameters_name_only(requested_modes=[0]), ["asc_bike_mu", "b_tt_bike_mu"])
 
     def test_set_list(self):
         mc_c = configloader.ModeChoiceConfig(

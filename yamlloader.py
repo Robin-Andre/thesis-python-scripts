@@ -58,6 +58,15 @@ class YAML:
                 return config
         return None
 
+    def get_all_dest_parameters_name(self, subconfig_list, use_main=True):
+        temp = []
+        if use_main:
+            temp = ([x for x in self.destination_config().parameters])
+        for sconf in subconfig_list:
+            assert sconf in ["business", "leisure", "service", "shopping"]
+            temp = temp + [(sconf, x) for x in self.activity_destination_config(sconf).parameters]
+        return temp
+
     # TODO mobitopp might not be at the same location
     def find_config(self, cwd, dict_entry1, dict_entry2):
         path = Path(cwd + self.data[dict_entry1][dict_entry2])
