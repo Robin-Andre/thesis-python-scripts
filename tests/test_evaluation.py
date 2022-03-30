@@ -37,7 +37,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_data_merge(self):
         x = evaluation.default_test_merge()
-        y = evaluation.merge_costs(x)
+        y = evaluation.get_travel_costs(x)
         self.assertIsNotNone(y)
 
     def test_readin_attractivities(self):

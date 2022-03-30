@@ -30,6 +30,15 @@ class MyTestCase(unittest.TestCase):
         my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error")
         my_algorithm.tune(PARAMS, data, "TravelTime_Default_sum_squared_error")
 
+
+    def test_cost_tuning(self):
+        PARAMS = ["b_cost"]
+        individual = Individual(param_list=PARAMS)
+        print(individual["b_cost"])
+        individual.run()
+        data = individual.data
+        my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error")
+
     def test_advanced_param_tuning(self):
         PARAMS = ["asc_car_d_mu", "female_on_asc_car_d"]
 
