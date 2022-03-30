@@ -69,7 +69,70 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=-1):
     print(result)
     return pop, result
 
-def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1):
+class Tuner:
+    def __init__(self, tuning_parameter_list, comparison_data, metric, seed=-1):
+        self.tuning_parameter_list = tuning_parameter_list
+        self.comparison_data = comparison_data
+        self.metric = metric
+        self.seed = seed
+        self.pop = Population()
+        self.pop.set_target(comparison_data)
+        self.individual = start_individual(tuning_parameter_list, comparison_data, metric, self.pop, seed)
+        self.opt = ObserverOptions()
+        self.opt.use_better_travel_method = True
+        self.individual.change_observer_options(self.opt)
+        self.func = execute_with_removal_and_readdal
+        self.tuning_options = TuningOptions()
+        self.tuning_options.epsilon = 0.02
+        self.tuning_options.num_steps_hard_limit = 3
+
+    def tune_beta_travel_cost(self):
+        self.individual = tune_travel_cost_parameters(self.tuning_parameter_list, self.individual, self.comparison_data, self.metric,
+                                                 self.tuning_options, self.pop, func=self.func)
+        assert self.individual.parameter_name_list == self.tuning_parameter_list
+
+    def tune_beta_travel_time(self):
+        self.individual = tune_travel_time_parameters(self.tuning_parameter_list, self.individual, self.comparison_data, self.metric,
+                                                 self.tuning_options, self.pop, func=self.func)
+        assert self.individual.parameter_name_list == self.tuning_parameter_list
+
+    def tune_alpha(self):
+        self.individual = tune_travel_time_parameters(self.tuning_parameter_list, self.individual, self.comparison_data, self.metric,
+                                                 self.tuning_options, self.pop, func=self.func)
+        assert self.individual.parameter_name_list == self.tuning_parameter_list
+
+    def print(self):
+        print(self.individual)
+
+    def error_result(self):
+        print(self.tuning_options.print_csv())
+    def result(self):
+        result = self.pop.logger.print_csv()
+
+        print(result)
+        return self.pop, result
+
+
+def subroutine_default(tuner):
+    tuner.tune_beta_travel_cost()
+    tuner.print()
+    tuner.tune_beta_travel_time()
+    tuner.print()
+    tuner.tune_alpha()
+    tuner.print()
+
+def subroutine_travel_cost_only_bad_recognition(tuner):
+    tuner.opt.use_better_travel_method = False
+    tuner.tune_beta_travel_cost()
+
+def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1, subroutine=subroutine_default):
+    t = Tuner(tuning_parameter_list, comparison_data, metric, seed)
+    subroutine(t)
+    t.error_result()
+    return t.result()
+
+
+"""def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1):
     pop = Population()
     pop.set_target(comparison_data)
     individual = start_individual(tuning_parameter_list, comparison_data, metric, pop, seed)
@@ -79,14 +142,16 @@ def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1):
     func = execute_with_removal_and_readdal
     tuning_options = TuningOptions()
     tuning_options.epsilon = 0.02
-    tuning_options.num_steps_hard_limit = 1
+    tuning_options.num_steps_hard_limit = 3
     individual = tune_travel_cost_parameters(tuning_parameter_list, individual, comparison_data, metric, tuning_options, pop, func=func)
-    assert individual.parameter_name_list == tuning_parameter_list
+    print(tuning_options.print_csv())
+    
     print(">>>>>>>>>>>>>>>>>>")
     print(individual)
     print(">>>>>>>>>>>>>>>>>>")
 
     individual = tune_travel_time_parameters(tuning_parameter_list, individual, comparison_data, metric, tuning_options, pop, func=func)
+    assert individual.parameter_name_list == tuning_parameter_list
     individual.parameter_name_list = tuning_parameter_list
     print(">>>>>>>>>>>>>>>>>>")
     print(individual)
@@ -96,6 +161,7 @@ def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1):
     tuning_options.epsilon = 0.005
     tuning_options.num_steps_hard_limit = 3
     individual = tune_asc_parameters(tuning_parameter_list, individual, comparison_data, metric, tuning_options, pop, func=func)
+    assert individual.parameter_name_list == tuning_parameter_list
     individual.parameter_name_list = tuning_parameter_list
     print(">>>>>>>>>>>>>>>>>>")
     print(individual)
@@ -105,7 +171,7 @@ def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1):
 
     print(result)
     return pop, result
-
+"""
 
 def temp2tune(tuning_parameter_list, comparison_data, metric):
     pop = Population()
