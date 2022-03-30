@@ -4,7 +4,7 @@ import numpy as np
 from qiskit.algorithms.optimizers import SPSA
 import mobitopp_execution as simulation
 
-from calibration.evolutionary.individual import Individual
+from calibration.evolutionary.individual import Individual, DestinationIndividual
 from calibration.evolutionary.population import Population
 from configurations import SPECS
 from metrics.data import Comparison
@@ -36,6 +36,12 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_na
     return params_optimized, result
 
 
+def metrics(comparision, metric):
+    x = comparision.mode_metrics.get(metric)
+    if x is None:
+        x = comparision.destination_metrics.get(metric)
+    return x
+
 def loss_factory(p_list, metric, data, population, experiment_name, descriptor, individual_constructor):
 
     def loss(x):
@@ -44,7 +50,7 @@ def loss_factory(p_list, metric, data, population, experiment_name, descriptor, 
         ind.set_list(list(x))
         ind.run()
         c = Comparison(ind.data, data)
-        value = c.mode_metrics[metric]
+        value = metrics(c, metric)
         ind.fitness = -value # Fitness has to be negative
         log_and_save_individual(ind, population, experiment_name, descriptor)
         print(value)

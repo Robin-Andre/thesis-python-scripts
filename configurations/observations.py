@@ -107,16 +107,14 @@ class TimeModeObservation(Observation):
         x_2 = t_2.index.get_level_values(-1).values
 
         y_target = quantile_vals.values
-        assert len(x_1) == len(x_2) == len(y_1) == len(y_2) == len(quants)
+        assert len(x_1) == len(x_2) == len(y_1) == len(y_2) == len(self.options.quantiles)
         better_results = [self._interpolate(a, b, c, d, e) for a, b, c, d, e in zip(x_1, y_1, x_2, y_2, y_target)]
         #(f"Better Interpolation: {better_results}")
         q = cumulated_values.index.values[x]
         #print(self.options.use_better_travel_method)
         if self.options.use_better_travel_method:
-            print("Using optimized quantile")
             return better_results
         else:
-            print("Using default quantile")
             return [split_tuples[-1] for split_tuples in q]
 
 

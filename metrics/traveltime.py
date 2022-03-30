@@ -24,7 +24,6 @@ class TravelTime(Metric):
 
     def sub_all(self, other):
         intersection = list(self.columns() & other.columns())
-        print(intersection)
         return subtract(self.get_data_frame(), other.get_data_frame(), intersection)
 
     def sub_none(self, other):

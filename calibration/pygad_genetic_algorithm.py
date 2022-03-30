@@ -94,6 +94,13 @@ def log_and_save_individual(individual, population, experiment_name, descriptor)
     population.logger.log_detailed(population, individual, increase_counter=True)
 
 
+def metrics(comparision, metric):
+    x = comparision.mode_metrics.get(metric)
+    if x is None:
+        x = comparision.destination_metrics.get(metric)
+    return x
+
+
 def fitness_func_factory(data, param_list, ind_constructor, metric, population, experiment_name, descriptor):
     p = Path(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor)
     p.mkdir(exist_ok=True)
@@ -105,7 +112,7 @@ def fitness_func_factory(data, param_list, ind_constructor, metric, population, 
 
         output = individual.run()
         c = Comparison(individual.data, data)
-        value = c.mode_metrics[metric]
+        value = metrics(c, metric)
         individual.fitness = -value
 
         log_and_save_individual(individual, population, experiment_name, descriptor)
