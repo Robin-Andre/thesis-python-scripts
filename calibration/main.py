@@ -157,10 +157,10 @@ def experiment_meta_heuristics_destination_same_seed_with_business():
     metrict = "TravelDistance_All_sum_squared_error"
 
     for i in [106, 107, 108]: #, 109, 110]:
-
+        launch_pyswarms_destination(params, i, "pyswarms_main_destination_same_seed_plus_business", metric=metrict)
         launch_pygad_destination(params, i, "pygad_main_destination_same_seed_plus_business", metric=metrict)
 
-        launch_pyswarms_destination(params, i, "pyswarms_main_destination_same_seed_plus_business", metric=metrict)
+
     for i in [106, 107, 108]:
         launch_spsa_destination(params, i, "spsa_main_destination_same_seed_plus_business", metric=metrict)
 
