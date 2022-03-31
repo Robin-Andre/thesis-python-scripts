@@ -11,7 +11,10 @@ from matplotlib import pyplot as plt
 class ObserverOptions:
     def __init__(self):
         self.use_better_travel_method = False
-        self.quantiles = [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999]
+        self.quantile_with_name = ("base", [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999])
+        self.quantiles = self.quantile_with_name[1]
+        self.step_size_if_equal = -0.1
+
         self.alpha_error_dict = {
             "b_cost": 10,
             "b_cost_put": 0.5,
@@ -21,12 +24,25 @@ class ObserverOptions:
         self.alpha_scaling_dict = {
 
         }
-    def get_error_scaling(self, parameter):
-        x = self.alpha_error_dict.get(parameter.name, 0.01)
+    def get_error_scaling(self, p_name):
+        x = self.alpha_error_dict.get(p_name, 0.01)
         return x
+
+    def set_quantile_with_name(self, name, quantiles):
+        self.quantile_with_name = (name, quantiles)
+        self.quantiles = quantiles
 
     def get_observation_scaling(self, p_name):
         return self.alpha_scaling_dict.get(p_name, -0.1)
+
+
+    @classmethod
+    def get_description(self):
+        return "used_better_approx, step_size_equal, quantile_name, error_scaling, observation_scaling"
+
+    def get_options_string(self, p_name):
+        return f"{self.use_better_travel_method}, {self.step_size_if_equal}, {self.quantile_with_name[0]}, {self.get_error_scaling(p_name)}, {self.get_observation_scaling(p_name)}"
+
 
 
 class Observation(ABC):
@@ -122,7 +138,7 @@ class TimeModeObservation(Observation):
         y_target = quantile_vals.values
         assert len(x_1) == len(x_2) == len(y_1) == len(y_2) == len(self.options.quantiles)
         better_results = [self._interpolate(a, b, c, d, e) for a, b, c, d, e in zip(x_1, y_1, x_2, y_2, y_target)]
-        #(f"Better Interpolation: {better_results}")
+        #print(f"Better Interpolation: {better_results}")
         q = cumulated_values.index.values[x]
         #print(self.options.use_better_travel_method)
         if self.options.use_better_travel_method:
@@ -190,7 +206,7 @@ class TimeModeObservation(Observation):
 
     def error(self, ind_1, target_data, parameter):
         z = self._other_error_method(ind_1, target_data, parameter)
-        alpha = self.options.get_error_scaling(parameter)
+        alpha = self.options.get_error_scaling(parameter.name)
         return z * alpha
         #return alpha * self._helper(ind_1, target_data, parameter)[1]
 
@@ -229,7 +245,7 @@ class TimeModeObservation(Observation):
         if m == 0 or abs(y_2 - y_1) < 0.001:
             print(f"Special case has entered the chat")
             # if y is positive that means that the b_tt value is too large and smaller travels should be preferred
-            step = -0.1 * numpy.sign(y_1)
+            step = self.options.step_size_if_equal * numpy.sign(y_1)
             x_new = x_1 + step
         else:
             assert m != 0
@@ -239,9 +255,12 @@ class TimeModeObservation(Observation):
             assert abs(y_1 - m * x_1 - c) < epsilon
             assert abs(y_2 - m * x_2 - c) < epsilon
         #print(f"New x before inverse: {x_new}")
-        if x_new >= 0:
-            x_new = -0.0001
-        return self.f_inverse(x_new)
+        try:
+            x = self.f_inverse(x_new)
+        except ValueError:
+            x = self.f_inverse(-0.0001)
+
+        return x
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
         #popt1 = self._helper(ind_1, target_data, parameter)

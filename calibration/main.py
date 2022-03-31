@@ -73,22 +73,23 @@ def launch_my_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descript
     write_helper(result, seed, exname, descriptor)
 
 
-def launch_my_algorithm_new(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None):
+def launch_my_algorithm_new(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None,
+                            algorithm_seed=-1, sub_r=my_algorithm.subroutine_default):
     random.seed(seed)
     build_folders(exname)
     if d is None:
         d = Individual(seed=individual_seed, param_list=param_list)
         d.run()
     data = d.data
-    pop, result = my_algorithm.tune_new(param_list, data, "ModalSplit_Default_Splits_sum_squared_error")
+    pop, result, error_log = my_algorithm.tune_new(param_list, data, "ModalSplit_Default_Splits_sum_squared_error", algorithm_seed, subroutine=sub_r)
     pop_save_helper(pop, seed, exname, descriptor)
     print(pop.best())
     write_helper(result, seed, exname, descriptor)
+    write_error_log_helper(error_log, seed, exname, descriptor)
 
 
 
-
-def launch_my_other_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None):
+"""def launch_my_other_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None):
     random.seed(seed)
     build_folders(exname)
     if d is None:
@@ -98,13 +99,19 @@ def launch_my_other_algorithm(param_list, seed, exname="myalgorithm_Unnamed", de
     pop, result = my_algorithm.temp2tune(param_list, data, "ModalSplit_Default_Splits_sum_squared_error")
     pop_save_helper(pop, seed, exname, descriptor)
     print(pop.best())
-    write_helper(result, seed, exname, descriptor)
+    write_helper(result, seed, exname, descriptor)"""
 
 def pop_save_helper(pop, seed, exname, descriptor):
     if descriptor is None:
         pop.save(SPECS.EXP_PATH + exname + "/data/seed" + str(seed) + "/")
     else:
         pop.save(SPECS.EXP_PATH + exname + "/data/" + descriptor + "/")
+
+def write_error_log_helper(result, seed, exname, descriptor):
+    if descriptor is None:
+        write(result, "seed" + str(seed) + "_errors", exname)
+    else:
+        write(result, descriptor + "_errors", exname)
 
 
 def write_helper(result, seed, exname, descriptor):
@@ -203,9 +210,38 @@ def further_Exp(params):
         launch_spsa(params, seed, exp_name, descriptor="spsa_seed" + str(seed), d=target, metric="TravelTime_Default_sum_squared_error")
         launch_my_algorithm(params, seed, exp_name, descriptor="myalgorithm_seed" + str(seed), d=target)
 
-if __name__ == "__main__":
+def _unnamed_launch_for_quantiles(params, name):
+    target_seeds = list(range(100, 105))
+    algo_seeds = list(range(42, 47))
+    for target_seed in target_seeds:
+        for algo_seed in algo_seeds:
+            launch_my_algorithm_new(params, target_seed, name, "FixedQuantilesTarget"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_fixed_quantiles)
 
-    experiment_meta_heuristics_destination_same_seed_with_business()
+            launch_my_algorithm_new(params, target_seed, name, "VariableQuantilesTarget"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_better_quantiles)
+
+def experiment_are_variable_quantiles_good():
+    params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+              "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+    _unnamed_launch_for_quantiles(params, "MyExperimentVariableQuantiles")
+
+def experiment_are_variable_quantiles_good_for_cost():
+    params = ["b_cost", "b_cost_put", "b_inc_high_on_b_cost", "b_inc_high_on_b_cost_put"]
+    _unnamed_launch_for_quantiles(params, "MyExperimentVariableQuantilesCost")
+
+
+
+if __name__ == "__main__":
+    #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+    #          "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+    experiment_are_variable_quantiles_good()
+    experiment_are_variable_quantiles_good_for_cost()
+    exit()
+    launch_my_algorithm_new(PARAMS, 2, "myalgo_test_run", descriptor="Diffseed2_2iters", algorithm_seed=13)
+    #experiment_meta_heuristics_destination_same_seed_with_business()
     exit()
     experiment_meta_heuristics_destination_same_seed()
 

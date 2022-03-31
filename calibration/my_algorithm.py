@@ -87,17 +87,20 @@ class Tuner:
         self.tuning_options.num_steps_hard_limit = 3
 
     def tune_beta_travel_cost(self):
+        print("Tuning B_COST")
         self.individual = tune_travel_cost_parameters(self.tuning_parameter_list, self.individual, self.comparison_data, self.metric,
                                                  self.tuning_options, self.pop, func=self.func)
         assert self.individual.parameter_name_list == self.tuning_parameter_list
 
     def tune_beta_travel_time(self):
+        print("Tuning B_TT")
         self.individual = tune_travel_time_parameters(self.tuning_parameter_list, self.individual, self.comparison_data, self.metric,
                                                  self.tuning_options, self.pop, func=self.func)
         assert self.individual.parameter_name_list == self.tuning_parameter_list
 
     def tune_alpha(self):
-        self.individual = tune_travel_time_parameters(self.tuning_parameter_list, self.individual, self.comparison_data, self.metric,
+        print("Tuning ASC")
+        self.individual = tune_asc_parameters(self.tuning_parameter_list, self.individual, self.comparison_data, self.metric,
                                                  self.tuning_options, self.pop, func=self.func)
         assert self.individual.parameter_name_list == self.tuning_parameter_list
 
@@ -105,7 +108,8 @@ class Tuner:
         print(self.individual)
 
     def error_result(self):
-        print(self.tuning_options.print_csv())
+        return self.tuning_options.print_csv()
+
     def result(self):
         result = self.pop.logger.print_csv()
 
@@ -121,57 +125,57 @@ def subroutine_default(tuner):
     tuner.tune_alpha()
     tuner.print()
 
-def subroutine_travel_cost_only_bad_recognition(tuner):
-    tuner.opt.use_better_travel_method = False
+
+def subroutine_fixed_quantiles(tuner):
+    tuner.opt.use_better_travel_method = False  # This disables quantile guessing so the quantiles are fixed
+    tuner.opt.set_quantile_with_name("basic_quantiles", [.1, .2, .3, .4, .5, .6, .7, .8, .9])
+    tuner.tuning_options.use_better_bounds_for_guessing = False
+
     tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
+def subroutine_better_quantiles(tuner):
+    tuner.opt.use_better_travel_method = True  # Quantiles are now calculated on a variable position
+    tuner.opt.set_quantile_with_name("basic_quantiles", [.1, .2, .3, .4, .5, .6, .7, .8, .9])
+    tuner.tuning_options.use_better_bounds_for_guessing = False
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
+def s2(tuner):
+    """
+    Optimizes only cost and uses the bad recognition with massive search depth to deliberately run into a softlock
+    """
+    tuner.opt.use_better_travel_method = True
+    tuner.opt.set_quantile_with_name("only5", [.5])
+    tuner.tuning_options.num_steps_soft_limit = 1
+    tuner.tuning_options.num_steps_hard_limit = 1
+    tuner.tuning_options.use_better_bounds_for_guessing = False
+    tuner.tune_beta_travel_cost()
+
+
+def s3(tuner):
+    tuner.opt.use_better_travel_method = True
+    tuner.opt.set_quantile_with_name("only5", [.5])
+    tuner.tuning_options.num_steps_soft_limit = 1
+    tuner.tuning_options.num_steps_hard_limit = 1
+    tuner.tuning_options.use_better_bounds_for_guessing = False
+    tuner.tune_beta_travel_time()
+    tuner.tuning_options.epsilon = 0.0000001
+    tuner.tune_alpha()
+
 
 def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1, subroutine=subroutine_default):
     t = Tuner(tuning_parameter_list, comparison_data, metric, seed)
     subroutine(t)
-    t.error_result()
-    return t.result()
+    print(t.error_result())
+    pop, result = t.result()
+    return pop, result, t.error_result()
 
-
-"""def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1):
-    pop = Population()
-    pop.set_target(comparison_data)
-    individual = start_individual(tuning_parameter_list, comparison_data, metric, pop, seed)
-    opt = ObserverOptions()
-    opt.use_better_travel_method = True
-    individual.change_observer_options(opt)
-    func = execute_with_removal_and_readdal
-    tuning_options = TuningOptions()
-    tuning_options.epsilon = 0.02
-    tuning_options.num_steps_hard_limit = 3
-    individual = tune_travel_cost_parameters(tuning_parameter_list, individual, comparison_data, metric, tuning_options, pop, func=func)
-    print(tuning_options.print_csv())
-    
-    print(">>>>>>>>>>>>>>>>>>")
-    print(individual)
-    print(">>>>>>>>>>>>>>>>>>")
-
-    individual = tune_travel_time_parameters(tuning_parameter_list, individual, comparison_data, metric, tuning_options, pop, func=func)
-    assert individual.parameter_name_list == tuning_parameter_list
-    individual.parameter_name_list = tuning_parameter_list
-    print(">>>>>>>>>>>>>>>>>>")
-    print(individual)
-    print(">>>>>>>>>>>>>>>>>>")
-
-    errors = sorted_errors(individual, comparison_data)
-    tuning_options.epsilon = 0.005
-    tuning_options.num_steps_hard_limit = 3
-    individual = tune_asc_parameters(tuning_parameter_list, individual, comparison_data, metric, tuning_options, pop, func=func)
-    assert individual.parameter_name_list == tuning_parameter_list
-    individual.parameter_name_list = tuning_parameter_list
-    print(">>>>>>>>>>>>>>>>>>")
-    print(individual)
-    print(">>>>>>>>>>>>>>>>>>")
-
-    result = pop.logger.print_csv()
-
-    print(result)
-    return pop, result
-"""
 
 def temp2tune(tuning_parameter_list, comparison_data, metric):
     pop = Population()
@@ -226,11 +230,9 @@ def execute_parameters_in_list(params, individual, comparison_data, metric, opt,
 
 
 def _help_tune_sublist(tuning_parameter_list, params, individual, comparison_data, metric, opt, population, func):
-    print(f"TEH {params}")
     if len(params) == 0:
         logging.warning("Warning list contains no parameters")
         return individual
-    print(params)
     ind = func(params, individual, comparison_data, metric, opt, population)
     ind.parameter_name_list = tuning_parameter_list
     return ind
