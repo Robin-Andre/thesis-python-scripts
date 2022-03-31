@@ -4,6 +4,7 @@ import visualization
 from calibration import tuning, my_algorithm
 from calibration.evolutionary.individual import Individual
 from calibration.evolutionary.population import Population
+from calibration.my_algorithm import s2, s3
 from configurations.observations import ObserverOptions
 from configurations.parameter import Parameter
 from metrics.data import Data
@@ -38,12 +39,19 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_cost_tuning(self):
-        PARAMS = ["b_cost", "b_cost_put", "b_inc_high_on_b_cost_put", "b_inc_high_on_b_cost"]
+        PARAMS = ["b_cost"]#, "b_cost_put", "b_inc_high_on_b_cost_put", "b_inc_high_on_b_cost"]
         individual = Individual(param_list=PARAMS)
         print(individual["b_inc_high_on_b_cost_put"])
         individual.run()
         data = individual.data
-        my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error")
+        my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error", subroutine=s2)
+
+    def test_s3_tuning(self):
+        PARAMS = ["b_tt_ped", "b_tt_car_p_mu", "asc_car_d_mu"]#, "b_cost_put", "b_inc_high_on_b_cost_put", "b_inc_high_on_b_cost"]
+        individual = Individual(param_list=PARAMS)
+        individual.run()
+        data = individual.data
+        my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error", subroutine=s3)
 
     def test_advanced_param_tuning(self):
         PARAMS = ["asc_car_d_mu", "female_on_asc_car_d"]

@@ -1,5 +1,6 @@
 from calibration.evolutionary.individual import BaseIndividual
 from calibration.evolutionary.population import Population
+from configurations.observations import ObserverOptions
 from metrics.data import Data, Comparison
 
 class TuningOptions:
@@ -12,12 +13,14 @@ class TuningOptions:
 
         self.error_logger = []
 
-    def append_to_logger(self, p_name, p_val, iter, error):
-        self.error_logger.append(f"{p_name}, {p_val}, {iter}, {error}")
+    def append_to_logger(self, p_name, p_val, iter, error, obs_options):
+        self.error_logger.append(f"{p_name}, {p_val}, {iter}, {error}, {self.num_steps_soft_limit},"
+                                 f" {self.num_steps_hard_limit}, {self.epsilon}, {self.number_iterations},"
+                                 f" {self.use_better_bounds_for_guessing}, {obs_options.get_options_string(p_name)}")
 
     def print_csv(self):
 
-        return "\n".join(["parameter_name, value, iteration, error"] + self.error_logger)
+        return "\n".join(["parameter_name, value, iteration, error, soft_limit, hard_limit, epsilon, num_iters_fixed, min_max_as_bounds, " + ObserverOptions.get_description()] + self.error_logger)
 
 def __do_population_shenanigans(copy_ind_1, population, draw, mode):
     if population is not None:
@@ -38,7 +41,7 @@ def log_and_save_individual(individual, population, experiment_name, descriptor)
     population.append(individual)
     population.logger.log_detailed(population, individual, increase_counter=True)
 
-    draw(individual, population.target)
+    # TODO manually disabled drawing by comment # draw(individual, population.target)
 
 
 def draw(ind, data):
@@ -72,7 +75,9 @@ def sort_errors_and_get_best_individuals(spec_error_list):
 def append_and_log_error(l_errors, individual, parameter, error, iter, options):
     l_errors.append((individual[parameter].value, error, individual))
     print(f"Errors {l_errors}")
-    options.append_to_logger(individual[parameter].name, individual[parameter].value, iter, error)
+    p = individual[parameter]
+    obs = p.observer
+    options.append_to_logger(p.name, p.value, iter, error, obs.options)
 
 
 def tune(individual: BaseIndividual, data_target: Data, parameter, options=TuningOptions(), population=None, metric="ModalSplit_Default_Splits_sum_squared_error"):
@@ -83,7 +88,6 @@ def tune(individual: BaseIndividual, data_target: Data, parameter, options=Tunin
 
     error = parameter.error(individual, data_target)
     append_and_log_error(l_errors, individual, parameter, error, hard_counter, options)
-
     if abs(error) < options.epsilon:
         print("Error too small. No optimization will be done")
         return individual

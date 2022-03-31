@@ -192,6 +192,14 @@ class ModeChoiceConfig(Config):
             if all_requirements_satisfied and parameter.requirements["tripMode"] in requested_modes:
                 param_list.append(parameter.name)
 
+        if "cost" in attribute_list:  # Hack to get cost into the list
+            param_list.append("b_cost")
+            param_list.append("b_cost_put")
+            if "economicalStatus" in attribute_list:
+                param_list.append("b_inc_high_on_b_cost")
+                param_list.append("b_inc_high_on_b_cost_put")
+
+
         return param_list
 
 
