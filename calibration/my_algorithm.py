@@ -5,6 +5,7 @@ from calibration import tuning
 from calibration.evolutionary.individual import Individual
 from calibration.evolutionary.population import Population
 from calibration.tuning import TuningOptions
+from configurations import SPECS
 from configurations.observations import ObserverOptions, ModalSplitObservation, TimeModeObservation
 from metrics.data import Comparison
 
@@ -17,8 +18,15 @@ def draw(ind, data):
 
 def log_and_save_individual(individual, population, experiment_name, descriptor):
     #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" +  str(population.logger.iteration))
-    population.append(individual)
+    if population is None:
+        return
+    if len(population) < 10:
+        population.append(individual)
+    else:
+        population.insert(individual)
+    individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" + str(population.logger.iteration))
     population.logger.log_detailed(population, individual, increase_counter=True)
+
 
 
 def set_fitness(individual, data, metric):
@@ -32,13 +40,13 @@ def sorted_errors(individual, comparison_data):
     print(errors)
     return errors
 
-def start_individual(param_list, comparison_data, metric, pop, seed):
+def start_individual(param_list, comparison_data, metric, pop, seed, ex_name, descriptor):
     individual = Individual(seed, param_list)
     start_values = individual.average_value_list()
     individual.set_list(start_values)
     individual.run()
     set_fitness(individual, comparison_data, metric) # Because the logging requires a desired metric for the comp to the other algos
-    log_and_save_individual(individual, pop, "", "") # Start element should be logged
+    log_and_save_individual(individual, pop, ex_name, descriptor) # Start element should be logged
     return individual
 
 
@@ -70,14 +78,14 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=-1):
     return pop, result
 
 class Tuner:
-    def __init__(self, tuning_parameter_list, comparison_data, metric, seed=-1):
+    def __init__(self, tuning_parameter_list, comparison_data, metric, seed=-1, ex_name="", descriptor=""):
         self.tuning_parameter_list = tuning_parameter_list
         self.comparison_data = comparison_data
         self.metric = metric
         self.seed = seed
         self.pop = Population()
         self.pop.set_target(comparison_data)
-        self.individual = start_individual(tuning_parameter_list, comparison_data, metric, self.pop, seed)
+        self.individual = start_individual(tuning_parameter_list, comparison_data, metric, self.pop, seed, ex_name, descriptor)
         self.opt = ObserverOptions()
         self.opt.use_better_travel_method = True
         self.individual.change_observer_options(self.opt)
@@ -169,8 +177,10 @@ def s3(tuner):
     tuner.tune_alpha()
 
 
-def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1, subroutine=subroutine_default):
-    t = Tuner(tuning_parameter_list, comparison_data, metric, seed)
+def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1, subroutine=subroutine_default, ex_name="", descriptor=""):
+    t = Tuner(tuning_parameter_list, comparison_data, metric, seed, ex_name=ex_name, descriptor=descriptor)
+    t.tuning_options.ex_name = ex_name
+    t.tuning_options.descriptor = descriptor
     subroutine(t)
     print(t.error_result())
     pop, result = t.result()
@@ -224,7 +234,7 @@ def execute_parameters_in_list(params, individual, comparison_data, metric, opt,
             p_name = min_tuple[0]
         print(f"The Name of the parameter SI: {p_name}")
         temp_individual = tuning.tune(temp_individual, comparison_data, individual[p_name], options=opt, population=population, metric=metric)
-        draw(temp_individual, comparison_data)
+        #draw(temp_individual, comparison_data)
     return temp_individual
 
 
@@ -268,7 +278,7 @@ def execute_with_removal(params, individual, comparison_data, metric, opt, popul
             p_name = min_tuple[0]
         print(f"The Name of the parameter IS: {p_name}")
         temp_individual = tuning.tune(temp_individual, comparison_data, individual[p_name], options=opt, population=population, metric=metric)
-        draw(temp_individual, comparison_data)
+        #draw(temp_individual, comparison_data)
         params_copy.remove(p_name)
         temp_individual.parameter_name_list = params_copy
         print(temp_individual.parameter_name_list)
@@ -323,7 +333,7 @@ def execute_with_removal_and_readdal(params, individual, comparison_data, metric
                 params_copy.append(main_p)
         print(f"The Name of the parameter IS: {p_name}")
         temp_individual = tuning.tune(temp_individual, comparison_data, individual[p_name], options=opt, population=population, metric=metric)
-        draw(temp_individual, comparison_data)
+        #draw(temp_individual, comparison_data)
         params_copy.remove(p_name)
         temp_individual.parameter_name_list = params_copy
         print(temp_individual.parameter_name_list)

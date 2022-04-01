@@ -89,7 +89,7 @@ def write(result, experiment, folder):
 
 
 def log_and_save_individual(individual, population, experiment_name, descriptor):
-    individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" +  str(population.logger.iteration))
+    individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" + str(population.logger.iteration))
     population.append(individual)
     population.logger.log_detailed(population, individual, increase_counter=True)
 

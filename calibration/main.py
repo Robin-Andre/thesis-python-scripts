@@ -74,15 +74,16 @@ def launch_my_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descript
 
 
 def launch_my_algorithm_new(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None,
-                            algorithm_seed=-1, sub_r=my_algorithm.subroutine_default):
+                            algorithm_seed=-1, sub_r=my_algorithm.subroutine_default, metric="TravelTime_Default_sum_squared_error"):
     random.seed(seed)
     build_folders(exname)
     if d is None:
         d = Individual(seed=individual_seed, param_list=param_list)
         d.run()
     data = d.data
-    pop, result, error_log = my_algorithm.tune_new(param_list, data, "ModalSplit_Default_Splits_sum_squared_error", algorithm_seed, subroutine=sub_r)
-    pop_save_helper(pop, seed, exname, descriptor)
+    pop, result, error_log = my_algorithm.tune_new(param_list, data, metric,
+                                                   algorithm_seed, subroutine=sub_r, ex_name=exname, descriptor=descriptor)
+    #pop_save_helper(pop, seed, exname, descriptor)
     print(pop.best())
     write_helper(result, seed, exname, descriptor)
     write_error_log_helper(error_log, seed, exname, descriptor)
@@ -233,14 +234,33 @@ def experiment_are_variable_quantiles_good_for_cost():
     _unnamed_launch_for_quantiles(params, "MyExperimentVariableQuantilesCost")
 
 
+def experiment_full_launch_my_algorithm():
+    reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
+            'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+    params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+    target_seeds = list(range(100, 102))
+    algo_seeds = list(range(42, 44))
+    for target_seed in target_seeds:
+        for algo_seed in algo_seeds:
+            launch_my_algorithm_new(params, target_seed, "MyAlgorithmFullMode", "FixedQuantilesTarget"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_fixed_quantiles,
+                                    metric="TravelTime_All_sum_squared_error")
 
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
     #          "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+    #launch_my_algorithm_new(PARAMS, 2, "myalgo_test_run", descriptor="Diffseed2_2iters", algorithm_seed=13)
+    #exit(0)
+
+    experiment_full_launch_my_algorithm()
+    exit(0)
+
+
     experiment_are_variable_quantiles_good()
     experiment_are_variable_quantiles_good_for_cost()
     exit()
-    launch_my_algorithm_new(PARAMS, 2, "myalgo_test_run", descriptor="Diffseed2_2iters", algorithm_seed=13)
+
     #experiment_meta_heuristics_destination_same_seed_with_business()
     exit()
     experiment_meta_heuristics_destination_same_seed()

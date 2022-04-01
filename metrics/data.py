@@ -405,8 +405,8 @@ class Comparison:
 
 
     def apply_on_all_sub_methods(self, input_obj, comparison_obj, name, string, use_dest_dict=False):
-        self.apply_all_metrics(input_obj, comparison_obj, name + "_Default_", string, use_dest_dict)
-        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "_All_", string, use_dest_dict)
+        self.apply_all_metrics(input_obj, comparison_obj, name + "_All_", string, use_dest_dict)
+        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "_Default_", string, use_dest_dict)
         self.apply_all_metrics_generic(input_obj, comparison_obj, name + "_None_", string, use_dest_dict)
 
     def __helper(self, input_obj, comparison_obj, name, diff, string, use_dest_dict=False):
