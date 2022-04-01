@@ -8,7 +8,7 @@ from calibration.my_algorithm import s2, s3
 from configurations.observations import ObserverOptions
 from configurations.parameter import Parameter
 from metrics.data import Data
-
+import mobitopp_execution as simulation
 
 def helper(data, title, ref=None):
     visualization.draw_grouped_modal_split(data.get_grouped_modal_split(["gender", "age"]), title)
@@ -52,6 +52,17 @@ class MyTestCase(unittest.TestCase):
         individual.run()
         data = individual.data
         my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error", subroutine=s3)
+
+    def test_mega_parameter_set_tuning(self):
+        reqs = ['workday', 'gender', 'employment',  'age', 'activityType',
+                'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+        # ['HasEBikeNotImplemented','relief',"parking", 'HasCSMembershipNotImplemented', 'access_time',, 'sigma', 'transfer',
+
+        params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+        individual = Individual(param_list=params)
+        individual.run()
+        data = individual.data
+        my_algorithm.tune_new(params, data, "TravelTime_Default_sum_squared_error")
 
     def test_advanced_param_tuning(self):
         PARAMS = ["asc_car_d_mu", "female_on_asc_car_d"]

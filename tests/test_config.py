@@ -111,6 +111,11 @@ class ConfigTestCase(unittest.TestCase):
         self.assertEqual(mc_c.get_main_parameters_name_only(requested_modes=[]), [])
         self.assertEqual(mc_c.get_main_parameters_name_only(requested_modes=[0]), ["asc_bike_mu", "b_tt_bike_mu"])
 
+    def test_get_options(self):
+        mc_c = configloader.ModeChoiceConfig(
+            Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))
+        print(mc_c.get_all_requirement_options())
+
     def test_set_list(self):
         mc_c = configloader.ModeChoiceConfig(
             Path("resources/example_config_load/configs/mode_choice_main_parameters.txt"))

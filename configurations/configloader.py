@@ -163,7 +163,13 @@ class ModeChoiceConfig(Config):
                 p.randomize_with_limits(p.lower_bound, p.lower_bound)
                 #p.randomize_with_limits(p.lower_bound, (p.upper_bound + p.lower_bound) / 2)
 
-    # TODO rename to "you only get the strings here"
+    def get_all_requirement_options(self):
+        options = set()
+        for parameter in self.parameters.values():
+            options = options.union(set(parameter.requirements.keys()))
+
+        return list(options)
+
     def get_main_parameters_name_only(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []
         for parameter in self.parameters.values():
@@ -191,7 +197,10 @@ class ModeChoiceConfig(Config):
             all_requirements_satisfied = set(parameter.requirements).issubset(set(attribute_list))
             if all_requirements_satisfied and parameter.requirements["tripMode"] in requested_modes:
                 param_list.append(parameter.name)
-
+        param_list.remove("b_cost")
+        param_list.remove("b_cost_put")
+        param_list.remove("b_inc_high_on_b_cost")
+        param_list.remove("b_inc_high_on_b_cost_put")
         if "cost" in attribute_list:  # Hack to get cost into the list
             param_list.append("b_cost")
             param_list.append("b_cost_put")
