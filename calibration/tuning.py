@@ -42,11 +42,9 @@ def log_and_save_individual(individual, population, experiment_name, descriptor)
     #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" +  str(population.logger.iteration))
     if population is None:
         return
-    if len(population) < 10:
-        population.append(individual)
-    else:
-        population.insert(individual)
-    individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" + str(population.logger.iteration))
+    population.append(individual.copy())
+
+    #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" + str(population.logger.iteration))
     population.logger.log_detailed(population, individual, increase_counter=True)
 
     # TODO manually disabled drawing by comment # draw(individual, population.target)
@@ -81,7 +79,7 @@ def sort_errors_and_get_best_individuals(spec_error_list):
     return values
 
 def append_and_log_error(l_errors, individual, parameter, error, iter, options):
-    l_errors.append((individual[parameter].value, error, individual))
+    l_errors.append((individual[parameter].value, error, individual.copy()))
     print(f"Errors {l_errors}")
     p = individual[parameter]
     obs = p.observer
@@ -89,7 +87,7 @@ def append_and_log_error(l_errors, individual, parameter, error, iter, options):
 
 
 def tune(individual: BaseIndividual, data_target: Data, parameter, options=TuningOptions(), population=None,
-         metric="ModalSplit_Default_Splits_sum_squared_error", ex_name="", descriptor=""):
+         metric="ModalSplit_Default_Splits_sum_squared_error"):
     soft_counter = 0
     hard_counter = -1
     l_errors = []

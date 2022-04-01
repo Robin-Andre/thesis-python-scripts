@@ -20,11 +20,10 @@ def log_and_save_individual(individual, population, experiment_name, descriptor)
     #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" +  str(population.logger.iteration))
     if population is None:
         return
-    if len(population) < 10:
-        population.append(individual)
-    else:
-        population.insert(individual)
-    individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" + str(population.logger.iteration))
+
+    population.append(individual)
+
+    #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" + str(population.logger.iteration))
     population.logger.log_detailed(population, individual, increase_counter=True)
 
 

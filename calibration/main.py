@@ -83,7 +83,7 @@ def launch_my_algorithm_new(param_list, seed, exname="myalgorithm_Unnamed", desc
     data = d.data
     pop, result, error_log = my_algorithm.tune_new(param_list, data, metric,
                                                    algorithm_seed, subroutine=sub_r, ex_name=exname, descriptor=descriptor)
-    #pop_save_helper(pop, seed, exname, descriptor)
+    pop_save_helper(pop, seed, exname, descriptor)
     print(pop.best())
     write_helper(result, seed, exname, descriptor)
     write_error_log_helper(error_log, seed, exname, descriptor)
@@ -246,7 +246,7 @@ def experiment_full_launch_my_algorithm():
                                     + str(target_seed) + "_Algo" + str(algo_seed),
                                     algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_fixed_quantiles,
                                     metric="TravelTime_All_sum_squared_error")
-
+#https://github.com/Robin-Andre/thesis-python-scripts.git
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
     #          "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
