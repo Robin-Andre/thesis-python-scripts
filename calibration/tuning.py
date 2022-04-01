@@ -1,5 +1,6 @@
 from calibration.evolutionary.individual import BaseIndividual
 from calibration.evolutionary.population import Population
+from configurations import SPECS
 from configurations.observations import ObserverOptions
 from metrics.data import Data, Comparison
 
@@ -10,6 +11,9 @@ class TuningOptions:
         self.epsilon = 0.05
         self.number_iterations = 5
         self.use_better_bounds_for_guessing = True
+
+        self.ex_name = ""
+        self.descriptor = ""
 
         self.error_logger = []
 
@@ -38,7 +42,9 @@ def log_and_save_individual(individual, population, experiment_name, descriptor)
     #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" +  str(population.logger.iteration))
     if population is None:
         return
-    population.append(individual)
+    population.append(individual.copy())
+
+    #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" + str(population.logger.iteration))
     population.logger.log_detailed(population, individual, increase_counter=True)
 
     # TODO manually disabled drawing by comment # draw(individual, population.target)
@@ -73,14 +79,15 @@ def sort_errors_and_get_best_individuals(spec_error_list):
     return values
 
 def append_and_log_error(l_errors, individual, parameter, error, iter, options):
-    l_errors.append((individual[parameter].value, error, individual))
+    l_errors.append((individual[parameter].value, error, individual.copy()))
     print(f"Errors {l_errors}")
     p = individual[parameter]
     obs = p.observer
     options.append_to_logger(p.name, p.value, iter, error, obs.options)
 
 
-def tune(individual: BaseIndividual, data_target: Data, parameter, options=TuningOptions(), population=None, metric="ModalSplit_Default_Splits_sum_squared_error"):
+def tune(individual: BaseIndividual, data_target: Data, parameter, options=TuningOptions(), population=None,
+         metric="ModalSplit_Default_Splits_sum_squared_error"):
     soft_counter = 0
     hard_counter = -1
     l_errors = []
@@ -99,7 +106,7 @@ def tune(individual: BaseIndividual, data_target: Data, parameter, options=Tunin
     run_and_set_fitness(copy_ind_1, data_target, metric)
     hard_counter += 1
     #__do_population_shenanigans(copy_ind_1, population, draw, mode=parameter.requirements["tripMode"])
-    log_and_save_individual(copy_ind_1, population, "", "")
+    log_and_save_individual(copy_ind_1, population, options.ex_name, options.descriptor)
     error = copy_ind_1[parameter].error(copy_ind_1, data_target)
     append_and_log_error(l_errors, copy_ind_1, parameter, error, hard_counter, options)
     #print(f"Error2 {error}")
@@ -121,7 +128,7 @@ def tune(individual: BaseIndividual, data_target: Data, parameter, options=Tunin
         #print(copy_ind_1[parameter])
 
         run_and_set_fitness(copy_ind_1, data_target, metric)
-        log_and_save_individual(copy_ind_1, population, "", "")
+        log_and_save_individual(copy_ind_1, population, options.ex_name, options.descriptor)
         temp_error = copy_ind_1[parameter].error(copy_ind_1, data_target)
         if abs(temp_error) < abs(best_error):
             #print("Improvement Found")
@@ -137,11 +144,6 @@ def tune(individual: BaseIndividual, data_target: Data, parameter, options=Tunin
     copy_ind_1[parameter].set(best_result[0])
 
     return copy_ind_1
-
-def search_parameter_optimum(individual: BaseIndividual, data_target: Data, parameter):
-    low = parameter.lower_bound
-    up = parameter.upper_bound
-
 
 
 def tune_strategy1(individual: BaseIndividual, data_target: Data, epsilon, rounds=10):
