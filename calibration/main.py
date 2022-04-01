@@ -237,8 +237,9 @@ def experiment_are_variable_quantiles_good_for_cost():
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
     #          "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    experiment_are_variable_quantiles_good()
+
     experiment_are_variable_quantiles_good_for_cost()
+    experiment_are_variable_quantiles_good()
     exit()
     launch_my_algorithm_new(PARAMS, 2, "myalgo_test_run", descriptor="Diffseed2_2iters", algorithm_seed=13)
     #experiment_meta_heuristics_destination_same_seed_with_business()

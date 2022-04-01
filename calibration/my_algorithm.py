@@ -10,10 +10,11 @@ from metrics.data import Comparison
 
 
 def draw(ind, data):
-    ind.data.draw_modal_split(reference=data)
-    x = ind.data.travel_time.draw(reference=data.travel_time)
+    pass
+    #ind.data.draw_modal_split(reference=data)
+    #x = ind.data.travel_time.draw(reference=data.travel_time)
 
-    x.show()
+    #x.show()
 
 def log_and_save_individual(individual, population, experiment_name, descriptor):
     #individual.save(SPECS.EXP_PATH + experiment_name + "/data/" + descriptor + "/" +  str(population.logger.iteration))
