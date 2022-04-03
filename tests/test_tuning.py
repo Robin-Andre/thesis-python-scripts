@@ -62,7 +62,9 @@ class MyTestCase(unittest.TestCase):
         individual = Individual(param_list=params)
         individual.run()
         data = individual.data
-        my_algorithm.tune_new(params, data, "TravelTime_Default_sum_squared_error")
+        print(individual.errors(data))
+
+        #my_algorithm.tune_new(params, data, "TravelTime_Default_sum_squared_error")
 
     def test_advanced_param_tuning(self):
         PARAMS = ["asc_car_d_mu", "female_on_asc_car_d"]
@@ -76,6 +78,27 @@ class MyTestCase(unittest.TestCase):
         data = individual.data
         my_algorithm.tune_new(PARAMS, data, "TravelTime_Default_sum_squared_error")
         my_algorithm.tune(PARAMS, data, "TravelTime_Default_sum_squared_error")
+
+    def test_arbwo_tuning(self):
+        reqs = ["nominalSize", "tripMode"]
+
+        params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+        print(params)
+        params = ["hhgr_2_on_asc_car_d"]
+        individual = Individual(param_list=params)
+        individual.run()
+        data = individual.data
+        my_algorithm.tune_new(params, data, "TravelTime_Default_sum_squared_error")
+
+    def test_hhgr_tuning(self):
+        reqs = ["workday", "tripMode"]
+
+        params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+        params = ["b_arbwo_ped"]
+        individual = Individual(param_list=params)
+        individual.run()
+        data = individual.data
+        my_algorithm.tune_new(params, data, "TravelTime_Default_sum_squared_error")
 
 
     #@unittest.skip("Not a test but a convenience run")
