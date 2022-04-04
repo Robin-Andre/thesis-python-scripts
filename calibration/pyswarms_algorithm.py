@@ -26,7 +26,7 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_na
     options = {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
     optimizer = GlobalBestPSO(n_particles=10, dimensions=len(tuning_parameter_list), options=options, bounds=bounds)
 
-    cost, pos = optimizer.optimize(loss_function, iters=10)
+    cost, pos = optimizer.optimize(loss_function, iters=20)
     print(pos)
     result = pop.logger.print_csv()
     print(result)

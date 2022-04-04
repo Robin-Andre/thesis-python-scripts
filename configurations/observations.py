@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 class ObserverOptions:
     def __init__(self):
         self.use_better_travel_method = False
-        self.quantile_with_name = ("base", [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999])
+        self.quantile_with_name = ("ExtraQuantilesForLongTravels", [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999])
         self.quantiles = self.quantile_with_name[1]
         self.step_size_if_equal = -0.1
 
@@ -206,7 +206,7 @@ class TimeModeObservation(Observation):
 
     def error(self, ind_1, target_data, parameter):
         z = self._other_error_method(ind_1, target_data, parameter)
-        alpha = self.options.get_error_scaling(parameter.name)
+        alpha = self.options.get_error_scaling(parameter.name) * 10 / len(self.options.quantiles)
         return z * alpha
         #return alpha * self._helper(ind_1, target_data, parameter)[1]
 
@@ -371,7 +371,15 @@ class CostObservation(TimeModeObservation):
     def _other_error_method(self, ind_1, target_data, parameter):
         x = self._get_data_subset(ind_1.data.travel_costs.get_data_frame(), parameter)
         y = self._get_data_subset(target_data.travel_costs.get_data_frame(), parameter)
-
+        if len(x) == 0 and len(y) == 0:
+            logging.warning("Bad quantiles, none exist")
+            return 0
+        elif len(x) == 0:
+            logging.warning("Bad quantiles x doesnt exist")
+            return sum(self._generate_quantiles(y))
+        elif len(y) == 0:
+            logging.warning("Bad quantiles y doesnt exist")
+            return sum(self._generate_quantiles(x))
         a = self._generate_quantiles(x)
         b = self._generate_quantiles(y)
         # print(f"Param {parameter}")

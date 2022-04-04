@@ -172,7 +172,20 @@ def experiment_meta_heuristics_destination_same_seed_with_business():
     for i in [106, 107, 108]:
         launch_spsa_destination(params, i, "spsa_main_destination_same_seed_plus_business", metric=metrict)
 
+def experiment_meta_heuristics_destination_same_seed_with_all_modes():
+    params = simulation.default_yaml().get_all_dest_parameters_name(["business", "leisure", "shopping", "service"])
+    params.remove('b_cost')
+    params.remove('b_tt_acc_put')
+    print(params)
+    metrict = "TravelDistance_All_sum_squared_error"
 
+    for i in [106, 107, 108]: #, 109, 110]:
+        launch_pyswarms_destination(params, i, "pyswarms_main_destination_same_seed_plus_all", metric=metrict)
+        launch_pygad_destination(params, i, "pygad_main_destination_same_seed_plus_all", metric=metrict)
+
+
+    for i in [106, 107, 108]:
+        launch_spsa_destination(params, i, "spsa_main_destination_same_seed_plus_all", metric=metrict)
 
 def experiment_random_target_individual(params):
 
@@ -211,6 +224,8 @@ def further_Exp(params):
         launch_spsa(params, seed, exp_name, descriptor="spsa_seed" + str(seed), d=target, metric="TravelTime_Default_sum_squared_error")
         launch_my_algorithm(params, seed, exp_name, descriptor="myalgorithm_seed" + str(seed), d=target)
 
+
+
 def _unnamed_launch_for_quantiles(params, name):
     target_seeds = list(range(100, 105))
     algo_seeds = list(range(42, 47))
@@ -224,14 +239,82 @@ def _unnamed_launch_for_quantiles(params, name):
                                     + str(target_seed) + "_Algo" + str(algo_seed),
                                     algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_better_quantiles)
 
+
+def _unnamed_launch_for_better_guessing(params, name):
+    target_seeds = list(range(100, 105))
+    algo_seeds = list(range(42, 47))
+    for target_seed in target_seeds:
+        for algo_seed in algo_seeds:
+            launch_my_algorithm_new(params, target_seed, name, "FixedQuantilesBetterBounds"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_fixed_quantiles_better_bounds_guessing)
+
+            launch_my_algorithm_new(params, target_seed, name, "VariableQuantilesBetterBounds"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_better_quantiles_better_bounds_guessing)
+
+
+def experiment_different_quantiles():
+    params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+              "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+    target_seeds = list(range(100, 105))
+    algo_seeds = list(range(42, 47))
+    for target_seed in target_seeds:
+        for algo_seed in algo_seeds:
+            launch_my_algorithm_new(params, target_seed, "MyExperimentQuantiles", "SimpleQuantile"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_simple_quantile)
+            launch_my_algorithm_new(params, target_seed, "MyExperimentQuantiles", "ThreeQuantiles"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_medium_precision_quantile)
+
+            launch_my_algorithm_new(params, target_seed, "MyExperimentQuantiles", "QuantilesFocusOnLong"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_shifted_to_long_travel_precision_quantile)
+
+            launch_my_algorithm_new(params, target_seed, "MyExperimentQuantiles", "HundredQuantiles"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_high_precision_quantile)
+
+def experiment_very_high_precision():
+    params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+              "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+    target_seeds = list(range(100, 105))
+    algo_seeds = list(range(42, 47))
+    for target_seed in target_seeds:
+        for algo_seed in algo_seeds:
+            launch_my_algorithm_new(params, target_seed, "MyExperimentVeryHighPrecision", "PreciseSubroutine"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_extremely_high_precision)
+
+def experiment_which_error_correction_method_is_better():
+    params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+              "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+    _unnamed_launch_for_better_guessing(params, "MyExperimentBetterErrorGuessing")
+
 def experiment_are_variable_quantiles_good():
     params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
               "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    _unnamed_launch_for_quantiles(params, "MyExperimentVariableQuantiles")
+    _unnamed_launch_for_quantiles(params, "MyExperimentVariableQuantilesFixedOutput")
 
 def experiment_are_variable_quantiles_good_for_cost():
     params = ["b_cost", "b_cost_put", "b_inc_high_on_b_cost", "b_inc_high_on_b_cost_put"]
-    _unnamed_launch_for_quantiles(params, "MyExperimentVariableQuantilesCost")
+    _unnamed_launch_for_quantiles(params, "MyExperimentVariableQuantilesCostFixedOutput")
+
+def experiment_tuning_alpha_before_beta():
+    params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+              "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+    target_seeds = list(range(100, 105))
+    algo_seeds = list(range(42, 47))
+    for target_seed in target_seeds:
+        for algo_seed in algo_seeds:
+            launch_my_algorithm_new(params, target_seed, "tuningAlphabeforeBeta", "AlphaBeforeBeta"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_alpha_before_beta)
+
+            launch_my_algorithm_new(params, target_seed, "tuningAlphabeforeBeta", "BetaBeforeAlpha"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_default)
 
 
 def experiment_full_launch_my_algorithm():
@@ -250,9 +333,14 @@ def experiment_full_launch_my_algorithm():
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
     #          "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    experiment_are_variable_quantiles_good()
-    experiment_are_variable_quantiles_good_for_cost()
-    experiment_are_variable_quantiles_good()
+    experiment_different_quantiles()
+    #experiment_tuning_alpha_before_beta()
+
+    #experiment_very_high_precision()
+
+    #experiment_which_error_correction_method_is_better()
+    #experiment_are_variable_quantiles_good()
+    #experiment_are_variable_quantiles_good_for_cost()
     exit()
     launch_my_algorithm_new(PARAMS, 2, "myalgo_test_run", descriptor="Diffseed2_2iters", algorithm_seed=13)
     #experiment_meta_heuristics_destination_same_seed_with_business()

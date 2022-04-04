@@ -134,6 +134,66 @@ def subroutine_default(tuner):
     tuner.print()
 
 
+def subroutine_simple_quantile(tuner):
+    tuner.opt.use_better_travel_method = True
+    tuner.opt.set_quantile_with_name("trivial", [.5])
+    tuner.tuning_options.use_better_bounds_for_guessing = True
+    tuner.tuning_options.num_steps_hard_limit = 10
+    tuner.tuning_options.num_steps_soft_limit = 5
+    tuner.tuning_options.epsilon = 0.001
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
+def subroutine_medium_precision_quantile(tuner):
+    tuner.opt.use_better_travel_method = True
+    tuner.opt.set_quantile_with_name("three_quantiles", [.25, .5, .75])
+    tuner.tuning_options.use_better_bounds_for_guessing = True
+    tuner.tuning_options.num_steps_hard_limit = 10
+    tuner.tuning_options.num_steps_soft_limit = 5
+    tuner.tuning_options.epsilon = 0.001
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+def subroutine_shifted_to_long_travel_precision_quantile(tuner):
+    tuner.opt.use_better_travel_method = True
+    tuner.tuning_options.use_better_bounds_for_guessing = True
+    tuner.tuning_options.num_steps_hard_limit = 10
+    tuner.tuning_options.num_steps_soft_limit = 5
+    tuner.tuning_options.epsilon = 0.001
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
+def subroutine_high_precision_quantile(tuner):
+    tuner.opt.use_better_travel_method = True
+    tuner.opt.set_quantile_with_name("fulldetailed", [x * 0.01 for x in range(1, 100)])
+    tuner.tuning_options.use_better_bounds_for_guessing = True
+    tuner.tuning_options.num_steps_hard_limit = 10
+    tuner.tuning_options.num_steps_soft_limit = 5
+    tuner.tuning_options.epsilon = 0.001
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
+def subroutine_simplest_quantiles(tuner):
+    tuner.opt.use_better_travel_method = False  # This disables quantile guessing so the quantiles are fixed
+    tuner.opt.set_quantile_with_name("basic_quantiles", [.1, .2, .3, .4, .5, .6, .7, .8, .9])
+    tuner.tuning_options.use_better_bounds_for_guessing = False
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
 def subroutine_fixed_quantiles(tuner):
     tuner.opt.use_better_travel_method = False  # This disables quantile guessing so the quantiles are fixed
     tuner.opt.set_quantile_with_name("basic_quantiles", [.1, .2, .3, .4, .5, .6, .7, .8, .9])
@@ -149,9 +209,48 @@ def subroutine_better_quantiles(tuner):
     tuner.opt.set_quantile_with_name("basic_quantiles", [.1, .2, .3, .4, .5, .6, .7, .8, .9])
     tuner.tuning_options.use_better_bounds_for_guessing = False
 
+
     tuner.tune_beta_travel_cost()
     tuner.tune_beta_travel_time()
     tuner.tune_alpha()
+
+
+def subroutine_fixed_quantiles_better_bounds_guessing(tuner):
+    tuner.opt.use_better_travel_method = False  # This disables quantile guessing so the quantiles are fixed
+    tuner.opt.set_quantile_with_name("basic_quantiles", [.1, .2, .3, .4, .5, .6, .7, .8, .9])
+    tuner.tuning_options.use_better_bounds_for_guessing = True
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
+def subroutine_extremely_high_precision(tuner):
+    tuner.opt.use_better_travel_method = True
+    tuner.opt.set_quantile_with_name("basic_quantiles", [.1, .2, .3, .4, .5, .6, .7, .8, .9])
+    tuner.tuning_options.use_better_bounds_for_guessing = True
+    tuner.tuning_options.num_steps_hard_limit = 10
+    tuner.tuning_options.epsilon = 0.0001
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
+def subroutine_better_quantiles_better_bounds_guessing(tuner):
+    tuner.opt.use_better_travel_method = True  # Quantiles are now calculated on a variable position
+    tuner.opt.set_quantile_with_name("basic_quantiles", [.1, .2, .3, .4, .5, .6, .7, .8, .9])
+    tuner.tuning_options.use_better_bounds_for_guessing = True
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_beta_travel_time()
+    tuner.tune_alpha()
+
+
+def subroutine_alpha_before_beta(tuner):
+
+    tuner.tune_beta_travel_cost()
+    tuner.tune_alpha()
+    tuner.tune_beta_travel_time()
 
 
 def s2(tuner):
