@@ -25,7 +25,7 @@ class Config:
 
     def __repr__(self):
         return self._text
-        #return f"Data: {self.parameters}\nPath: {self.path}\nName: {self.name}\n"
+        # return f"Data: {self.parameters}\nPath: {self.path}\nName: {self.name}\n"
 
     def __getitem__(self, item):
         if type(item) == Parameter:
@@ -85,7 +85,7 @@ class Config:
             if line.__contains__(parameter_name):
                 # TODO maybe not all configs have an equal sign
                 return eval(line.split("=")[1])
-        #print("Parameter [" + parameter_name + "] not found")
+        # print("Parameter [" + parameter_name + "] not found")
 
     def set_parameter(self, parameter_name, new_value, absolute=False):
         assert isinstance(new_value, int) or isinstance(new_value, float)
@@ -107,7 +107,7 @@ class Config:
             operator = "+" if diff > 0 else ""
             self._text = re.sub(regex, "\\1\\2 " + operator + str(diff) + "\\3", self._text)
             return
-        #print("Parameter[" + parameter_name + "] not found")
+        # print("Parameter[" + parameter_name + "] not found")
         return
 
     def override_parameter(self, parameter_name, parameter_value_absolute):
@@ -120,7 +120,7 @@ class Config:
         if search:
             self._text = re.sub(regex, "\\1 " + str(parameter_value_absolute) + "\\3", self._text)
             return
-        #print("Parameter[" + parameter_name + "] not found")
+        # print("Parameter[" + parameter_name + "] not found")
         return
 
     def set_path(self, new_path):
@@ -158,10 +158,10 @@ class ModeChoiceConfig(Config):
             p = self.parameters[parameter]
             if p.requirements["tripMode"] in mode_prevalence_list:
                 p.randomize_with_limits(p.upper_bound, p.upper_bound)
-                #p.randomize_with_limits((p.upper_bound + p.lower_bound) / 2, p.upper_bound)
+                # p.randomize_with_limits((p.upper_bound + p.lower_bound) / 2, p.upper_bound)
             else:
                 p.randomize_with_limits(p.lower_bound, p.lower_bound)
-                #p.randomize_with_limits(p.lower_bound, (p.upper_bound + p.lower_bound) / 2)
+                # p.randomize_with_limits(p.lower_bound, (p.upper_bound + p.lower_bound) / 2)
 
     def get_all_requirement_options(self):
         options = set()
@@ -178,7 +178,6 @@ class ModeChoiceConfig(Config):
                 param_list.append(parameter.name)
 
         return param_list
-
 
     def get_main_parameters(self, requested_modes=[0, 1, 2, 3, 4]):
         param_list = []
@@ -197,17 +196,16 @@ class ModeChoiceConfig(Config):
             all_requirements_satisfied = set(parameter.requirements).issubset(set(attribute_list))
             if all_requirements_satisfied and parameter.requirements["tripMode"] in requested_modes:
                 param_list.append(parameter.name)
-        param_list.remove("b_cost")
-        param_list.remove("b_cost_put")
-        param_list.remove("b_inc_high_on_b_cost")
-        param_list.remove("b_inc_high_on_b_cost_put")
+        if "b_cost" in param_list: param_list.remove("b_cost")
+        if "b_cost_put" in param_list: param_list.remove("b_cost_put")
+        if "b_inc_high_on_b_cost" in param_list: param_list.remove("b_inc_high_on_b_cost")
+        if "b_inc_high_on_b_cost_put" in param_list: param_list.remove("b_inc_high_on_b_cost_put")
         if "cost" in attribute_list:  # Hack to get cost into the list
             param_list.append("b_cost")
             param_list.append("b_cost_put")
             if "economicalStatus" in attribute_list:
                 param_list.append("b_inc_high_on_b_cost")
                 param_list.append("b_inc_high_on_b_cost_put")
-
 
         return param_list
 
@@ -237,5 +235,3 @@ class DestinationChoiceConfig(Config):
                 param_list.append(parameter.name)
 
         return param_list
-
-

@@ -238,8 +238,8 @@ def get_all_parameter_limitations(param):
 
 
 def group_weekday(df):
-    group_list(df, "tripBeginDay", ["Mo.", "Di.", "Mi.", "Do.", "Fr."], "WORKDAY")
-    group_list(df, "tripBeginDay", ["Sa.", "So."], "WEEKEND")
+    group_list(df, "tripBeginDay", ["Mo.", "Di.", "Mi.", "Do.", "Fr."], True)
+    group_list(df, "tripBeginDay", ["Sa.", "So."], False)
 
 
 def group_employment(df):
@@ -271,9 +271,9 @@ def group_household_size(df):
 
 
 class HouseholdSize(Enum):
-    SIZE_2 = 0
-    SIZE_3_OR_BIGGER = 1
-    UNSPECIFIED = -1
+    SIZE_2 = 2
+    SIZE_3_OR_BIGGER = 3
+    UNSPECIFIED = 1
 
     @classmethod
     def get_hh_size_from_int(cls, val):
