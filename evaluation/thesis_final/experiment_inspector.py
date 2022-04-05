@@ -23,7 +23,7 @@ def at_which_iterations_were_the_best_elements_produced(df, metric):
 def add_missing_iterations():
     pass
 
-def make_directory_of_csvs_into_one_big_csv(string_path, name):
+def make_directory_of_csvs_into_one_big_csv(string_path, name, identifier):
     output_dfs = []
     error_dfs = []
     path = Path(string_path)
@@ -34,7 +34,7 @@ def make_directory_of_csvs_into_one_big_csv(string_path, name):
             x["target_seed"] = get_target_seed_from_string(file.name)
             error_dfs.append(x)
         else:
-            x["identifier"] = get_identifier(file.name, "BetterBounds")
+            x["identifier"] = get_identifier(file.name, identifier)
             output_dfs.append(x)
     df = pandas.concat(output_dfs)
     df_err = pandas.concat(error_dfs)
@@ -83,36 +83,65 @@ def plot_subset(df, columns_list):
 
     temp = wololo.groupby(["iteration", "identifier"]).mean()[columns_list]
     temp = temp.groupby("identifier")
-    temp.plot(legend=True)
 
-    plt.show()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    for label, df in temp:
+        df = df.droplevel("identifier")
+        df = df.rename(columns={columns_list[0]: label})
+        print(label)
+        df.plot(ax=ax)
 
+
+
+    fig.show()
+
+
+METRICS = ["sum_squared_error", "mean_absolute_error", "mean_average_error",
+             "root_mean_squared_error", "theils_inequality", "sum_squared_percent_error",
+             "mean_sum_squared_error", "sum_cubed_error"]
 def main():
 
     path = "C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\MyExperimentBetterErrorGuessing\\"
-    #make_directory_of_csvs_into_one_big_csv(path, "BetterBoundEstimation")
+    #make_directory_of_csvs_into_one_big_csv(path, "BetterBoundEstimation", "BetterBounds")
+
+    #path = "C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\tuningAlphabeforeBeta\\"
+    #make_directory_of_csvs_into_one_big_csv(path, "AlphaBeforeBeta", "Before")
+
     path = "C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\CSV_CONCATENATED\\"
 
     x = pandas.read_csv(path + "BetterBoundEstimation.csv")
 
+    for metric in METRICS:
+        metric_best = "TravelTime_All_" + metric + "_best"
+        metric_current = "TravelTime_All_" + metric + "_current"
+
+        plot_subset(x, [metric_best, metric_current])
+    exit()
     metric = "theils_inequality"
     metric_best = "TravelTime_All_" + metric + "_best"
     metric_current = "TravelTime_All_" + metric + "_current"
+    plot_subset(x, [metric_best])
     plot_subset(x, [metric_best, metric_current])
     plot_subset(x, get_distribution_tests("time", test_list=["ks"], which_element=["current"]))
     plot_subset(x, get_distribution_tests("time", test_list=["ttest"], which_element=["current"]))
     plot_subset(x, get_distribution_tests("time", test_list=["ranksums"], which_element=["current"]))
-    exit()
-    temp = x[["iteration", metric_best, metric_current, "identifier", "seed", "algorithm_seed"]]
-    wololo = pad_iterations(temp)
 
-    temp = wololo.groupby(["iteration", "identifier"]).mean()[[metric_best, metric_current]]
-    temp = temp.groupby("identifier")
-    temp.plot(legend=True)
 
-    plt.show()
+def alpha_before_beta():
+    path = "C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\tuningAlphabeforeBeta\\"
+    make_directory_of_csvs_into_one_big_csv(path, "AlphaBeforeBeta", "Before")
+    path = "C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\CSV_CONCATENATED\\"
+
+    x = pandas.read_csv(path + "AlphaBeforeBeta.csv")
+    for metric in METRICS:
+        metric_best = "TravelTime_All_" + metric + "_best"
+        #metric_current = "TravelTime_All_" + metric + "_current"
+
+        plot_subset(x, [metric_best])
+
     print(x)
 
 
 if __name__ == "__main__":
+    #alpha_before_beta()
     main()

@@ -12,7 +12,7 @@ from calibration.evolutionary.individual import Individual, DestinationIndividua
 from calibration.evolutionary.population import Population
 from metrics.data import Data
 from metrics.trafficdemand import TrafficDemand
-
+import mobitopp_execution as simulation
 
 def _helper(x, d):
     x.run()
@@ -32,6 +32,113 @@ Fill this test case with all the convenience clicker tests to speed up the proce
 """
 #@unittest.skip
 class ConvenienceClickToExecute(unittest.TestCase):
+
+
+    def test_draw_the_element(self):
+        reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
+                'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+        params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+        d = Individual(seed=42, param_list=params)
+        d.run()
+        data = d.data
+        i = Individual(param_list=params)
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_250"
+        i.load(path)
+        a, b, c = i.data.draw(reference=data)
+        a.show()
+        b.show()
+        visualization.draw_modal_split_new_name(i.data, None, data)
+        for r in reqs:
+            if r == "tripMode":
+                continue
+            b = i.data.travel_time.draw(reference=data.travel_time, group=r)
+
+            b.show()
+            visualization.draw_modal_split_new_name(i.data, r, data)
+
+
+
+
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_0"
+        i.load(path)
+        a, b, c = i.data.draw(reference=data)
+        a.show()
+        b.show()
+        visualization.draw_modal_split_new_name(i.data, None, data)
+        for r in reqs:
+
+            b = i.data.travel_time.draw(reference=data.travel_time, group=r)
+
+            b.show()
+
+            if r == "tripMode":
+                continue
+            visualization.draw_modal_split_new_name(i.data, r, data)
+
+        return
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_150"
+        i.load(path)
+        a, b, c = i.data.draw(reference=data)
+        a.show()
+        b.show()
+
+    def test_howto_plot_sth_with_errors(self):
+        x = pandas.DataFrame({"Oldguys": [0.2, 0.3, 0.1, 0.2, 0.2], "Newguys": [0.2, 0.2, 0, 0.1, 0.1], "Newgu2s": [0.2, 0.2, 0, 0.1, 0.1]})
+        x_errrs = pandas.DataFrame({"Oldguys_erros": [0.2, 0.3, 0.1, 0.2, 0.2], "Newguys_erros": [0.2, 0.2, 0.4, 0.1, 0.1]})
+        fig, ax = plt.subplots()
+        x.T.plot(kind="bar", ax=ax, width=0.8)
+        step = 0.8 / 5
+        offset = -0.8 / 2
+
+        for i, column in enumerate(x_errrs):
+            x_vals = [round(i + offset + x * step, 3) for x in range(6)]
+            print(x_vals)
+            y_vals = [x_errrs[column][0]] + list(x_errrs[column].values)
+            ax.step(x=x_vals, y=y_vals, color='black', linewidth=2)
+        #ax.plot([offset, offset + step], [0.2, 0.2], color='black', linewidth=2)
+        #ax.plot([-0.4, 0], [0.25, 0.25], color='black', linewidth=2)
+        fig.show()
+        print(x)
+
+    def test_draw_without_reference(self):
+        reqs = [ 'age', 'workday', 'gender', 'employment', 'activityType',
+                'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+        params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+        i = Individual(param_list=params)
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_250"
+        i.load(path)
+        for r in reqs:
+            if r != "tripMode":
+                fig, ax = plt.subplots()
+                tempdf = i.data.get_grouped_modal_split(column_names=[r])
+                grop = tempdf.groupby(r)
+                growing_data = {}
+                for label, df in grop:
+                    growing_data[label] = df.values.flatten().tolist()
+                    #df = df.rename(columns={"split": label})
+                    #print(label)
+                    #df.T.plot(ax=ax, kind="bar")
+                df = pandas.DataFrame(growing_data, index=[0, 1, 2, 3, 4])
+                width = 0.8
+                step = width / 5
+                offset = -width / 2
+
+
+                df.T.plot(kind="bar", ax=ax, width=width)
+
+                for iterator, column in enumerate(df):
+                    x_vals = [round(iterator + offset + x * step, 3) for x in range(6)]
+                    print(x_vals)
+                    y_vals = [df[column][0]] + list(df[column].values)
+                    ax.step(x=x_vals, y=y_vals, color='black', linewidth=2)
+                #grop.plot(kind="bar", ax=ax, stacked=True)
+
+                #visualization.draw_grouped_modal_split(tempdf)
+                #tempdf.plot(kind="bar", subplots=True)
+                fig.show()
+                print(tempdf)
+
+
 
 
     def test_cost_calculation(self):

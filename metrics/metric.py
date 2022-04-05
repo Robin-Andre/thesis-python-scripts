@@ -25,7 +25,10 @@ def roll_trips(df, rolling_minutes, string):
 
 
 def reduce(data, keep, string1, string2):
-    listtype = list(keep)
+    if type(keep) is str:
+        listtype = [keep]
+    else:
+        listtype = list(keep)
     assert string1, string2 not in keep
     temp = data.groupby(listtype + [string1]).sum()
     temp = temp.reset_index()

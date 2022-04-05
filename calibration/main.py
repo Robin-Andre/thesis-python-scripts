@@ -316,8 +316,7 @@ def experiment_tuning_alpha_before_beta():
                                     + str(target_seed) + "_Algo" + str(algo_seed),
                                     algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_default)
 
-
-def experiment_full_launch_my_algorithm():
+def _full_launch_helper(subroutine, experiment_name, additional_descriptor):
     reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
             'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
     params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
@@ -325,10 +324,21 @@ def experiment_full_launch_my_algorithm():
     algo_seeds = list(range(42, 44))
     for target_seed in target_seeds:
         for algo_seed in algo_seeds:
-            launch_my_algorithm_new(params, target_seed, "MyAlgorithmFullMode", "FixedQuantilesTarget"
+            #launch_my_algorithm_new(params, target_seed, "MyAlgorithmFullMode", "FixedQuantilesTarget"
+            #                        + str(target_seed) + "_Algo" + str(algo_seed),
+            #                        algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_fixed_quantiles,
+            #                        metric="TravelTime_All_sum_squared_error")
+            launch_my_algorithm_new(params, target_seed, experiment_name, additional_descriptor
                                     + str(target_seed) + "_Algo" + str(algo_seed),
-                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_fixed_quantiles,
+                                    algorithm_seed=algo_seed, sub_r=subroutine,
                                     metric="TravelTime_All_sum_squared_error")
+
+def experiment_full_launch_my_algorithm():
+    _full_launch_helper(my_algorithm.subroutine_better_quantiles, "MyAlgorithmFullMode", "FixedQuantilesTarget")
+
+
+def experiment_full_launch_two_passes_my_algorithm():
+    _full_launch_helper(my_algorithm.subroutine_full_data_two_passes, "MyAlgorithmFullTwoPasses", "ImprovedDetailPasses")
 #https://github.com/Robin-Andre/thesis-python-scripts.git
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",

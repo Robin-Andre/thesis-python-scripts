@@ -161,13 +161,25 @@ class Data:
         df = self.travel_time.get_data_frame()
         temp = df.groupby(column_names)
         s_list = []
+
         test = df.groupby(column_names + ["tripMode"]).sum()["count"].to_frame()
-        test = test.reset_index(level="tripMode")
+        element_list = list(set(df[column_names[0]]))
+        index = pandas.MultiIndex.from_product([element_list, mode_list], names=[column_names[0], "tripMode"])
+        crossboi = pandas.DataFrame(index=index).reset_index()
+        test = test.reset_index()
+        test = test.merge(crossboi, how="outer")
+        test = test.fillna(0)
+        test = test.set_index(column_names[0])
+
+
+
+
         looo = list(range(len(column_names)))
         test1 = test.groupby(level=looo).sum()["count"].to_frame()
         test1.rename(columns={"count": 'max'}, inplace=True)
         test2 = test.join(test1)
         test2["split"] = test2["count"] / test2["max"]
+        test2 = test2.sort_values(by=[column_names[0], "tripMode"], ascending = [True, True])
 
         if divide:
             return test2["split"].to_frame()
