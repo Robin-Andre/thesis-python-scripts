@@ -48,16 +48,26 @@ class ConvenienceClickToExecute(unittest.TestCase):
         a.show()
         b.show()
         visualization.draw_modal_split_new_name(i.data, None, data)
+        visualization.draw_modal_split_new_name(i.data, "age", data)
+        visualization.draw_modal_split_new_name(i.data, "activityType", data)
+        visualization.draw_modal_split_new_in_one_figure(i.data, ['employment', "workday", "totalNumberOfCars", 'gender'], data,  suggested_layout=(2, 2))
+        visualization.draw_modal_split_new_in_one_figure(i.data, ['totalNumberOfCars', 'previousMode', 'economicalStatus', 'nominalSize'],
+                                                         data, suggested_layout=(2, 2))
+        temp = reqs.copy()
+        temp.remove("tripMode")
+        visualization.draw_modal_split_new_in_one_figure(i.data, temp, data)
+
+        visualization.draw_modal_split_new_in_one_figure(i.data, temp, data, suggested_layout=(10, 1))
         for r in reqs:
             if r == "tripMode":
                 continue
             b = i.data.travel_time.draw(reference=data.travel_time, group=r)
 
             b.show()
-            visualization.draw_modal_split_new_name(i.data, r, data)
+            #visualization.draw_modal_split_new_name(i.data, r, data)
 
 
-
+        return
 
         path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_0"
         i.load(path)
@@ -123,8 +133,9 @@ class ConvenienceClickToExecute(unittest.TestCase):
                 step = width / 5
                 offset = -width / 2
 
+                df = df.rename(visualization.label_modes)
 
-                df.T.plot(kind="bar", ax=ax, width=width)
+                df.T.plot(kind="bar", ax=ax, width=width, color=visualization.color_modes(None, get_all=True))
 
                 for iterator, column in enumerate(df):
                     x_vals = [round(iterator + offset + x * step, 3) for x in range(6)]
