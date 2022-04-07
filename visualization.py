@@ -227,7 +227,7 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
         if color_seperator is not None:
             tmp = temp.groupby(color_seperator)
             for key, group in tmp:
-                cur_ax.hist(group[x], group[x], weights=group[keyword], color=color_modes(key), alpha=1, label="X")
+                cur_ax.hist(group[x], group[x], weights=group[keyword], color=color_modes(key), alpha=1, label=label_modes(key))
                 #cur_ax.plot(group[x], group[keyword], color=color_modes(key), alpha=1)
         else:
 
@@ -263,6 +263,64 @@ def draw_modal_split(df_list):
     return
 
 
+def _helper_get_plot_df(data, requirement):
+    if requirement is None:
+        return data._get_modal_split()
+    tempdf = data.get_grouped_modal_split(column_names=[requirement])
+    grop = tempdf.groupby(requirement)
+    growing_data = {}
+    for label, df in grop:
+        growing_data[label] = df.values.flatten().tolist()
+        # df = df.rename(columns={"split": label})
+        # print(label)
+        # df.T.plot(ax=ax, kind="bar")
+    df = pandas.DataFrame(growing_data, index=[0, 1, 2, 3, 4])
+    return df
+
+def draw_modal_split_new_in_one_figure(input_data, requirement_list, reference=None, suggested_layout=None):
+    if suggested_layout is None:
+        temp = math.ceil(math.sqrt(len(requirement_list)))
+        suggested_layout = temp, (len(requirement_list) // temp) + 1
+    fig, ax = plt.subplots(suggested_layout[0], suggested_layout[1], sharey=False)
+    fig.set_tight_layout(True)
+    for r, a in zip(requirement_list, ax.flatten()):
+
+        draw_modal_split_new_name(input_data, r, reference, ax=a)
+
+    handles, labels = a.get_legend_handles_labels()
+    #fig.legend(handles, labels, loc='center right')
+    #fig.subplots_adjust(right=0.75)
+    fig.show()
+
+
+def draw_modal_split_new_name(input_data, requirement, reference=None, ax=None):
+    show_internal = False
+    if ax is None:
+        show_internal = True
+        fig, ax = plt.subplots()
+    df = _helper_get_plot_df(input_data, requirement)
+
+    width = 0.8
+    step = width / 5
+    offset = -width / 2
+
+    df = df.rename(label_modes)
+
+    df.T.plot(kind="bar", ax=ax, width=width, color=color_modes(None, get_all=True))
+    ax.tick_params(axis='x', labelrotation=0)
+
+    ax.set_title(requirement)
+    ax.get_legend().remove()
+    if reference is not None:
+        refdf = _helper_get_plot_df(reference, requirement)
+
+        for iterator, column in enumerate(refdf):
+            x_vals = [round(iterator + offset + x * step, 3) for x in range(6)]
+            print(x_vals)
+            y_vals = [refdf[column][0]] + list(refdf[column].values)
+            ax.step(x=x_vals, y=y_vals, color='black', linestyle="--", linewidth=2)
+    if show_internal:
+        fig.show()
 def draw_grouped_modal_split(df, title="", reference=None):
 
     x = df.T
