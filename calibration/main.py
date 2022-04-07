@@ -172,6 +172,12 @@ def experiment_meta_heuristics_destination_same_seed_with_business():
     for i in [106, 107, 108]:
         launch_spsa_destination(params, i, "spsa_main_destination_same_seed_plus_business", metric=metrict)
 
+
+def experiment_meta_heuristics_for_all_mode_parameters():
+    reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
+            'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+    params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+
 def experiment_meta_heuristics_destination_same_seed_with_all_modes():
     params = simulation.default_yaml().get_all_dest_parameters_name(["business", "leisure", "shopping", "service"])
     params.remove('b_cost')
@@ -257,8 +263,8 @@ def _unnamed_launch_for_better_guessing(params, name):
 def experiment_different_quantiles():
     params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
               "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    target_seeds = list(range(100, 105))
-    algo_seeds = list(range(42, 47))
+    target_seeds = list(range(104, 105))
+    algo_seeds = list(range(46, 47))
     for target_seed in target_seeds:
         for algo_seed in algo_seeds:
             launch_my_algorithm_new(params, target_seed, "MyExperimentQuantiles", "SimpleQuantile"
@@ -275,7 +281,15 @@ def experiment_different_quantiles():
             launch_my_algorithm_new(params, target_seed, "MyExperimentQuantiles", "HundredQuantiles"
                                     + str(target_seed) + "_Algo" + str(algo_seed),
                                     algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_high_precision_quantile)
+    target_seed = 104
+    algo_seed = 45
+    launch_my_algorithm_new(params, target_seed, "MyExperimentQuantiles", "QuantilesFocusOnLong"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_shifted_to_long_travel_precision_quantile)
 
+    launch_my_algorithm_new(params, target_seed, "MyExperimentQuantiles", "HundredQuantiles"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_high_precision_quantile)
 def experiment_very_high_precision():
     params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
               "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
@@ -300,6 +314,8 @@ def experiment_are_variable_quantiles_good():
 def experiment_are_variable_quantiles_good_for_cost():
     params = ["b_cost", "b_cost_put", "b_inc_high_on_b_cost", "b_inc_high_on_b_cost_put"]
     _unnamed_launch_for_quantiles(params, "MyExperimentVariableQuantilesCostFixedOutput")
+
+
 
 def experiment_tuning_alpha_before_beta():
     params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
@@ -334,6 +350,7 @@ if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
     #          "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
     experiment_different_quantiles()
+    experiment_meta_heuristics_destination_same_seed_with_all_modes()
     #experiment_tuning_alpha_before_beta()
 
     #experiment_very_high_precision()
