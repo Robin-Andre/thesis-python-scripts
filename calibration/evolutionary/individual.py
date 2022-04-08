@@ -83,12 +83,13 @@ class BaseIndividual(ABC):
         self.yaml.update_configs()
         return_code, self.data = simulation.run_mobitopp(self.yaml)
         if return_code == 1:
-            with open(SPECS.EXP_PATH + "FAILED_RUNS/" + str(hash(self.yaml.mode_config())), "w+") as file:
-                file.write(str(self.yaml.mode_config()))
+            with open(SPECS.EXP_PATH + "FAILED_RUNS/" + str(hash(self.yaml.mode_config())) + ".txt", "w+") as file:
+                file.write(str(self.yaml.mode_config()._text))
             print("FAILED RUN")
-            return
+            return return_code
 
         self.data.reduce(self.requirements)
+        return return_code
 
     def save(self, path):
         simulation.save(self.yaml, self.data, path)

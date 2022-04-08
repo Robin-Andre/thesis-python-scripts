@@ -177,6 +177,15 @@ def experiment_meta_heuristics_for_all_mode_parameters():
     reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
             'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
     params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+    metrict = "TravelTime_All_sum_squared_error"
+    target_seed = 9001
+    #for i in [106, 107, 108]: #, 109, 110]:
+    #    launch_pyswarms(params, i, "pyswarms_main_mode_all_parameters", metric=metrict, individual_seed=target_seed)
+    #    launch_pygad(params, i, "pygad_main_mode_all_parameters", metric=metrict, individual_seed=target_seed)
+
+
+    for i in [106, 107, 108]:
+        launch_spsa(params, i, "spsa_main_mode_all_parameters", metric=metrict, individual_seed=target_seed)
 
 def experiment_meta_heuristics_destination_same_seed_with_all_modes():
     params = simulation.default_yaml().get_all_dest_parameters_name(["business", "leisure", "shopping", "service"])
@@ -359,8 +368,9 @@ def experiment_full_launch_two_passes_my_algorithm():
 if __name__ == "__main__":
     #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
     #          "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    experiment_different_quantiles()
-    experiment_meta_heuristics_destination_same_seed_with_all_modes()
+    experiment_meta_heuristics_for_all_mode_parameters()
+    #experiment_different_quantiles()
+    #experiment_meta_heuristics_destination_same_seed_with_all_modes()
     #experiment_tuning_alpha_before_beta()
 
     #experiment_very_high_precision()

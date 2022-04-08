@@ -54,11 +54,14 @@ def loss_factory(p_list, data, metric, population, ex_name, descriptor, individu
         for x in np_array:
             ind = individual_constructor(param_list=p_list)
             ind.set_list(x)
-            ind.run()
-            c = Comparison(ind.data, data)
-            fitness = metrics(c, metric)
-            ind.fitness = -fitness # FItness has to be negative for logging but positive for spsp
-            log_and_save_individual(ind, population, ex_name, descriptor)
+            return_code = ind.run()
+            if return_code == 1:
+                fitness = 999999999
+            else:
+                c = Comparison(ind.data, data)
+                fitness = metrics(c, metric)
+                ind.fitness = -fitness # FItness has to be negative for logging but positive for spsp
+                log_and_save_individual(ind, population, ex_name, descriptor)
 
             print(fitness)
             fitness_vals.append(fitness)

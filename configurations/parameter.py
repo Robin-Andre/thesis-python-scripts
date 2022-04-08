@@ -442,7 +442,7 @@ class Parameter:
     def __init__(self, name, value=0):
         self.name = name
         self.value = value
-        self.lower_bound, self.upper_bound = -1, 1
+        self.lower_bound, self.upper_bound = -2, 2
         self.requirements = get_all_parameter_limitations(name)
         self.observer = get_appropriate_observation_function(name)
 

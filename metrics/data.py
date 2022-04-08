@@ -155,8 +155,9 @@ class Data:
             return ret
 
     def get_grouped_modal_split(self, column_names=None, mode_list=[0, 1, 2, 3, 4], divide=True):
-        if column_names is None or column_names == []:
+        if column_names is None or column_names == [] or len(column_names) > 1:
             return self._get_modal_split()
+
         assert "tripMode" not in column_names
         df = self.travel_time.get_data_frame()
         temp = df.groupby(column_names)
