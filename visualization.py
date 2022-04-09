@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from configurations import SPECS
 
 
-def label_modes(s):
+def label_modes(s, get_all_and_combined=False):
     d = {
         -1: "All",
         0: "Bike",
@@ -18,11 +18,13 @@ def label_modes(s):
         3: "Pedestrian",
         4: "Public Transport"
     }
+    if get_all_and_combined:
+        return list(d.values())
     if s in d.keys():
         return d[s]
     return "Unknown Label"
 
-def color_modes(s, get_all=False):
+def color_modes(s, get_all=False, get_all_and_combined=False):
     d = {
         -1: "#888888",
         0: "#e41a1c",
@@ -31,7 +33,8 @@ def color_modes(s, get_all=False):
         3: "#984ea3",
         4: "#ff7f00"
     }
-
+    if get_all_and_combined:
+        return list(d.values())
     if get_all:
         return list(d.values())[1:]
     if s in d.keys():
@@ -205,7 +208,7 @@ def generic_smol_plot(data_frame, agg_list, keyword, x, element):
     fig.show()
 
 
-def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None, set_title=False):
+def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None, set_title=False, suptitle=None):
     inputs = list(set(data_frame[split_element_name]))
     inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
@@ -213,8 +216,13 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
     fig, ax = plt.subplots(square_value, rest, sharex=sharex)
 
     fig.set_tight_layout(True)
-    axes = ax.flatten()
-    for i in range(len(inputs), len(axes)):
+    if len(inputs) > 1:
+        axes = ax.flatten()
+        cutoff = len(axes)
+    else:
+        axes = [ax]
+        cutoff = 0
+    for i in range(len(inputs), cutoff):
         fig.delaxes(axes[i])
     for i, element in enumerate(inputs):
         cur_ax = axes[i]
@@ -236,15 +244,17 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
         if reference_df is not None:
             temp2 = reference_df[reference_df[split_element_name] == element]
             rolled_and_smoked = temp2.copy()
-            rolled_and_smoked[keyword] = rolled_and_smoked[keyword].rolling(3, center=True, min_periods=1).mean()
+            #rolled_and_smoked[keyword] = rolled_and_smoked[keyword].rolling(3, center=True, min_periods=1).mean()
             cur_ax.plot(rolled_and_smoked[x], rolled_and_smoked[keyword], color="black", linewidth=1, alpha=0.5, label="Target")
 
 
         if set_title:
             cur_ax.set_title(element)
         cur_ax.legend()
-
-    fig.suptitle(split_element_name)
+    if suptitle is not None:
+        fig.suptitle(suptitle)
+    else:
+        fig.suptitle(split_element_name)
     #plt.legend()
     #fig.show()
     return fig
