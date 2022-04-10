@@ -77,7 +77,7 @@ def get_distribution_tests(name, mode_list=[-1, 0, 1, 2, 3, 4], test_list=["ks",
     mode_dict = {-1: "all", 0: "bike", 1: "car", 2: "passenger", 3: "pedestrian", 4:"public_transport"}
     return [name + "_" + test_name + "_" + mode_dict[mode_num] + "_" + element for test_name in test_list for mode_num in mode_list for element in which_element]
 
-def plot_subset(df, columns_list, legend_cols=None, title=None, color=None):
+def plot_subset(df, columns_list, legend_cols=None, title=None, color=None, slicer=None):
     temp = df[["iteration", "identifier", "seed", "algorithm_seed"] + columns_list]
     wololo = pad_iterations(temp)
     print(f"Plotting columns: {columns_list}")
@@ -93,6 +93,9 @@ def plot_subset(df, columns_list, legend_cols=None, title=None, color=None):
         else:
             df = df.rename(columns={columns_list[0]: label})
         print(label)
+        if slicer is not None:
+            df = df.iloc[slicer, :]
+        #df = df.rolling(5, center=True, min_periods=1).mean()
         df.plot(ax=ax, color=color)
 
     fig.suptitle(title)
