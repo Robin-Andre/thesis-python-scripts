@@ -226,8 +226,10 @@ class TimeModeObservation(Observation):
         y_new = y_1 + alpha * error
 
         #print(f"Debug{x_1} {y_1} {y_new} {error}")
-
-        x_new = self.f_inverse(y_new)
+        try:
+            x_new = self.f_inverse(y_new)
+        except ValueError:
+            x_new = self.f_inverse(-0.0001)
         #print(f"{x_1} {y_1}|  {y_new}")
         #print(f"Suggested Value simple: {x_new}")
         return x_new
