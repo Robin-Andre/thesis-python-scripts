@@ -74,7 +74,7 @@ def launch_my_algorithm(param_list, seed, exname="myalgorithm_Unnamed", descript
 
 
 def launch_my_algorithm_new(param_list, seed, exname="myalgorithm_Unnamed", descriptor=None, individual_seed=-1, d=None,
-                            algorithm_seed=-1, sub_r=my_algorithm.subroutine_default, metric="TravelTime_Default_sum_squared_error"):
+                            algorithm_seed=-1, sub_r=my_algorithm.subroutine_default, metric="TravelTime_Default_sum_squared_error", use_existing_config=False):
     random.seed(seed)
     build_folders(exname)
     if d is None:
@@ -82,7 +82,7 @@ def launch_my_algorithm_new(param_list, seed, exname="myalgorithm_Unnamed", desc
         d.run()
     data = d.data
     pop, result, error_log = my_algorithm.tune_new(param_list, data, metric,
-                                                   algorithm_seed, subroutine=sub_r, ex_name=exname, descriptor=descriptor)
+                                                   algorithm_seed, subroutine=sub_r, ex_name=exname, descriptor=descriptor, use_existing_config=use_existing_config)
     pop_save_helper(pop, seed, exname, descriptor)
     print(pop.best())
     write_helper(result, seed, exname, descriptor)
@@ -127,21 +127,26 @@ def experiment_spsa_target_has_same_seed(params):
         launch_spsa(params, i, "spsa_10_parameters_target_has_same_seed")
 
 
+def experiment_spsa_target_has_same_seed_time_metric(params):
+    for i in range(106, 109):
+        launch_spsa(params, i, "spsa_10_parameters_target_has_same_seed_time_metric2", metric="TravelTime_Default_sum_squared_error", individual_seed=i)
+
+
 def experiment_pygad_target_has_same_seed(params):
     for i in range(106, 111):
         launch_pygad(params, i, "pygad_10_parameters_target_has_same_seed")
 
 def experiment_pygad_target_has_same_seed_time_metric(params):
-    for i in range(106, 111):
-        launch_pygad(params, i, "pygad_10_parameters_target_has_same_seed_time_metric", metric="TravelTime_Default_sum_squared_error")
+    for i in range(106, 109):
+        launch_pygad(params, i, "pygad_10_parameters_target_has_same_seed_time_metric2", metric="TravelTime_Default_sum_squared_error", individual_seed=i)
 
 def experiment_pyswarms_target_has_same_seed(params):
-    for i in range(106, 111):
-        launch_pyswarms(params, i, "pyswarms_10_parameters_target_has_same_seed")
+    for i in range(106, 109):
+        launch_pyswarms(params, i, "pyswarms_10_parameters_target_has_same_seed2", individual_seed=i)
 
 def experiment_pyswarms_target_has_same_seed_time_metric(params):
-    for i in range(106, 111):
-        launch_pyswarms(params, i, "pyswarms_10_parameters_target_has_same_seed_time_metric", metric="TravelTime_Default_sum_squared_error")
+    for i in range(106, 109):
+        launch_pyswarms(params, i, "pyswarms_10_parameters_target_has_same_seed_time_metric2", metric="TravelTime_Default_sum_squared_error", individual_seed=i)
 
 
 def experiment_meta_heuristics_destination_same_seed():
@@ -201,6 +206,32 @@ def experiment_meta_heuristics_destination_same_seed_with_all_modes():
 
     for i in [106, 107, 108]:
         launch_spsa_destination(params, i, "spsa_main_destination_same_seed_plus_all", metric=metrict)
+
+
+def experiment_misscaled_target():
+    params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+              "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+
+    target = Individual(seed=9001, param_list=params, fraction_of_pop=0.05)
+    target.run()
+
+    metrict = "TravelTime_All_sum_squared_error"
+    metric_fair = "ModalSplit_Default_Splits_sum_squared_error"
+    for i in [106]:
+        launch_pyswarms(params, i, "erroneous_comparison_data", "PYSWARMSFair", metric=metric_fair, d=target)
+        launch_pygad(params, i, "erroneous_comparison_data", "PYGADFair", metric=metric_fair, d=target)
+        launch_spsa(params, i, "erroneous_comparison_data", "SPSAFair", metric=metric_fair, d=target)
+
+    for i in [107]:
+        launch_pyswarms(params, i, "erroneous_comparison_data", "PYSWARMS2", metric=metrict, d=target)
+        launch_pygad(params, i, "erroneous_comparison_data", "PYGAD2", metric=metrict, d=target)
+        launch_spsa(params, i, "erroneous_comparison_data", "SPSA2", metric=metrict, d=target)
+        launch_my_algorithm_new(params, i, "erroneous_comparison_data", "MyAlgorithm2", algorithm_seed=i, sub_r=my_algorithm.subroutine_better_quantiles, d=target)
+        launch_pyswarms(params, i, "erroneous_comparison_data", "PYSWARMSFair2", metric=metric_fair, d=target)
+    launch_pygad(params, i, "erroneous_comparison_data", "PYGADFair2", metric=metric_fair, d=target)
+    launch_spsa(params, i, "erroneous_comparison_data", "SPSAFair2", metric=metric_fair, d=target)
+
+
 
 def experiment_random_target_individual(params):
 
@@ -310,6 +341,36 @@ def experiment_very_high_precision():
                                     + str(target_seed) + "_Algo" + str(algo_seed),
                                     algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_extremely_high_precision)
 
+def experiment_calibration_from_original_values():
+    touched_params = ['asc_car_d_mu', 'asc_car_p_mu', 'asc_put_mu', 'asc_ped_mu', 'asc_bike_mu', 'b_tt_car_p_mu', 'b_tt_put_mu',
+     'b_tt_bike_mu', 'b_tt_ped', 'female_on_asc_bike', 'female_on_asc_car_d', 'age_0_17_on_asc_car_p',
+     'age_0_17_on_asc_bike', 'age_18_29_on_asc_car_d', 'age_18_29_on_asc_put', 'age_50_59_on_asc_ped',
+     'age_60_69_on_asc_car_d', 'age_60_69_on_asc_ped', 'age_70_100_on_asc_car_d', 'age_70_100_on_asc_bike',
+     'age_70_100_on_asc_put', 'age_70_100_on_asc_ped', 'student_on_asc_bike', 'student_on_asc_ped',
+     'student_on_asc_car_d', 'student_on_asc_car_p', 'student_on_asc_put', 'beruft_on_asc_bike', 'beruft_on_asc_car_p',
+     'beruft_on_asc_car_d', 'pkw_0_on_asc_ped', 'pkw_0_on_asc_bike', 'pkw_0_on_asc_car_p', 'pkw_0_on_asc_put',
+     'pkw_1_on_asc_car_p', 'pkw_1_on_asc_put', 'inc_low_on_asc_bike', 'inc_low_on_asc_put', 'inc_high_on_asc_bike',
+     'inc_high_on_asc_put', 'inc_low_on_asc_car_d', 'inc_high_on_asc_car_d', 'b_arbeit_car_d', 'b_arbeit_car_p',
+     'b_arbeit_put', 'b_arbeit_bike', 'b_arbeit_ped', 'b_dienst_put', 'b_dienst_car_d', 'b_dienst_car_p',
+     'b_dienst_bike', 'b_ausb_car_d', 'b_ausb_bike', 'b_eink_car_d', 'b_eink_car_p', 'b_eink_put', 'b_eink_bike',
+     'b_freiz_car_d', 'b_freiz_car_p', 'b_freiz_put', 'b_freiz_bike', 'b_freiz_ped', 'b_service_car_d',
+     'b_service_car_p', 'b_service_put', 'b_service_bike', 'b_service_ped', 'b_home_car_p', 'age_0_17_on_b_tt_car_p',
+     'age_18_29_on_b_tt_car_p', 'beruft_on_b_tt_car_d', 'beruft_on_b_tt_bike', 'b_tt_ausb_ped', 'b_tt_freiz_ped']
+    reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
+            'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+    all_params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+    for target_seed in range(106, 108):
+        for algo_seed in range(42, 44):
+
+            launch_my_algorithm_new(touched_params, target_seed, "RecreatingManualTuningProcess", "OnlyChangedParams"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, individual_seed=target_seed, sub_r=my_algorithm.subroutine_better_quantiles)
+            launch_my_algorithm_new(all_params, target_seed, "RecreatingManualTuningProcess", "AllModeParams"
+                                    + str(target_seed) + "_Algo" + str(algo_seed),
+                                    algorithm_seed=algo_seed, individual_seed=target_seed, sub_r=my_algorithm.subroutine_better_quantiles)
+
+
+
 def experiment_which_error_correction_method_is_better():
     params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
               "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
@@ -366,9 +427,15 @@ def experiment_full_launch_two_passes_my_algorithm():
     _full_launch_helper(my_algorithm.subroutine_full_data_two_passes, "MyAlgorithmFullTwoPasses", "ImprovedDetailPasses")
 #https://github.com/Robin-Andre/thesis-python-scripts.git
 if __name__ == "__main__":
-    #PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
-    #          "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-    experiment_meta_heuristics_for_all_mode_parameters()
+    PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
+              "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
+
+    experiment_calibration_from_original_values()
+    experiment_spsa_target_has_same_seed_time_metric(PARAMS)
+    experiment_pyswarms_target_has_same_seed_time_metric(PARAMS)
+    experiment_pygad_target_has_same_seed_time_metric(PARAMS)
+    #experiment_misscaled_target()
+    #experiment_meta_heuristics_for_all_mode_parameters()
     #experiment_different_quantiles()
     #experiment_meta_heuristics_destination_same_seed_with_all_modes()
     #experiment_tuning_alpha_before_beta()

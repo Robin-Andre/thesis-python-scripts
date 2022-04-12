@@ -29,7 +29,7 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=101, experiment_na
     bounds = individual.spsa_bound_lists()
     print(bounds)
     print(initial_points)
-    spsa = SPSA(maxiter=200, second_order=second_order)
+    spsa = SPSA(maxiter=150, second_order=second_order)
     params_optimized = spsa.optimize(len(tuning_parameter_list), loss_func, initial_point=initial_points, variable_bounds=bounds)
     print(params_optimized)
     result = pop.logger.print_csv()

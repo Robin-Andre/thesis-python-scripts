@@ -7,6 +7,7 @@ from calibration.evolutionary.population import Population
 from calibration.tuning import TuningOptions
 from configurations import SPECS
 from configurations.observations import ObserverOptions, ModalSplitObservation, TimeModeObservation
+from definitions import ROOT_DIR
 from metrics.data import Comparison
 
 
@@ -40,9 +41,17 @@ def sorted_errors(individual, comparison_data):
     print(errors)
     return errors
 
-def start_individual(param_list, comparison_data, metric, pop, seed, ex_name, descriptor):
+def uncalibrated_config(param_list, seed):
     individual = Individual(seed, param_list)
-    start_values = individual.average_value_list()
+    individual.load(ROOT_DIR + "/tests/resources/example_config_load2")
+    return [x[1] for x in individual.active_values()]
+
+def start_individual(param_list, comparison_data, metric, pop, seed, ex_name, descriptor, use_existing_config=False):
+    individual = Individual(seed, param_list)
+    if use_existing_config:
+        start_values = uncalibrated_config(param_list, seed)
+    else:
+        start_values = individual.average_value_list()
     individual.set_list(start_values)
     individual.run()
     set_fitness(individual, comparison_data, metric) # Because the logging requires a desired metric for the comp to the other algos
@@ -78,14 +87,14 @@ def tune(tuning_parameter_list, comparison_data, metric, seed=-1):
     return pop, result
 
 class Tuner:
-    def __init__(self, tuning_parameter_list, comparison_data, metric, seed=-1, ex_name="", descriptor=""):
+    def __init__(self, tuning_parameter_list, comparison_data, metric, seed=-1, ex_name="", descriptor="", use_existing_config=False):
         self.tuning_parameter_list = tuning_parameter_list
         self.comparison_data = comparison_data
         self.metric = metric
         self.seed = seed
         self.pop = Population()
         self.pop.set_target(comparison_data)
-        self.individual = start_individual(tuning_parameter_list, comparison_data, metric, self.pop, seed, ex_name, descriptor)
+        self.individual = start_individual(tuning_parameter_list, comparison_data, metric, self.pop, seed, ex_name, descriptor, use_existing_config)
         self.opt = ObserverOptions()
         self.opt.use_better_travel_method = True
         self.individual.change_observer_options(self.opt)
@@ -276,8 +285,8 @@ def s3(tuner):
     tuner.tune_alpha()
 
 
-def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1, subroutine=subroutine_default, ex_name="", descriptor=""):
-    t = Tuner(tuning_parameter_list, comparison_data, metric, seed, ex_name=ex_name, descriptor=descriptor)
+def tune_new(tuning_parameter_list, comparison_data, metric, seed=-1, subroutine=subroutine_default, ex_name="", descriptor="", use_existing_config=False):
+    t = Tuner(tuning_parameter_list, comparison_data, metric, seed, ex_name=ex_name, descriptor=descriptor, use_existing_config=use_existing_config)
     t.tuning_options.ex_name = ex_name
     t.tuning_options.descriptor = descriptor
     subroutine(t)

@@ -66,6 +66,23 @@ class MyTestCase(unittest.TestCase):
 
         #my_algorithm.tune_new(params, data, "TravelTime_Default_sum_squared_error")
 
+    def test_my_algorithm_load(self):
+        reqs = ['workday', 'gender', 'employment',  'age', 'activityType',
+                'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+        # ['HasEBikeNotImplemented','relief',"parking", 'HasCSMembershipNotImplemented', 'access_time',, 'sigma', 'transfer',
+
+        params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+        ind = Individual(param_list=params)
+        print(ind)
+        x = my_algorithm.uncalibrated_config(params, -1)
+        print(x)
+        p_list = []
+        for a, b in zip(ind.parameter_name_list, x.parameter_name_list):
+            assert ind[a].name == x[b].name
+            if ind[a].value != x[b].value:
+                p_list.append(a)
+        print(p_list)
+
     def test_advanced_param_tuning(self):
         PARAMS = ["asc_car_d_mu", "female_on_asc_car_d"]
 
