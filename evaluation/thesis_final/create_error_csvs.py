@@ -11,6 +11,7 @@ def write(path, csv):
 
 
 def load_run(path, params, target):
+    print(params)
     csv_list = [",".join(params)]
     for file in sorted(path.iterdir(), key=lambda i: int(i.name.split("_")[1])):
         print(file)
@@ -44,19 +45,19 @@ def load_run_competition_destination(path, params, target):
 
 
 def make_error_tracking_for_experiment(params, path, reference=None):
-    for file in (path / "data").iterdir():
+    for file in (path / "data/").iterdir():
         print(file)
-        load_run(params, file, reference)
+        load_run(file, params, reference)
 
 def make_error_tracking_for_experiment_competition(params, path, reference=None):
-    for file in (path / "data").iterdir():
+    for file in (path / "data/").iterdir():
         print(file)
-        load_run_competition(params, file, reference)
+        load_run_competition(file, params, reference)
 
 def make_error_tracking_for_experiment_competition_destination(params, path, reference=None):
-    for file in (path / "data").iterdir():
+    for file in (path / "data/").iterdir():
         print(file)
-        load_run_competition(params, file, reference)
+        load_run_competition(file, params, reference)
 
 def main():
     params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
@@ -64,8 +65,6 @@ def main():
 
     ref = Individual(param_list=params)
     ref.run()
-    load_run_competition(Path("D:/master_thesis_final_results/pygad_10_parameters_target_has_same_seed/data/101_metric_ModalSplit_Default_Splits_sum_squared_error/"), params, ref)
-    return
 
     make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentBetterErrorGuessing/"), ref)
     make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentQuantiles/"), ref)  # MyExperimentQuantiles
