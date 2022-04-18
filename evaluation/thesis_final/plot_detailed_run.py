@@ -166,12 +166,15 @@ def main():
     #experiment_inspector.plot_subset(x, values)
     #values = get_count_tests(1, 1, None, 0)
     #experiment_inspector.plot_subset(x, values)
-    values = get_count_tests(3, 1, None, 1)
-    experiment_inspector.plot_subset(x, values)
-    values = get_count_tests(3, 0, None, 1)
-    experiment_inspector.plot_subset(x, values)
-    values = get_count_tests(3, 2, None, 1)
-    experiment_inspector.plot_subset(x, values)
+
+    for k, v in {"Zones": 0, "Distance": 1, "Demand": 2, "Time": 3}.items():
+        values = get_count_tests(v, 1, None, 1)
+        experiment_inspector.plot_subset(x, values, title=k)
+        if v != 2:
+            values = get_count_tests(v, 0, None, 1)
+            experiment_inspector.plot_subset(x, values, title=k)
+        values = get_count_tests(v, 2, None, 1)
+        experiment_inspector.plot_subset(x, values, title=k)
 
     slicer = slice(None, None, 20)
     values = get_stochastic_tests(0, None, 0, 1)

@@ -27,11 +27,11 @@ def label_modes(s, get_all_and_combined=False):
 def color_modes(s, get_all=False, get_all_and_combined=False):
     d = {
         -1: "#888888",
-        0: "#e41a1c",
-        1: "#377eb8",
-        2: "#4daf4a",
-        3: "#984ea3",
-        4: "#ff7f00"
+        0: "#2D77BC",
+        1: "#BF252C",
+        2: "#F89C1C",
+        3: "#B3E0F7",
+        4: "#70BE43"
     }
     if get_all_and_combined:
         return list(d.values())
@@ -208,6 +208,9 @@ def generic_smol_plot(data_frame, agg_list, keyword, x, element):
     fig.show()
 
 
+def get_color_palette_from_seperator():
+    pass
+
 def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None, set_title=False, suptitle=None):
     inputs = list(set(data_frame[split_element_name]))
     inputs.sort()
@@ -240,6 +243,7 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
         else:
 
             cur_ax.plot(temp[x], temp[keyword])
+        print(max(temp[x]))
         cur_ax.set_xlim([-1, max(temp[x])])
         if reference_df is not None:
             temp2 = reference_df[reference_df[split_element_name] == element]
@@ -377,8 +381,8 @@ def draw_modal_split_new_name(input_data, requirement, reference=None, ax=None):
             print(x_vals)
             y_vals = list(refdf[column].values)
             print(y_vals)
-            ax.hlines(y_vals, x_mins, x_max, color='black', linewidth=2, label="Ref")
-    ax.legend(labels=["Target"] + labels)
+            ax.hlines(y_vals, x_mins, x_max, color='black', linewidth=2, label="_nolegend_")
+    ax.legend(labels= labels + ["Target"])
     if show_internal:
         fig.show()
 def draw_grouped_modal_split(df, title="", reference=None):

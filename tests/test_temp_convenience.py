@@ -51,7 +51,6 @@ class ConvenienceClickToExecute(unittest.TestCase):
         visualization.draw_modal_split_new_name(i.data, None, data, ax=ax)
         fig.show()
 
-        return
         visualization.draw_modal_split_new_name(i.data, "age", data)
         visualization.draw_modal_split_new_name(i.data, "activityType", data)
         visualization.draw_modal_split_new_in_one_figure(i.data, ['employment', "workday", "totalNumberOfCars", 'gender'], data,  suggested_layout=(2, 2))
@@ -65,7 +64,7 @@ class ConvenienceClickToExecute(unittest.TestCase):
         for r in reqs:
             if r == "tripMode":
                 continue
-            b = i.data.travel_time.draw(reference=data.travel_time, group=[r, "tripMode"])
+            b = i.data.travel_time.draw(reference=data.travel_time, group=r)
 
             b.show()
             #visualization.draw_modal_split_new_name(i.data, r, data)

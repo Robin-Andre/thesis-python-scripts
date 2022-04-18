@@ -15,6 +15,7 @@ def get_target_seed_from_string(string):
 
 def get_identifier(string, seperator):
     name = string.split(seperator)[0]
+    print(name)
     return name
 
 def at_which_iterations_were_the_best_elements_produced(df, metric):
@@ -96,7 +97,10 @@ def plot_subset(df, columns_list, legend_cols=None, title=None, color=None, slic
         if slicer is not None:
             df = df.iloc[slicer, :]
         #df = df.rolling(5, center=True, min_periods=1).mean()
-        df.plot(ax=ax, color=color)
+        if color is not None:
+            df.plot(ax=ax, color=color)
+        else:
+            df.plot(ax=ax)
 
     fig.suptitle(title)
     fig.show()
@@ -147,7 +151,25 @@ def alpha_before_beta():
 
     print(x)
 
+def quantiles_which_distribution():
+   # path = "C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\MyExperimentQuantiles\\"
+   # make_directory_of_csvs_into_one_big_csv(path, "QuantileDistributionExperiment", "1")
+    path = "C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\CSV_CONCATENATED\\"
+
+    x = pandas.read_csv(path + "QuantileDistributionExperiment.csv")
+    #for metric in METRICS:
+    #    metric_best = "TravelTime_All_" + metric + "_best"
+    #    #metric_current = "TravelTime_All_" + metric + "_current"
+
+    #    plot_subset(x, [metric_best])
+    for metric in METRICS:
+        metric_cur = "TravelTime_All_" + metric + "_current"
+        #metric_current = "TravelTime_All_" + metric + "_current"
+
+        plot_subset(x, [metric_cur])
+    print(x)
 
 if __name__ == "__main__":
+    quantiles_which_distribution()
     #alpha_before_beta()
-    main()
+    #main()
