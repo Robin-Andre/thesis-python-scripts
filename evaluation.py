@@ -1,3 +1,4 @@
+import logging
 import math
 import os
 import time
@@ -100,6 +101,9 @@ def create_zone_destination_traffic_data(almost_raw_data):
 
 
 def read_in_data(yaml):
+    if not Path(SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv").exists():
+        logging.warning("Demand Simulation is Missing: There seems to be an error")
+        return None
     data = pandas.read_csv(SPECS.CWD + yaml.data["resultFolder"] + "/demandsimulationResult.csv", sep=";")
     data_household = pandas.read_csv(SPECS.CWD + yaml.data["dataSource"]["demandDataFolder"] + "/household.csv",
                                      sep=";")

@@ -52,6 +52,7 @@ def start_individual(param_list, comparison_data, metric, pop, seed, ex_name, de
         start_values = uncalibrated_config(param_list, seed)
     else:
         start_values = individual.average_value_list()
+    print(start_values)
     individual.set_list(start_values)
     individual.run()
     set_fitness(individual, comparison_data, metric) # Because the logging requires a desired metric for the comp to the other algos

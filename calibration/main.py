@@ -128,7 +128,7 @@ def experiment_spsa_target_has_same_seed(params):
 
 
 def experiment_spsa_target_has_same_seed_time_metric(params):
-    for i in range(106, 109):
+    for i in range(108, 109):
         launch_spsa(params, i, "spsa_10_parameters_target_has_same_seed_time_metric2", metric="TravelTime_Default_sum_squared_error", individual_seed=i)
 
 
@@ -362,12 +362,12 @@ def experiment_calibration_from_original_values():
     for target_seed in range(106, 108):
         for algo_seed in range(42, 44):
 
-            launch_my_algorithm_new(touched_params, target_seed, "RecreatingManualTuningProcess", "OnlyChangedParams"
-                                    + str(target_seed) + "_Algo" + str(algo_seed),
-                                    algorithm_seed=algo_seed, individual_seed=target_seed, sub_r=my_algorithm.subroutine_better_quantiles)
+            #launch_my_algorithm_new(touched_params, target_seed, "RecreatingManualTuningProcess", "OnlyChangedParams"
+            #                        + str(target_seed) + "_Algo" + str(algo_seed),
+            #                        algorithm_seed=algo_seed, individual_seed=target_seed, sub_r=my_algorithm.subroutine_better_quantiles, use_existing_config=True)
             launch_my_algorithm_new(all_params, target_seed, "RecreatingManualTuningProcess", "AllModeParams"
                                     + str(target_seed) + "_Algo" + str(algo_seed),
-                                    algorithm_seed=algo_seed, individual_seed=target_seed, sub_r=my_algorithm.subroutine_better_quantiles)
+                                    algorithm_seed=algo_seed, individual_seed=target_seed, sub_r=my_algorithm.subroutine_better_quantiles, use_existing_config=True)
 
 
 
@@ -394,9 +394,9 @@ def experiment_tuning_alpha_before_beta():
     algo_seeds = list(range(42, 47))
     for target_seed in target_seeds:
         for algo_seed in algo_seeds:
-            launch_my_algorithm_new(params, target_seed, "tuningAlphabeforeBeta", "AlphaBeforeBeta"
-                                    + str(target_seed) + "_Algo" + str(algo_seed),
-                                    algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_alpha_before_beta)
+            #launch_my_algorithm_new(params, target_seed, "tuningAlphabeforeBeta", "AlphaBeforeBeta"
+            #                        + str(target_seed) + "_Algo" + str(algo_seed),
+            #                        algorithm_seed=algo_seed, sub_r=my_algorithm.subroutine_alpha_before_beta)
 
             launch_my_algorithm_new(params, target_seed, "tuningAlphabeforeBeta", "BetaBeforeAlpha"
                                     + str(target_seed) + "_Algo" + str(algo_seed),
@@ -429,11 +429,11 @@ def experiment_full_launch_two_passes_my_algorithm():
 if __name__ == "__main__":
     PARAMS = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
               "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
-
+    #experiment_spsa_target_has_same_seed_time_metric(PARAMS)
+    #experiment_pyswarms_target_has_same_seed_time_metric(PARAMS)
+    #experiment_pygad_target_has_same_seed_time_metric(PARAMS)
     experiment_calibration_from_original_values()
-    experiment_spsa_target_has_same_seed_time_metric(PARAMS)
-    experiment_pyswarms_target_has_same_seed_time_metric(PARAMS)
-    experiment_pygad_target_has_same_seed_time_metric(PARAMS)
+
     #experiment_misscaled_target()
     #experiment_meta_heuristics_for_all_mode_parameters()
     #experiment_different_quantiles()
