@@ -14,6 +14,7 @@ class ObserverOptions:
         self.quantile_with_name = ("ExtraQuantilesForLongTravels", [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999])
         self.quantiles = self.quantile_with_name[1]
         self.step_size_if_equal = -0.1
+        self.use_sigmoid_approximation = False
 
         self.alpha_error_dict = {
             "b_cost": 10,
@@ -117,13 +118,18 @@ class TimeModeObservation(Observation):
     def _generate_quantiles(self, frame):
         # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
         assert frame.index.names[-1] == "durationTrip"
-        if frame.empty:
+        if frame.empty or len(frame) == 1:
             logging.warning("Empty Data frame in quantiles  ")
             return [0 for _ in range(len(self.options.quantiles))]
         cumulated_values = frame["count"].cumsum()
         quantile_vals = cumulated_values.quantile(self.options.quantiles)
 
         x = [(numpy.abs(cumulated_values - i)).argmin() for i in quantile_vals]
+        x_1_index_manual = []
+        for i in quantile_vals:
+            temp = numpy.where(cumulated_values < i)[0]
+            if len(temp) > 0:
+                x_1_index_manual.append(temp[-1])
 
         x_1_index = [numpy.where(cumulated_values < i)[0][-1] for i in quantile_vals]
         x_2_index = [i + 1 for i in x_1_index]
@@ -302,6 +308,9 @@ def default_logit(y, limit=1):
 
 def inv_log_func(y,  k, x_0, L):
     x = (L / y) - 1
+    if y == 0:
+        logging.warning("Y is zero for asc")
+        x = 1000000
     if x <= 0:
         x = 0.01
     return (math.log(x) / -k) + x_0
@@ -330,7 +339,13 @@ class ModalSplitObservation(Observation):
     # This function suggests, for a lack of information, the estimated value from the sigmoid transformation as a new
     def observe(self, ind_1, target_data, parameter):
         x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
-        x_new = g(y_target, mode_num) + x_1 - g(y_1, mode_num)
+        if self.options.use_sigmoid_approximation:
+            x_new = g(y_target, mode_num) + x_1 - g(y_1, mode_num)
+        else:
+            scaling = 10
+
+            x_new = scaling * (y_target - y_1) + x_1
+            logging.log(f"Linear Estimation: {x_1}{y_1}->{x_new}{y_target}")
         return x_new
 
     def error(self, ind_1, target_data, parameter):
@@ -342,10 +357,15 @@ class ModalSplitObservation(Observation):
         x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         x_2 = ind_2[parameter.name].value
         y_2 = ind_2.data.get_modal_split_by_param(parameter)
-
-        z = g(y_target)
-        z_1 = g(y_1)
-        z_2 = g(y_2)
+        if self.options.use_sigmoid_approximation:
+            z = g(y_target)
+            z_1 = g(y_1)
+            z_2 = g(y_2)
+        else:
+            z = y_target
+            z_1 = y_1
+            z_2 = y_2
+            logging.log(f"Linear Observation Detailed: {z}{z_1}{z_2}")
         #print(f"All the observed ladies: {x_1} {y_1} {y_target} {z} {z_1} {z_2}")
 
         if abs(z_2 - z_1) < 0.000001:

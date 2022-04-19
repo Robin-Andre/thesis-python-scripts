@@ -66,22 +66,26 @@ def main():
     ref = Individual(param_list=params)
     ref.run()
 
-    make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentBetterErrorGuessing/"), ref)
-    make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentQuantiles/"), ref)  # MyExperimentQuantiles
+    #make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentBetterErrorGuessing/"), ref)
+    #make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentQuantiles/"), ref)  # MyExperimentQuantiles
 
-    make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentVeryHighPrecision/"), ref)  # MyExperimentVeryHighPrecision
+    #make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentVeryHighPrecision/"), ref)  # MyExperimentVeryHighPrecision
 
-    make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentVariableQuantilesFixedOutput/"), ref) # MyExperimentVariableQuantilesFixedOutput
-    cost_params = ["b_cost", "b_cost_put", "b_inc_high_on_b_cost", "b_inc_high_on_b_cost_put"]
-    make_error_tracking_for_experiment(cost_params, Path(SPECS.EXP_PATH + "/MyExperimentVariableQuantilesCostFixedOutput/"), ref) # MyExperimentVariableQuantilesCostFixedOutput
-    make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/tuningAlphabeforeBeta/"), ref)
+    #make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentVariableQuantilesFixedOutput/"), ref) # MyExperimentVariableQuantilesFixedOutput
 
 
-    list_of_comp_experiments = ["pygad_10_parameters", "pygad_10_parameters_target_has_same_seed",
-                                "pyswarms_10_parameters", "pyswarms_10_parameters_target_has_same_seed",
+    #make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/tuningAlphabeforeBeta/"), ref)
+
+    #"pygad_10_parameters", "pygad_10_parameters_target_has_same_seed",
+    #"pyswarms_10_parameters",
+    list_of_comp_experiments = ["pyswarms_10_parameters_target_has_same_seed",
                                 "spsa_10_parameters_target_has_same_seed"]
-    for l in list_of_comp_experiments:
-        make_error_tracking_for_experiment_competition(params, "/" + l + "/", ref)
+
+    #ind = Individual(param_list=params)
+    #ind.load(Path("D:/master_thesis_final_results/pygad_10_parameters/data/seed_102/236"))
+    #print(ind.errors(ref.data))
+    # for l in list_of_comp_experiments:
+    #    make_error_tracking_for_experiment_competition(params, Path(SPECS.EXP_PATH + "/" + l + "/"), ref)
 
 
     """ individual_seed is set:
@@ -128,6 +132,12 @@ random_target_10_parameters_time_metric
         for app, param_li in zip(appendix, p_list):
             make_error_tracking_for_experiment_competition_destination(param_li, Path(SPECS.EXP_PATH + "/" + a + "_main_destination_same_seed" + app + "/"), ref)
 
+
+    # TODO fix cost read in
+    cost_params = ["b_cost", "b_cost_put", "b_inc_high_on_b_cost", "b_inc_high_on_b_cost_put"]
+    cost_ind = Individual(param_list=cost_params + params)
+    cost_ind.run()
+    make_error_tracking_for_experiment(cost_params + params, Path(SPECS.EXP_PATH + "/MyExperimentVariableQuantilesCostFixedOutput/"), cost_ind) # MyExperimentVariableQuantilesCostFixedOutput
     # TODO enable on other machine
     #make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullMode/"), ref)
     #make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPasses/"), ref)
