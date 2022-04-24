@@ -48,8 +48,23 @@ class TravelDistance(Metric):
     def reduce(self, keeper_list):
         self._data_frame = metric.reduce(self._data_frame, keeper_list, "distanceInKm", "count")
 
-    def draw(self, group="tripMode", reference=None):
-        return visualization.draw_travel_distance_without_modes(self, reference)
+    def draw(self, group="tripMode", reference=None, suptitle=None):
+        if type(group) is not list:
+            listgroup = [group]
+        else:
+            listgroup = group
+        temp = metric.reduce(self._data_frame, listgroup, "distanceInKm", "count")
+        temp2 = None
+        if reference is not None:
+            temp2 = metric.reduce(reference._data_frame, listgroup, "distanceInKm", "count")
+
+        col_seperator="tripMode"
+        if "tripMode" not in listgroup:
+            col_seperator = None
+        return visualization.generic_plot(temp, group, "count", "distanceInKm", reference_df=temp2, color_seperator=col_seperator, sharex=False, suptitle=suptitle)
+
+
+        #return visualization.draw_travel_distance_without_modes(self, reference)
         #temp = metric.reduce(self._data_frame, [], "distanceInKm", "count")
         #temp2 = None
         #if reference is not None:

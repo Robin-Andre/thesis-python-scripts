@@ -12,7 +12,7 @@ from calibration.evolutionary.individual import Individual, DestinationIndividua
 from calibration.evolutionary.population import Population
 from metrics.data import Data
 from metrics.trafficdemand import TrafficDemand
-
+import mobitopp_execution as simulation
 
 def _helper(x, d):
     x.run()
@@ -31,7 +31,127 @@ def expected_linear_func(x, L, k):
 Fill this test case with all the convenience clicker tests to speed up the process
 """
 #@unittest.skip
+
+def draw_all_of_iteration(i, data, reqs, save_dir=None):
+    a, b, c = i.data.draw(reference=data)
+    a.show()
+    b.show()
+    c.show()
+    fig, ax = plt.subplots()
+    visualization.draw_modal_split_new_name(i.data, None, data, ax=ax)
+    fig.show()
+    if save_dir is not None:
+        a.savefig(save_dir + "Demand.svg", format="svg")
+        b.savefig(save_dir + "Time.svg", format="svg")
+        c.savefig(save_dir + "Distance.svg", format="svg")
+        fig.savefig(save_dir + "ModalSplitMain.svg", format="svg")
+
+    fig2 = visualization.draw_modal_split_new_name(i.data, "age", data)
+    fig3 = visualization.draw_modal_split_new_name(i.data, "activityType", data)
+    fig4 = visualization.draw_modal_split_new_in_one_figure(i.data, ['employment', "workday", "totalNumberOfCars", 'gender'],
+                                                     data, suggested_layout=(2, 2), hide_legend=True)
+    fig5 = visualization.draw_modal_split_new_in_one_figure(i.data, ['previousMode', 'economicalStatus', 'nominalSize'],
+                                                     data, suggested_layout=(2, 2), hide_legend=True)
+
+    if save_dir is not None:
+        fig2.savefig(save_dir + "ModalSplit2.svg", format="svg")
+        fig3.savefig(save_dir + "ModalSplit3.svg", format="svg")
+        fig4.savefig(save_dir + "ModalSplit4.svg", format="svg")
+        fig5.savefig(save_dir + "ModalSplit5.svg", format="svg")
+
+    temp = reqs.copy()
+    temp.remove("tripMode")
+    for r in reqs:
+        if r == "tripMode":
+            continue
+        b = i.data.travel_time.draw(reference=data.travel_time, group=r, axis_title=True)
+
+        b.show()
+        if save_dir is not None:
+            b.savefig(save_dir + r + "Time.svg", format="svg")
+        # visualization.draw_modal_split_new_name(i.data, r, data)
+
+
 class ConvenienceClickToExecute(unittest.TestCase):
+
+
+    def test_draw_the_element(self):
+        reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
+                'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+        params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+        d = Individual(seed=42, param_list=params)
+        d.run()
+        data = d.data
+        i = Individual(param_list=params)
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_250"
+        i.load(path)
+        draw_all_of_iteration(i, data, reqs, save_dir="../plots/SimulationOutput/Calibrated/")
+
+        i = Individual(param_list=params)
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_0"
+        i.load(path)
+        draw_all_of_iteration(i, data, reqs, save_dir="../plots/SimulationOutput/Uncalibrated/")
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPassesNoMinMax\data\ImprovedDetailPasses100_Algo42\individual_1588"
+        i.load(path)
+        draw_all_of_iteration(i, data, reqs, save_dir="../plots/SimulationOutput/CalibratedTwoPassesNoMinMax/")
+    def test_howto_plot_sth_with_errors(self):
+        x = pandas.DataFrame({"Oldguys": [0.2, 0.3, 0.1, 0.2, 0.2], "Newguys": [0.2, 0.2, 0, 0.1, 0.1], "Newgu2s": [0.2, 0.2, 0, 0.1, 0.1]})
+        x_errrs = pandas.DataFrame({"Oldguys_erros": [0.2, 0.3, 0.1, 0.2, 0.2], "Newguys_erros": [0.2, 0.2, 0.4, 0.1, 0.1]})
+        fig, ax = plt.subplots()
+        x.T.plot(kind="bar", ax=ax, width=0.8)
+        step = 0.8 / 5
+        offset = -0.8 / 2
+
+        for i, column in enumerate(x_errrs):
+            x_vals = [round(i + offset + x * step, 3) for x in range(6)]
+            print(x_vals)
+            y_vals = [x_errrs[column][0]] + list(x_errrs[column].values)
+            ax.step(x=x_vals, y=y_vals, color='black', linewidth=2)
+        #ax.plot([offset, offset + step], [0.2, 0.2], color='black', linewidth=2)
+        #ax.plot([-0.4, 0], [0.25, 0.25], color='black', linewidth=2)
+        fig.show()
+        print(x)
+
+    def test_draw_without_reference(self):
+        reqs = [ 'age', 'workday', 'gender', 'employment', 'activityType',
+                'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
+        params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+        i = Individual(param_list=params)
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_250"
+        i.load(path)
+        for r in reqs:
+            if r != "tripMode":
+                fig, ax = plt.subplots()
+                tempdf = i.data.get_grouped_modal_split(column_names=[r])
+                grop = tempdf.groupby(r)
+                growing_data = {}
+                for label, df in grop:
+                    growing_data[label] = df.values.flatten().tolist()
+                    #df = df.rename(columns={"split": label})
+                    #print(label)
+                    #df.T.plot(ax=ax, kind="bar")
+                df = pandas.DataFrame(growing_data, index=[0, 1, 2, 3, 4])
+                width = 0.8
+                step = width / 5
+                offset = -width / 2
+
+                df = df.rename(visualization.label_modes)
+
+                df.T.plot(kind="bar", ax=ax, width=width, color=visualization.color_modes(None, get_all=True))
+
+                for iterator, column in enumerate(df):
+                    x_vals = [round(iterator + offset + x * step, 3) for x in range(6)]
+                    print(x_vals)
+                    y_vals = [df[column][0]] + list(df[column].values)
+                    ax.step(x=x_vals, y=y_vals, color='black', linewidth=2)
+                #grop.plot(kind="bar", ax=ax, stacked=True)
+
+                #visualization.draw_grouped_modal_split(tempdf)
+                #tempdf.plot(kind="bar", subplots=True)
+                fig.show()
+                print(tempdf)
+
+
 
 
     def test_cost_calculation(self):
@@ -42,6 +162,7 @@ class ConvenienceClickToExecute(unittest.TestCase):
         for valetparking in [-0.15, -0.25, -0.5, -1, -2, -4, -8, -16]:
             print(valetparking)
             ind["b_cost"].set(valetparking)
+            print(ind.requirements)
             ind.run()
             y_1 = ind.data.travel_costs
             z = y[(y["tripMode"] == 1) & (y["economicalStatus"] == 3)]
@@ -265,15 +386,15 @@ class ConvenienceClickToExecute(unittest.TestCase):
         visualization.draw_grouped_modal_split(d)
         return
 
-    @unittest.skip("convenience click method, not a test")
+    #@unittest.skip("convenience click method, not a test")
     def test_run(self):
         x = Individual(21, [])
         x.load("resources/example_config_load")
-        x.yaml.set_fraction_of_population(0.02)
-        x.set_requirements(["tripMode", "workday"])
+        x.yaml.set_fraction_of_population(1)
+        x.set_requirements(["tripMode", "activityType"])
         x.run()
-        x.save("resources/workday_individual")
-
+        #x.save("resources/workday_individual")
+        x.save("resources/example_config_load_new")
 
     def test_detailed_ind(self):
         x = Individual(21, [])

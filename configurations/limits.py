@@ -34,8 +34,8 @@ MODE_CHOICE_LIMITS = {
     "b_tt_ped": (-0.8, 0),
     "b_cost": (-1, 0),
     "b_cost_put": (-1, 0),
-    "b_inc_high_on_b_cost": (-5, 5),
-    "b_inc_high_on_b_cost_put": (-5, 5),
+    "b_inc_high_on_b_cost": (-1, 1),
+    "b_inc_high_on_b_cost_put": (-1, 1),
     "b_u_put": (-1, 0),
     "b_zz_rp": (-1, 0),
     "b_wz_rp": (-1, 0),
@@ -44,7 +44,10 @@ MODE_CHOICE_LIMITS = {
     "b_logsum_acc_put": (-5, 0),
     "elasticity_acc_put": (-1, 0),
     "b_park_car_d": (-5, 0),
-    "elasticity_parken": (0.001, 1),
+    "elasticity_parken": (0.001, 1)
+}
+
+"""
     "b_mode_bef_put": (-5, 5),
     "b_mode_bef_ped": (-5, 5),
     "b_mode_bef_bike": (-5, 5),
@@ -231,7 +234,7 @@ MODE_CHOICE_LIMITS = {
     "b_tt_dienst_ped": (-5, 5),
     "b_tt_service_car_d": (-5, 5),
     "b_tt_service_put": (-5, 5),
-}
+} """
 
 DESTINATION_CHOICE_LIMITS = {
     "asc_car_d": (0, 100),
@@ -260,7 +263,11 @@ DESTINATION_CHOICE_LIMITS = {
 }
 
 DEFAULT_DICT = {
-
+    "b_logsum_pt": (0, 2),
+    "b_logsum_drive": (0, 2),
+    "b_logsum_pt_fix": (0, 2),
+    "b_logsum_drive_fix": (0, 2),
+    "b_attr": (0, 2)
 }
 
 

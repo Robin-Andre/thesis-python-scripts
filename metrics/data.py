@@ -1,6 +1,7 @@
 import copy
 import logging
 import math
+import time
 from operator import __sub__
 from pathlib import Path
 
@@ -13,6 +14,7 @@ import visualization
 from configurations.parameter import Parameter, ActivityGroup
 from metrics.metric import aggregate
 from metrics.trafficdemand import TrafficDemand
+from metrics.travelcost import TravelCost
 from metrics.traveldistance import TravelDistance
 from metrics.traveltime import TravelTime
 from metrics.zone_destination_traffic import ZoneDestinationTraffic
@@ -32,13 +34,14 @@ class Data:
         self.travel_time = TravelTime.from_raw_data(raw_data)
         self.travel_distance = TravelDistance.from_raw_data(raw_data)
         self.zone_destination = ZoneDestinationTraffic.from_raw_data(raw_data)
-        #TODO disabled self.travel_costs = evaluation.create_travel_cost_data(raw_data)
+        self.travel_costs = TravelCost.from_raw_data(raw_data)
 
     def __eq__(self, other):
         return self.traffic_demand._data_frame.equals(other.traffic_demand._data_frame)\
                and self.travel_time._data_frame.equals(other.travel_time._data_frame) \
                and self.travel_distance._data_frame.equals(other.travel_distance._data_frame) \
-               and self.zone_destination._data_frame.equals(other.zone_destination._data_frame)
+               and self.zone_destination._data_frame.equals(other.zone_destination._data_frame) \
+               and self.travel_costs._data_frame.equals(other.travel_costs._data_frame)
 
     def empty(self):
         return all(v is None for v in [self.traffic_demand, self.travel_time, self.travel_distance])
@@ -48,6 +51,7 @@ class Data:
         self.safe_write(self.travel_time, path + "Time.csv")
         self.safe_write(self.travel_distance, path + "Distance.csv")
         self.safe_write(self.zone_destination, path + "ZoneDestination.csv")
+        self.safe_write(self.travel_costs, path + "TravelCosts.csv")
 
     def safe_write(self, write_object, path):
         if write_object is None:
@@ -60,6 +64,7 @@ class Data:
         self.travel_time = self.safe_load(TravelTime, path + "Time.csv")
         self.travel_distance = self.safe_load(TravelDistance, path + "Distance.csv")
         self.zone_destination = self.safe_load(ZoneDestinationTraffic, path + "ZoneDestination.csv")
+        self.travel_costs = self.safe_load(TravelCost, path + "ZoneDestination.csv")
 
     def safe_load(self, load_object_class, path):
         if not Path(path).exists():
@@ -72,6 +77,7 @@ class Data:
         self.travel_time.print()
         self.travel_distance.print()
         self.zone_destination.print()
+        self.travel_costs.print()
 
     def columns(self):
         return self.travel_time.columns()
@@ -90,6 +96,18 @@ class Data:
             x = self.traffic_demand.draw(group=group)
             y = self.travel_time.draw(group=group)
             z = self.travel_distance.draw(group=group)
+        return x, y, z
+
+
+    def draw_with_title(self, reference=None, group="tripMode", title=""):
+        if reference is not None:
+            x = self.traffic_demand.draw(reference=reference.traffic_demand, group=group, title=title)
+            y = self.travel_time.draw(reference=reference.travel_time, group=group, suptitle=title)
+            z = self.travel_distance.draw(reference=reference.travel_distance, group=group, suptitle=title)
+        else:
+            x = self.traffic_demand.draw(group=group, title=title)
+            y = self.travel_time.draw(group=group, suptitle=title)
+            z = self.travel_distance.draw(group=group, suptitle=title)
         return x, y, z
 
     def draw_smooth(self, reference=None):
@@ -149,16 +167,41 @@ class Data:
             return ret
 
     def get_grouped_modal_split(self, column_names=None, mode_list=[0, 1, 2, 3, 4], divide=True):
-        if column_names is None or column_names == []:
+        if column_names is None or column_names == [] or len(column_names) > 1:
             return self._get_modal_split()
+
         assert "tripMode" not in column_names
         df = self.travel_time.get_data_frame()
         temp = df.groupby(column_names)
         s_list = []
+
+        test = df.groupby(column_names + ["tripMode"]).sum()["count"].to_frame()
+        element_list = list(set(df[column_names[0]]))
+        index = pandas.MultiIndex.from_product([element_list, mode_list], names=[column_names[0], "tripMode"])
+        crossboi = pandas.DataFrame(index=index).reset_index()
+        test = test.reset_index()
+        test = test.merge(crossboi, how="outer")
+        test = test.fillna(0)
+        test = test.set_index(column_names[0])
+
+
+
+
+        looo = list(range(len(column_names)))
+        test1 = test.groupby(level=looo).sum()["count"].to_frame()
+        test1.rename(columns={"count": 'max'}, inplace=True)
+        test2 = test.join(test1)
+        test2["split"] = test2["count"] / test2["max"]
+        test2 = test2.sort_values(by=[column_names[0], "tripMode"], ascending = [True, True])
+
+        if divide:
+            return test2["split"].to_frame()
+        else:
+            return test2["count"].to_frame()
         for key, group in temp:
             ret = self._modsplit_help(group, mode_list, divide).squeeze()
             if type(key) is tuple:
-                ret.name = ",".join([str(x)[:1] for x in key])
+                ret.name = ",".join([str(x)[:4] for x in key])
             else:
                 ret.name = key
             s_list.append(ret)
@@ -182,23 +225,10 @@ class Data:
         return t["modal_split"]
 
 
-def help_difference_builder(original, comparison, method, string):
-    diff = original - comparison
-    return method(diff[string], diff[string + "_original"], diff[string + "_comparison"])
 
 
-def help_difference_builder_all(original, comparison, method, string):
-    diff = original.sub_all(comparison)
-    return method(diff[string], diff[string + "_original"], diff[string + "_comparison"])
+def help_modal_split(diff, original, comparison, method):
 
-
-def help_difference_builder_none(original, comparison, method, string):
-    diff = original.sub_none(comparison)
-    return method(diff[string], diff[string + "_original"], diff[string + "_comparison"])
-
-
-def help_modal_split(original, comparison, method):
-    diff = original - comparison
     return method(diff.squeeze(), original.squeeze(), comparison.squeeze())
 
 
@@ -285,26 +315,33 @@ class Comparison:
                                       "count", use_dest_dict=True)
         self.apply_on_all_sub_methods(input_data.zone_destination, comparison_data.zone_destination, "ZoneDemand", "traffic", use_dest_dict=True)
 
-
-
         self.apply_on_all_sub_methods(input_data.travel_time, comparison_data.travel_time, "TravelTime", "count")
+
         self.apply_on_all_sub_methods(input_data.traffic_demand, comparison_data.traffic_demand, "TrafficDemand", "active_trips")
 
         self.apply_on_all_sub_methods(input_data.traffic_demand.aggregate_time(5), comparison_data.traffic_demand.aggregate_time(5), "TrafficDemand5min",
                                       "active_trips")
+
         self.apply_on_all_sub_methods(input_data.traffic_demand.aggregate_time(15), comparison_data.traffic_demand.aggregate_time(15), "TrafficDemand15min",
                                       "active_trips")
+
         self.apply_on_all_sub_methods(input_data.traffic_demand.aggregate_time(60), comparison_data.traffic_demand.aggregate_time(60), "TrafficDemand60min",
                                       "active_trips")
-        self.do_all_modal_splits(input_data, comparison_data)
-        self.do_all_modal_counts(input_data, comparison_data)
 
+        self.do_all_modal_splits(input_data, comparison_data)
+
+        self.do_all_modal_counts(input_data, comparison_data)
         self.statistic_tests = {}
         self.apply_count_statistic(input_data.travel_time, comparison_data.travel_time, "TravelTime")
+
         self.apply_count_statistic(input_data.traffic_demand, comparison_data.traffic_demand, "TrafficDemand")
+
         self.apply_count_statistic(input_data.travel_distance, comparison_data.travel_distance, "TravelDistance")
+
         self.apply_count_statistic(input_data.zone_destination, comparison_data.zone_destination, "Destinations")
+
         self.apply_statistic_tests(input_data.travel_time, comparison_data.travel_time, "time")
+
         self.apply_statistic_tests(input_data.travel_distance, comparison_data.travel_distance, "distance")
 
         self.modal_split = -self.mode_metrics["ModalSplit_Default_Splits_sum_squared_error"]
@@ -316,22 +353,36 @@ class Comparison:
             self.zone_traffic = (numpy.inf, numpy.inf)
 
     def __helper2(self, input_obj, comparison_obj, funct, string):
+
         if len(input_obj.columns()) >= 2:
             cols = list(input_obj.columns())
             cols.remove("tripMode")
-            for func in FUNCTIONS:
 
-                x = help_modal_split(funct(input_obj, cols), funct(comparison_obj, cols),
-                                     func)
+            original = funct(input_obj, cols)
+            comparison = funct(comparison_obj, cols)
+
+            temp = original.join(comparison, how="outer", lsuffix="or", rsuffix="comp")
+            temp = temp.fillna(0)
+            temp["diff"] = temp.iloc[:, 0] - temp.iloc[:,1]
+            #diff.fillna(0)
+
+
+            for func in FUNCTIONS:
+                x = help_modal_split(temp.iloc[:, 2], temp.iloc[:, 0], temp.iloc[:,1], func)
                 self.mode_metrics["ModalSplit_Detailed" + string + func.__name__] = x
 
         else:
             for func in FUNCTIONS:
                 x = numpy.inf
                 self.mode_metrics["ModalSplit_Detailed" + string + func.__name__] = x
-
+        original = funct(input_obj)
+        comparison = funct(comparison_obj)
+        temp = original.join(comparison, how="outer", lsuffix="or", rsuffix="comp")
+        temp = temp.fillna(0)
+        temp["diff"] = temp.iloc[:, 0] - temp.iloc[:, 1]
         for func in FUNCTIONS:
-            x = help_modal_split(funct(input_obj), funct(comparison_obj), func)
+
+            x = help_modal_split(temp.iloc[:, 2], temp.iloc[:, 0], temp.iloc[:,1], func)
             self.mode_metrics["ModalSplit_Default" + string + func.__name__] = x
 
     def do_all_modal_splits(self, input_obj, comparison_obj):
@@ -369,35 +420,52 @@ class Comparison:
         diff3 = input.sub_all(comparison)
         for d_name, d in zip(d_names, [diff, diff2, diff3]):
             for test_name, teste in tests.items():
-                _, p_value = teste(d[d.columns[0]], d[d.columns[1]])
+                temp = d[d.columns[2]] == 0
+                if temp.all():
+                    p_value = 1
+                else:
+                    x, p_value = teste(d[d.columns[0]], d[d.columns[1]])
+
                 self.statistic_tests["CountComparisonStatisticTest_" + name + "_" + test_name + "_" + d_name] = p_value
 
 
     def apply_on_all_sub_methods(self, input_obj, comparison_obj, name, string, use_dest_dict=False):
-        self.apply_all_metrics(input_obj, comparison_obj, name + "_Default_", string, use_dest_dict)
-        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "_All_", string, use_dest_dict)
+        self.apply_all_metrics(input_obj, comparison_obj, name + "_All_", string, use_dest_dict)
+        self.apply_all_metrics_detailed(input_obj, comparison_obj, name + "_Default_", string, use_dest_dict)
         self.apply_all_metrics_generic(input_obj, comparison_obj, name + "_None_", string, use_dest_dict)
 
-    def __helper(self, input_obj, comparison_obj, name, metric_func, string, use_dest_dict=False):
+    def __helper(self, input_obj, comparison_obj, name, diff, string, use_dest_dict=False):
         for func in FUNCTIONS:
-
-            if input_obj is None or comparison_obj is None:
+            if diff is None:
                 x = numpy.inf
             else:
-                x = metric_func(input_obj, comparison_obj, func, string)
+                x = func(diff[string], diff[string + "_original"], diff[string + "_comparison"])
+                #x = metric_func(input_obj, comparison_obj, func, string)
             if use_dest_dict:
                 self.destination_metrics[name + func.__name__] = x
             else:
                 self.mode_metrics[name + func.__name__] = x
 
     def apply_all_metrics_detailed(self, input_obj, comparison_obj, name, string, use_dest_dict):
-        self.__helper(input_obj, comparison_obj, name, help_difference_builder_all, string, use_dest_dict)
+        if input_obj is None or comparison_obj is None:
+            diff = None
+        else:
+            diff = input_obj - comparison_obj
+        self.__helper(input_obj, comparison_obj, name, diff, string, use_dest_dict)
 
     def apply_all_metrics(self, input_obj, comparison_obj, name, string, use_dest_dict):
-        self.__helper(input_obj, comparison_obj, name, help_difference_builder, string, use_dest_dict)
+        if input_obj is None or comparison_obj is None:
+            diff = None
+        else:
+            diff = input_obj.sub_all(comparison_obj)
+        self.__helper(input_obj, comparison_obj, name, diff, string, use_dest_dict)
 
     def apply_all_metrics_generic(self, input_obj, comparison_obj, name, string, use_dest_dict):
-        self.__helper(input_obj, comparison_obj, name, help_difference_builder_none, string, use_dest_dict)
+        if input_obj is None or comparison_obj is None:
+            diff = None
+        else:
+            diff = input_obj.sub_none(comparison_obj)
+        self.__helper(input_obj, comparison_obj, name, diff, string, use_dest_dict)
 
 
     def sum_zones(self):

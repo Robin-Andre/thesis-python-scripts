@@ -1,4 +1,5 @@
 import inspect
+import logging
 import os
 import platform
 from datetime import datetime
@@ -63,6 +64,8 @@ def __run(command):
     # print('STDOUT:{}'.format(stdout))
 
     process.wait()
+    if return_code != 0:
+        logging.warning("Something broke big time")
     return return_code
 
 

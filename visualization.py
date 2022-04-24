@@ -9,28 +9,34 @@ from matplotlib import pyplot as plt
 from configurations import SPECS
 
 
-def label_modes(s):
+def label_modes(s, get_all_and_combined=False):
     d = {
         -1: "All",
         0: "Bike",
         1: "Car",
         2: "Passenger",
         3: "Pedestrian",
-        4: "Public Transport"
+        4: "Pub. Transp."
     }
+    if get_all_and_combined:
+        return list(d.values())
     if s in d.keys():
         return d[s]
     return "Unknown Label"
 
-def color_modes(s):
+def color_modes(s, get_all=False, get_all_and_combined=False):
     d = {
         -1: "#888888",
-        0: "#e41a1c",
-        1: "#377eb8",
-        2: "#4daf4a",
-        3: "#984ea3",
-        4: "#ff7f00"
+        0: "#2D77BC",
+        1: "#BF252C",
+        2: "#F89C1C",
+        3: "#B3E0F7",
+        4: "#70BE43"
     }
+    if get_all_and_combined:
+        return list(d.values())
+    if get_all:
+        return list(d.values())[1:]
     if s in d.keys():
         return d[s]
     return "#000000"
@@ -74,18 +80,32 @@ def draw_travel_demand(data_series, color_num=-1, title=""):
 
 def draw_travel_demand_by_mode(data_frame, title="Active Trips", reference_df=None, group="tripMode"):
     trip_mode_list = list(set(data_frame[group]))
-    fig, ax = plt.subplots(math.ceil(len(trip_mode_list)), 2, sharex=True)
+    fig, ax = plt.subplots(math.ceil(len(trip_mode_list) / 2), 2, sharex=False)
+    axes = ax.flatten()
+    for i in range(len(trip_mode_list), len(axes)):
+        fig.delaxes(axes[i])
+    #fig.delaxes(axes[[4, 5]])
+    fig.set_dpi(400)
     fig.suptitle(title)
-
+    fig.set_tight_layout(True)
+    lines = []
     for i, element in enumerate(trip_mode_list):
         df = data_frame[data_frame[group] == element]
-        ax[i // 2][i % 2].plot(df["time"], df["active_trips"], color=color_modes(element))
-        ax[i // 2][i % 2].set_xticks([0, 1440, 2880, 4320, 5760, 7200, 8640, 10080])
-        ax[i // 2][i % 2].set_xticklabels(["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So", "Mo"])
+        line, = axes[i].plot(df["time"], df["active_trips"], color=color_modes(element))
+        lines.append(line)
+        axes[i].set_xticks([0, 1440, 2880, 4320, 5760, 7200, 8640, 10080])
+        #if (i // 2 == 2 and i % 2 == 0) or (i // 2 == 1 and i % 2 == 1):
+        axes[i].set_xticklabels(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su", "Mo"])
+        #else:
+        #    axes[i].set_xticklabels(["","","","","","","",""])
         if reference_df is not None:
             ref = reference_df[reference_df[group] == element]
-            ax[i // 2][i % 2].plot(ref["time"], ref["active_trips"], color="black", alpha=0.2)
+            axes[i].plot(ref["time"], ref["active_trips"], color="black", alpha=0.2)
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
+
+    #lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+    #lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
+    fig.legend(lines, ["Bike", "Car", "Passenger", "Pedestrian", "Public Transit"], loc=4)#[.7, 0.05])
     return fig
 
 def draw_travel_distance_without_modes(obj, reference=None):
@@ -188,40 +208,63 @@ def generic_smol_plot(data_frame, agg_list, keyword, x, element):
     fig.show()
 
 
-def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None):
+def get_color_palette_from_seperator():
+    pass
+
+def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None, set_title=False, suptitle=None, axis_title=None):
     inputs = list(set(data_frame[split_element_name]))
     inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
     rest = math.ceil(len(inputs) / square_value)
     fig, ax = plt.subplots(square_value, rest, sharex=sharex)
 
+    fig.set_tight_layout(True)
+    if len(inputs) > 1:
+        axes = ax.flatten()
+        cutoff = len(axes)
+    else:
+        axes = [ax]
+        cutoff = 0
+    for i in range(len(inputs), cutoff):
+        fig.delaxes(axes[i])
     for i, element in enumerate(inputs):
-        if rest > 1:
-            cur_ax = ax[i // rest][i % rest]
-        else:
-            cur_ax = ax[i // rest]
+        cur_ax = axes[i]
+        if axis_title is not None:
+            title_internal = get_axis_labels_from_req(split_element_name)[i]
+            cur_ax.set_title(title_internal)
+        #if rest > 1:
+        #    cur_ax = ax[i // rest][i % rest]
+        #else:
+        #    cur_ax = ax[i // rest]
 
         temp = data_frame[data_frame[split_element_name] == element]
-
-
         if color_seperator is not None:
             tmp = temp.groupby(color_seperator)
             for key, group in tmp:
-                cur_ax.plot(group[x], group[keyword], color=color_modes(key), alpha=0.4)
+                cur_ax.hist(group[x], group[x], weights=group[keyword], color=color_modes(key), alpha=1, label=label_modes(key))
+                #cur_ax.plot(group[x], group[keyword], color=color_modes(key), alpha=1)
         else:
 
             cur_ax.plot(temp[x], temp[keyword])
+        print(max(temp[x]))
+        cur_ax.set_xlim([-1, max(temp[x])])
 
-            if reference_df is not None:
-                temp2 = reference_df[reference_df[split_element_name] == element]
-                cur_ax.plot(temp2[x], temp2[keyword])
+        if reference_df is not None:
+            temp2 = reference_df[reference_df[split_element_name] == element]
+            rolled_and_smoked = temp2.copy()
+            rolled_and_smoked[keyword] = rolled_and_smoked[keyword].rolling(3, center=True, min_periods=1).mean()
+            cur_ax.plot(rolled_and_smoked[x], rolled_and_smoked[keyword], color="black", linewidth=2, alpha=0.5, label="Target")
 
 
+        if set_title:
+            cur_ax.set_title(element)
+        cur_ax.legend()
+    if suptitle is not None:
 
-        cur_ax.set_title(element)
-
-    fig.suptitle(split_element_name)
-    plt.legend(temp[keyword])
+        fig.suptitle(suptitle)
+    else:
+        fig.suptitle(get_title_from_req(split_element_name))
+    #plt.legend()
     #fig.show()
     return fig
 
@@ -239,10 +282,130 @@ def draw_modal_split(df_list):
     return
 
 
-def draw_grouped_modal_split(df, title=""):
+def _helper_get_plot_df(data, requirement):
+    if requirement is None:
+        return data._get_modal_split()
+    tempdf = data.get_grouped_modal_split(column_names=[requirement])
+    grop = tempdf.groupby(requirement)
+    growing_data = {}
+    for label, df in grop:
+        growing_data[label] = df.values.flatten().tolist()
+        # df = df.rename(columns={"split": label})
+        # print(label)
+        # df.T.plot(ax=ax, kind="bar")
+    df = pandas.DataFrame(growing_data, index=[0, 1, 2, 3, 4])
+    return df
+
+def draw_modal_split_new_in_one_figure(input_data, requirement_list, reference=None, suggested_layout=None, hide_legend=False):
+    if suggested_layout is None:
+        temp = math.ceil(math.sqrt(len(requirement_list)))
+        suggested_layout = temp, (len(requirement_list) // temp) + 1
+    fig, ax = plt.subplots(suggested_layout[0], suggested_layout[1], sharey=False)
+    fig.set_tight_layout(True)
+    for r, a in zip(requirement_list, ax.flatten()):
+
+        draw_modal_split_new_name(input_data, r, reference, ax=a)
+        if hide_legend:
+            a.get_legend().remove()
+    handles, labels = a.get_legend_handles_labels()
+    #fig.legend(handles, labels, loc='center right')
+    #fig.subplots_adjust(right=0.75)
+    fig.show()
+    return fig
+
+
+translate_req_to_title = {
+    "tripMode": "Mode",
+    "age": "Age",
+    "activityType": "Activity Type",
+    "employment": "Employment",
+    "workday": "Workday",
+    "totalNumberOfCars": "Cars in Household",
+    "gender": "Gender",
+    "previousMode": "Previous Mode",
+    "economicalStatus": "Income Class",
+    "nominalSize": "Household Size"
+}
+
+translate_req_to_axis = {
+    "tripMode": ["0", "1", "2", "3", "4"],
+    "age": ["0", "18", "30", "50", "60", "70", "100+"],
+    "activityType": ["Work", "business", "Education", "Shopping", "Leisure", "Service", "Home"],
+    "employment": ["Empl.", "Educ.", "Home", "?"],
+    "workday": ["Weekend", "Workday"],
+    "totalNumberOfCars": ["0", "1", "2+"],
+    "gender": ["Female", "Male"],
+    "previousMode": ["-1", "0", "1", "2", "3", "4"],
+    "economicalStatus": ["poor", "normal", "rich"],
+    "nominalSize": ["1", "2", "3+"]
+}
+
+def get_axis_labels_from_req(req):
+    if req is None:
+        return [""]
+    return translate_req_to_axis[req]
+def get_title_from_req(req):
+    if req is None:
+        return
+    return translate_req_to_title[req]
+
+def draw_modal_split_new_name(input_data, requirement, reference=None, ax=None):
+    show_internal = False
+    if ax is None:
+        show_internal = True
+        fig, ax = plt.subplots()
+    df = _helper_get_plot_df(input_data, requirement)
+
+    width = 0.8
+    step = width / 5
+    offset = -width / 2
+
+    df = df.rename(label_modes)
+
+    df.T.plot(kind="bar", ax=ax, width=width, color=color_modes(None, get_all=True))
+    ax.tick_params(axis='x', labelrotation=0)
+    print(requirement)
+    handles, labels = ax.get_legend_handles_labels()
+
+    print(f"{handles} |||| {labels}")
+    ax.set_xticklabels(get_axis_labels_from_req(requirement))
+    ax.set_title(get_title_from_req(requirement))
+    if requirement is None:
+        ax.tick_params(
+                        axis='x',          # changes apply to the x-axis
+                        which='both',      # both major and minor ticks are affected
+                        bottom=False,      # ticks along the bottom edge are off
+                        top=False,         # ticks along the top edge are off
+                        labelbottom=False)
+    #ax.get_legend().remove()
+    if reference is not None:
+        refdf = _helper_get_plot_df(reference, requirement)
+
+        for iterator, column in enumerate(refdf):
+            x_vals = [round(iterator + offset + x * step, 3) for x in range(6)]
+            x_mins = x_vals[:-1]
+            x_max = x_vals[1:]
+            print(x_vals)
+            y_vals = list(refdf[column].values)
+            print(y_vals)
+            ax.hlines(y_vals, x_mins, x_max, color='black', linewidth=2, label="_nolegend_")
+    ax.legend(labels= labels + ["Target"])
+    if show_internal:
+        fig.show()
+        return fig
+
+def draw_grouped_modal_split(df, title="", reference=None):
+
     x = df.T
+
     #df.plot(kind="bar", title=[""] * 13, stacked=True, rot=1, subplots=True, layout=(5, 3), legend=False)
-    ax = x.plot(kind="bar", title=title, stacked=True, rot=1, legend=True)
+    fig, ax = plt.subplots()
+    x.plot.bar(title=title, stacked=True, width=.5, rot=1, legend=True, ax=ax, color=color_modes(None, get_all=True), alpha=1)
+    if reference is not None:
+        lolcat = reference.cumsum()
+        pass
+        #reference.T.plot.scatter(title=title, width=.4, position=0, stacked=True, rot=1, legend=False, ax=ax, color=color_modes(None, get_all=True), alpha=0.2)
+
     #plt.show()
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
@@ -280,7 +443,7 @@ def draw_travel_time_per_mode(data_frame, mode_list=[-1, 0, 1, 2, 3, 4], title="
         ax[i // 2][i % 2].plot(df, color=color_modes(element))
         if reference_df is not None:
             ref = reference_df.get_mode_specific_data(element)
-            ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2)
+            ax[i // 2][i % 2].plot(ref, color="black", alpha=0.2, linewidth=1)
         #ax[i // 2][i % 2].scatter(*zip(*data_frame.get_week_peaks(element)), color=color_modes(element))
     return fig
     #plt.show()

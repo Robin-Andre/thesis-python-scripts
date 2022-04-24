@@ -12,7 +12,7 @@ from calibration.evolutionary.individual import Individual, DestinationIndividua
 from calibration.evolutionary.population import Population
 
 from configurations.observations import ModalSplitObservation, TimeModeObservation
-
+import mobitopp_execution as simulation
 
 class MyTestCase(unittest.TestCase):
 
@@ -101,8 +101,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.x["asc_car_d_mu"].value, 34)
 
     def test_error_calculation(self):
-        for v in self.x.errors(self.x.data).values():
-            self.assertAlmostEqual(v, 0)
+        for v in self.x.errors(self.x.data):
+            self.assertAlmostEqual(v[1], 0)
 
     def test_individual_parameter_extraction(self):
         r = Individual(9, ["shift_carav_on_logsum_drive", "b_mode_bef_ped", "b_arbwo_car_p"])
@@ -154,9 +154,17 @@ class MyTestCase(unittest.TestCase):
         #combine.basic_combine(d_individual, d_second, child, None, d_individual.parameter_names())
         #print(child["asc_car_d"])
 
-    @unittest.skip("Reevaluate what this test does test.individual l.135")
+    #@unittest.skip("Reevaluate what this test does test.individual l.135")
     def test_dest(self):
-        d_individual = DestinationIndividual()
+        x = simulation.default_yaml().get_all_dest_parameters_name([], use_main=True)
+        print(x)
+        d_individual = DestinationIndividual(param_list=x)
+
+        print(d_individual.pygad_bound_dict())
+        d_individual.set_list(list(range(13)))
+        print(d_individual.active_values())
+        print(d_individual[("business", "b_logsum_pt")])
+        print(d_individual["asc_car_d"])
         print(d_individual.parameter_names())
 
 

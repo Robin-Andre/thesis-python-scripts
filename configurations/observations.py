@@ -8,10 +8,49 @@ import scipy.optimize
 from matplotlib import pyplot as plt
 
 
+class ObserverOptions:
+    def __init__(self):
+        self.use_better_travel_method = False
+        self.quantile_with_name = ("ExtraQuantilesForLongTravels", [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999])
+        self.quantiles = self.quantile_with_name[1]
+        self.step_size_if_equal = -0.1
+        self.use_sigmoid_approximation = False
+
+        self.alpha_error_dict = {
+            "b_cost": 10,
+            "b_cost_put": 0.5,
+            "b_inc_high_on_b_cost": 10,
+            "b_inc_high_on_b_cost_put": 0.5,
+        }
+        self.alpha_scaling_dict = {
+
+        }
+    def get_error_scaling(self, p_name):
+        x = self.alpha_error_dict.get(p_name, 0.01)
+        return x
+
+    def set_quantile_with_name(self, name, quantiles):
+        self.quantile_with_name = (name, quantiles)
+        self.quantiles = quantiles
+
+    def get_observation_scaling(self, p_name):
+        return self.alpha_scaling_dict.get(p_name, -0.1)
+
+
+    @classmethod
+    def get_description(self):
+        return "used_better_approx, step_size_equal, quantile_name, error_scaling, observation_scaling"
+
+    def get_options_string(self, p_name):
+        return f"{self.use_better_travel_method}, {self.step_size_if_equal}, {self.quantile_with_name[0]}, {self.get_error_scaling(p_name)}, {self.get_observation_scaling(p_name)}"
+
+
+
 class Observation(ABC):
     def __init__(self, function=lambda x: x, function_inverse=lambda x: x):
         self.f = function
         self.f_inverse = function_inverse
+        self.options = ObserverOptions()
 
     def observe(self, ind_1, target_data, parameter):
         return 0
@@ -34,8 +73,6 @@ def b_tt_exp_inverse(y):
     return math.log(-y)
 
 
-class CostObservation(Observation):
-    pass
 
 
 class ElasticityObservation(Observation):
@@ -43,6 +80,13 @@ class ElasticityObservation(Observation):
     The elasticity parameters are cursed, trying to optimize them will only result in tears and broken bones.
     If anyone reads this and does unironically attempt to implement an observation for elasticity parameters:
     Godspeed
+    """
+    pass
+
+
+class TransferTimeObservation(Observation):
+    """
+    The underlying example model does not support transfer time as an analysis
     """
     pass
 
@@ -58,6 +102,7 @@ class TimeModeObservation(Observation):
         self.f = function
         self.f_inverse = inverse_function
         self.verify_functions()
+        self.options = ObserverOptions()
 
     def verify_functions(self):
         epsilon = 0.0001
@@ -65,15 +110,49 @@ class TimeModeObservation(Observation):
         for x in [-20, -10, -1, -0.01, 0, 0.01, 10, 20]:
             assert abs(self.f_inverse(self.f(x)) - x) < epsilon
 
+    def _interpolate(self, x_1, y_1, x_2, y_2, y_target):
+        assert y_1 != y_2
+        a = (y_target - y_1) / (y_2 - y_1)
+        return a * (x_2 - x_1) + x_1
+
     def _generate_quantiles(self, frame):
-        quants = [.1, .2, .3, .4, .5, .6, .7, .8, .9, .99, .999]
-        cumulated_values = frame["count"].cumsum()
-        quantile_vals = cumulated_values.quantile(quants)
-        x = [(numpy.abs(cumulated_values - i)).argmin() for i in quantile_vals]
-        q = cumulated_values.index.values[x]
         # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
         assert frame.index.names[-1] == "durationTrip"
-        return [split_tuples[-1] for split_tuples in q]
+        if frame.empty or len(frame) == 1:
+            logging.warning("Empty Data frame in quantiles  ")
+            return [0 for _ in range(len(self.options.quantiles))]
+        cumulated_values = frame["count"].cumsum()
+        quantile_vals = cumulated_values.quantile(self.options.quantiles)
+
+        x = [(numpy.abs(cumulated_values - i)).argmin() for i in quantile_vals]
+        x_1_index_manual = []
+        for i in quantile_vals:
+            temp = numpy.where(cumulated_values < i)[0]
+            if len(temp) > 0:
+                x_1_index_manual.append(temp[-1])
+
+        x_1_index = [numpy.where(cumulated_values < i)[0][-1] for i in quantile_vals]
+        x_2_index = [i + 1 for i in x_1_index]
+
+        t_1 = cumulated_values.take(x_1_index)
+        t_2 = cumulated_values.take(x_2_index)
+
+        y_1 = t_1.values
+        y_2 = t_2.values
+
+        x_1 = t_1.index.get_level_values(-1).values
+        x_2 = t_2.index.get_level_values(-1).values
+
+        y_target = quantile_vals.values
+        assert len(x_1) == len(x_2) == len(y_1) == len(y_2) == len(self.options.quantiles)
+        better_results = [self._interpolate(a, b, c, d, e) for a, b, c, d, e in zip(x_1, y_1, x_2, y_2, y_target)]
+        #print(f"Better Interpolation: {better_results}")
+        q = cumulated_values.index.values[x]
+        #print(self.options.use_better_travel_method)
+        if self.options.use_better_travel_method:
+            return better_results
+        else:
+            return [split_tuples[-1] for split_tuples in q]
 
 
     def _generate_function_estimate(self, target, observation):
@@ -112,9 +191,6 @@ class TimeModeObservation(Observation):
 
         wololo = self._get_data_subset(ind_1.data.travel_time.get_data_frame(), parameter)
         target_wololo = self._get_data_subset(target_data.travel_time.get_data_frame(), parameter)
-        #x = self._generate_quantiles(wololo)
-        #y = self._generate_quantiles(target_wololo)
-
         #print(x)
         #print(y)
         #print([a_i - b_i for a_i, b_i in zip(x, y)])
@@ -138,7 +214,7 @@ class TimeModeObservation(Observation):
 
     def error(self, ind_1, target_data, parameter):
         z = self._other_error_method(ind_1, target_data, parameter)
-        alpha = 0.01
+        alpha = self.options.get_error_scaling(parameter.name) * 10 / len(self.options.quantiles)
         return z * alpha
         #return alpha * self._helper(ind_1, target_data, parameter)[1]
 
@@ -151,15 +227,17 @@ class TimeModeObservation(Observation):
         # it is recommended to attach an inverse function to the specific parameter to gain a linear impact on the
         # time component.
 
-        alpha = -0.1
+        alpha = self.options.get_observation_scaling(parameter)
 
         x_1 = ind_1[parameter].value  # x == -0.5
         y_1 = self.f(x_1)
         y_new = y_1 + alpha * error
 
         #print(f"Debug{x_1} {y_1} {y_new} {error}")
-
-        x_new = self.f_inverse(y_new)
+        try:
+            x_new = self.f_inverse(y_new)
+        except ValueError:
+            x_new = self.f_inverse(-0.0001)
         #print(f"{x_1} {y_1}|  {y_new}")
         #print(f"Suggested Value simple: {x_new}")
         return x_new
@@ -167,15 +245,17 @@ class TimeModeObservation(Observation):
     def guess(self, x_1, y_1, x_2, y_2):
         #print(f"The values are {x_1}, {y_1}  {x_2}, {y_2}")
         # Calculate m * x + c for a linear approximation
+        if abs(x_2 - x_1) < 0.001:
+            return self.f_inverse((x_2 + x_1) / 2)
         m = (y_2 - y_1) / (x_2 - x_1)
         c = y_1 - m * x_1
 
         # This is a special case for the quantile approximation, since it is easily possible to generate two identical
         # y_1 == y_2
-        if m == 0:
+        if m == 0 or abs(y_2 - y_1) < 0.001:
             print(f"Special case has entered the chat")
             # if y is positive that means that the b_tt value is too large and smaller travels should be preferred
-            step = -0.1 * numpy.sign(y_1)
+            step = self.options.step_size_if_equal * numpy.sign(y_1)
             x_new = x_1 + step
         else:
             assert m != 0
@@ -185,7 +265,12 @@ class TimeModeObservation(Observation):
             assert abs(y_1 - m * x_1 - c) < epsilon
             assert abs(y_2 - m * x_2 - c) < epsilon
         #print(f"New x before inverse: {x_new}")
-        return self.f_inverse(x_new)
+        try:
+            x = self.f_inverse(x_new)
+        except ValueError:
+            x = self.f_inverse(-0.0001)
+
+        return x
 
     def observe_detailed(self, ind_1, ind_2, target_data, parameter):
         #popt1 = self._helper(ind_1, target_data, parameter)
@@ -222,7 +307,13 @@ def default_logit(y, limit=1):
 
 
 def inv_log_func(y,  k, x_0, L):
-    return (math.log((L / y) - 1) / -k) + x_0
+    x = (L / y) - 1
+    if y == 0:
+        logging.warning("Y is zero for asc")
+        x = 1000000
+    if x <= 0:
+        x = 0.01
+    return (math.log(x) / -k) + x_0
 
 
 def car_logit(x):
@@ -248,7 +339,13 @@ class ModalSplitObservation(Observation):
     # This function suggests, for a lack of information, the estimated value from the sigmoid transformation as a new
     def observe(self, ind_1, target_data, parameter):
         x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
-        x_new = g(y_target, mode_num) + x_1 - g(y_1, mode_num)
+        if self.options.use_sigmoid_approximation:
+            x_new = g(y_target, mode_num) + x_1 - g(y_1, mode_num)
+        else:
+            scaling = 10
+
+            x_new = scaling * (y_target - y_1) + x_1
+            logging.log(f"Linear Estimation: {x_1}{y_1}->{x_new}{y_target}")
         return x_new
 
     def error(self, ind_1, target_data, parameter):
@@ -260,10 +357,15 @@ class ModalSplitObservation(Observation):
         x_1, y_1, y_target, mode_num = self._helper(ind_1, target_data, parameter)
         x_2 = ind_2[parameter.name].value
         y_2 = ind_2.data.get_modal_split_by_param(parameter)
-
-        z = g(y_target)
-        z_1 = g(y_1)
-        z_2 = g(y_2)
+        if self.options.use_sigmoid_approximation:
+            z = g(y_target)
+            z_1 = g(y_1)
+            z_2 = g(y_2)
+        else:
+            z = y_target
+            z_1 = y_1
+            z_2 = y_2
+            logging.log(f"Linear Observation Detailed: {z}{z_1}{z_2}")
         #print(f"All the observed ladies: {x_1} {y_1} {y_target} {z} {z_1} {z_2}")
 
         if abs(z_2 - z_1) < 0.000001:
@@ -273,4 +375,74 @@ class ModalSplitObservation(Observation):
             a = (z - z_1) / (z_2 - z_1)  # a is the linear scale factor based on the normalized parameters
         x_new = a * (x_2 - x_1) + x_1
         return x_new
+
+
+class CostObservation(TimeModeObservation):
+    def __init__(self):
+        self.f = lambda x: x
+        self.f_inverse = lambda x: x
+        self.verify_functions()
+        self.options = ObserverOptions()
+
+    def _get_data_subset(self, dataframe, parameter):
+        requirements = list(parameter.requirements.keys())
+        temp = dataframe.groupby(requirements + ["travel_cost"]).sum()["count"].to_frame()
+        for k, v in parameter.requirements.items():
+            temp = temp.iloc[temp.index.get_level_values(k) == parameter.requirements[k]]
+        return temp
+
+
+    def _other_error_method(self, ind_1, target_data, parameter):
+        x = self._get_data_subset(ind_1.data.travel_costs.get_data_frame(), parameter)
+        y = self._get_data_subset(target_data.travel_costs.get_data_frame(), parameter)
+        if len(x) == 0 and len(y) == 0:
+            logging.warning("Bad quantiles, none exist")
+            return 0
+        elif len(x) == 0:
+            logging.warning("Bad quantiles x doesnt exist")
+            return sum(self._generate_quantiles(y))
+        elif len(y) == 0:
+            logging.warning("Bad quantiles y doesnt exist")
+            return sum(self._generate_quantiles(x))
+        a = self._generate_quantiles(x)
+        b = self._generate_quantiles(y)
+        # print(f"Param {parameter}")
+        # print([a_i - b_i for a_i, b_i in zip(a, b)])
+        z = sum([a_i - b_i for a_i, b_i in zip(a, b)])
+        # print(z)
+        return z
+
+
+    def _generate_quantiles(self, frame):
+        # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
+        assert frame.index.names[-1] == "travel_cost"
+
+        cumulated_values = frame["count"].cumsum()
+        quantile_vals = cumulated_values.quantile(self.options.quantiles)
+
+        x = [(numpy.abs(cumulated_values - i)).argmin() for i in quantile_vals]
+
+        x_1_index = [numpy.where(cumulated_values < i)[0][-1] for i in quantile_vals]
+        x_2_index = [i + 1 for i in x_1_index]
+
+        t_1 = cumulated_values.take(x_1_index)
+        t_2 = cumulated_values.take(x_2_index)
+
+        y_1 = t_1.values
+        y_2 = t_2.values
+
+        x_1 = t_1.index.get_level_values(-1).values
+        x_2 = t_2.index.get_level_values(-1).values
+
+        y_target = quantile_vals.values
+        assert len(x_1) == len(x_2) == len(y_1) == len(y_2) == len(self.options.quantiles)
+        better_results = [self._interpolate(a, b, c, d, e) for a, b, c, d, e in zip(x_1, y_1, x_2, y_2, y_target)]
+        #(f"Better Interpolation: {better_results}")
+        q = cumulated_values.index.values[x]
+        #print(self.options.use_better_travel_method)
+        if self.options.use_better_travel_method:
+            return better_results
+        else:
+            return [split_tuples[-1] for split_tuples in q]
+
 
