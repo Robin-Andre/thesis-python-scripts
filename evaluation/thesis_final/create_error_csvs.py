@@ -71,15 +71,14 @@ def make_error_tracking_for_experiment_competition(params, path, reference=None)
 def make_error_tracking_for_experiment_competition_destination(params, path, reference=None):
     for file in (path / "data/").iterdir():
         print(file)
-
         load_run_competition(file, params, reference)
 
 def main():
     params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
               "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
 
-    #ref = Individual(param_list=params)
-    #ref.run()
+    ref = Individual(param_list=params)
+    ref.run()
 
     """make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentBetterErrorGuessing/"), ref)
     make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentQuantiles/"), ref)  # MyExperimentQuantiles
@@ -152,6 +151,12 @@ random_target_10_parameters_time_metric
         for app, param_li in zip(appendix, p_list):
             make_error_tracking_for_experiment_competition_destination(param_li, Path(SPECS.EXP_PATH + "/" + a + "_main_destination_same_seed" + app + "/"), ref)
 
+
+    # TODO fix cost read in
+    cost_params = ["b_cost", "b_cost_put", "b_inc_high_on_b_cost", "b_inc_high_on_b_cost_put"]
+    cost_ind = Individual(param_list=cost_params + params)
+    cost_ind.run()
+    make_error_tracking_for_experiment(cost_params + params, Path(SPECS.EXP_PATH + "/MyExperimentVariableQuantilesCostFixedOutput/"), cost_ind) # MyExperimentVariableQuantilesCostFixedOutput
     # TODO enable on other machine
     #make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullMode/"), ref)
     #make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPasses/"), ref)
