@@ -211,7 +211,7 @@ def generic_smol_plot(data_frame, agg_list, keyword, x, element):
 def get_color_palette_from_seperator():
     pass
 
-def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None, set_title=False, suptitle=None):
+def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None, set_title=False, suptitle=None, axis_title=None):
     inputs = list(set(data_frame[split_element_name]))
     inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
@@ -229,6 +229,9 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
         fig.delaxes(axes[i])
     for i, element in enumerate(inputs):
         cur_ax = axes[i]
+        if axis_title is not None:
+            title_internal = get_axis_labels_from_req(split_element_name)[i]
+            cur_ax.set_title(title_internal)
         #if rest > 1:
         #    cur_ax = ax[i // rest][i % rest]
         #else:
@@ -245,6 +248,7 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
             cur_ax.plot(temp[x], temp[keyword])
         print(max(temp[x]))
         cur_ax.set_xlim([-1, max(temp[x])])
+
         if reference_df is not None:
             temp2 = reference_df[reference_df[split_element_name] == element]
             rolled_and_smoked = temp2.copy()
@@ -256,9 +260,10 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
             cur_ax.set_title(element)
         cur_ax.legend()
     if suptitle is not None:
+
         fig.suptitle(suptitle)
     else:
-        fig.suptitle(split_element_name)
+        fig.suptitle(get_title_from_req(split_element_name))
     #plt.legend()
     #fig.show()
     return fig
@@ -291,7 +296,7 @@ def _helper_get_plot_df(data, requirement):
     df = pandas.DataFrame(growing_data, index=[0, 1, 2, 3, 4])
     return df
 
-def draw_modal_split_new_in_one_figure(input_data, requirement_list, reference=None, suggested_layout=None):
+def draw_modal_split_new_in_one_figure(input_data, requirement_list, reference=None, suggested_layout=None, hide_legend=False):
     if suggested_layout is None:
         temp = math.ceil(math.sqrt(len(requirement_list)))
         suggested_layout = temp, (len(requirement_list) // temp) + 1
@@ -300,11 +305,13 @@ def draw_modal_split_new_in_one_figure(input_data, requirement_list, reference=N
     for r, a in zip(requirement_list, ax.flatten()):
 
         draw_modal_split_new_name(input_data, r, reference, ax=a)
-
+        if hide_legend:
+            a.get_legend().remove()
     handles, labels = a.get_legend_handles_labels()
     #fig.legend(handles, labels, loc='center right')
     #fig.subplots_adjust(right=0.75)
     fig.show()
+    return fig
 
 
 translate_req_to_title = {
@@ -324,7 +331,7 @@ translate_req_to_axis = {
     "tripMode": ["0", "1", "2", "3", "4"],
     "age": ["0", "18", "30", "50", "60", "70", "100+"],
     "activityType": ["Work", "business", "Education", "Shopping", "Leisure", "Service", "Home"],
-    "employment": ["Emplo", "Edu", "Hom", "?"],
+    "employment": ["Empl.", "Educ.", "Home", "?"],
     "workday": ["Weekend", "Workday"],
     "totalNumberOfCars": ["0", "1", "2+"],
     "gender": ["Female", "Male"],
@@ -385,6 +392,8 @@ def draw_modal_split_new_name(input_data, requirement, reference=None, ax=None):
     ax.legend(labels= labels + ["Target"])
     if show_internal:
         fig.show()
+        return fig
+
 def draw_grouped_modal_split(df, title="", reference=None):
 
     x = df.T

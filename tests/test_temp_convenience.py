@@ -31,6 +31,47 @@ def expected_linear_func(x, L, k):
 Fill this test case with all the convenience clicker tests to speed up the process
 """
 #@unittest.skip
+
+def draw_all_of_iteration(i, data, reqs, save_dir=None):
+    a, b, c = i.data.draw(reference=data)
+    a.show()
+    b.show()
+    c.show()
+    fig, ax = plt.subplots()
+    visualization.draw_modal_split_new_name(i.data, None, data, ax=ax)
+    fig.show()
+    if save_dir is not None:
+        a.savefig(save_dir + "Demand.svg", format="svg")
+        b.savefig(save_dir + "Time.svg", format="svg")
+        c.savefig(save_dir + "Distance.svg", format="svg")
+        fig.savefig(save_dir + "ModalSplitMain.svg", format="svg")
+
+    fig2 = visualization.draw_modal_split_new_name(i.data, "age", data)
+    fig3 = visualization.draw_modal_split_new_name(i.data, "activityType", data)
+    fig4 = visualization.draw_modal_split_new_in_one_figure(i.data, ['employment', "workday", "totalNumberOfCars", 'gender'],
+                                                     data, suggested_layout=(2, 2), hide_legend=True)
+    fig5 = visualization.draw_modal_split_new_in_one_figure(i.data, ['previousMode', 'economicalStatus', 'nominalSize'],
+                                                     data, suggested_layout=(2, 2), hide_legend=True)
+
+    if save_dir is not None:
+        fig2.savefig(save_dir + "ModalSplit2.svg", format="svg")
+        fig3.savefig(save_dir + "ModalSplit3.svg", format="svg")
+        fig4.savefig(save_dir + "ModalSplit4.svg", format="svg")
+        fig5.savefig(save_dir + "ModalSplit5.svg", format="svg")
+
+    temp = reqs.copy()
+    temp.remove("tripMode")
+    for r in reqs:
+        if r == "tripMode":
+            continue
+        b = i.data.travel_time.draw(reference=data.travel_time, group=r, axis_title=True)
+
+        b.show()
+        if save_dir is not None:
+            b.savefig(save_dir + r + "Time.svg", format="svg")
+        # visualization.draw_modal_split_new_name(i.data, r, data)
+
+
 class ConvenienceClickToExecute(unittest.TestCase):
 
 
@@ -44,57 +85,15 @@ class ConvenienceClickToExecute(unittest.TestCase):
         i = Individual(param_list=params)
         path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_250"
         i.load(path)
-        a, b, c = i.data.draw(reference=data)
-        a.show()
-        b.show()
-        fig, ax = plt.subplots()
-        visualization.draw_modal_split_new_name(i.data, None, data, ax=ax)
-        fig.show()
+        draw_all_of_iteration(i, data, reqs, save_dir="../plots/SimulationOutput/Calibrated/")
 
-        visualization.draw_modal_split_new_name(i.data, "age", data)
-        visualization.draw_modal_split_new_name(i.data, "activityType", data)
-        visualization.draw_modal_split_new_in_one_figure(i.data, ['employment', "workday", "totalNumberOfCars", 'gender'], data,  suggested_layout=(2, 2))
-        visualization.draw_modal_split_new_in_one_figure(i.data, ['totalNumberOfCars', 'previousMode', 'economicalStatus', 'nominalSize'],
-                                                         data, suggested_layout=(2, 2))
-        temp = reqs.copy()
-        temp.remove("tripMode")
-        visualization.draw_modal_split_new_in_one_figure(i.data, temp, data)
-
-        visualization.draw_modal_split_new_in_one_figure(i.data, temp, data, suggested_layout=(10, 1))
-        for r in reqs:
-            if r == "tripMode":
-                continue
-            b = i.data.travel_time.draw(reference=data.travel_time, group=r)
-
-            b.show()
-            #visualization.draw_modal_split_new_name(i.data, r, data)
-
-
-        return
-
+        i = Individual(param_list=params)
         path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_0"
         i.load(path)
-        a, b, c = i.data.draw(reference=data)
-        a.show()
-        b.show()
-        visualization.draw_modal_split_new_name(i.data, None, data)
-        for r in reqs:
-
-            b = i.data.travel_time.draw(reference=data.travel_time, group=r)
-
-            b.show()
-
-            if r == "tripMode":
-                continue
-            visualization.draw_modal_split_new_name(i.data, r, data)
-
-        return
-        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullMode\data\FixedQuantilesTarget101_Algo43\individual_150"
+        draw_all_of_iteration(i, data, reqs, save_dir="../plots/SimulationOutput/Uncalibrated/")
+        path = r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPassesNoMinMax\data\ImprovedDetailPasses100_Algo42\individual_1588"
         i.load(path)
-        a, b, c = i.data.draw(reference=data)
-        a.show()
-        b.show()
-
+        draw_all_of_iteration(i, data, reqs, save_dir="../plots/SimulationOutput/CalibratedTwoPassesNoMinMax/")
     def test_howto_plot_sth_with_errors(self):
         x = pandas.DataFrame({"Oldguys": [0.2, 0.3, 0.1, 0.2, 0.2], "Newguys": [0.2, 0.2, 0, 0.1, 0.1], "Newgu2s": [0.2, 0.2, 0, 0.1, 0.1]})
         x_errrs = pandas.DataFrame({"Oldguys_erros": [0.2, 0.3, 0.1, 0.2, 0.2], "Newguys_erros": [0.2, 0.2, 0.4, 0.1, 0.1]})

@@ -117,7 +117,7 @@ class TimeModeObservation(Observation):
     def _generate_quantiles(self, frame):
         # TODO this is dangerous, there is no guarantee that durationTrip is the last element of th index
         assert frame.index.names[-1] == "durationTrip"
-        if frame.empty:
+        if frame.empty or len(frame) == 1:
             logging.warning("Empty Data frame in quantiles  ")
             return [0 for _ in range(len(self.options.quantiles))]
         cumulated_values = frame["count"].cumsum()

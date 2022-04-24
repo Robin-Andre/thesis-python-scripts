@@ -98,6 +98,18 @@ class Data:
             z = self.travel_distance.draw(group=group)
         return x, y, z
 
+
+    def draw_with_title(self, reference=None, group="tripMode", title=""):
+        if reference is not None:
+            x = self.traffic_demand.draw(reference=reference.traffic_demand, group=group, title=title)
+            y = self.travel_time.draw(reference=reference.travel_time, group=group, suptitle=title)
+            z = self.travel_distance.draw(reference=reference.travel_distance, group=group, suptitle=title)
+        else:
+            x = self.traffic_demand.draw(group=group, title=title)
+            y = self.travel_time.draw(group=group, suptitle=title)
+            z = self.travel_distance.draw(group=group, suptitle=title)
+        return x, y, z
+
     def draw_smooth(self, reference=None):
         if reference is not None:
             x = self.traffic_demand.draw_smooth(reference.traffic_demand)

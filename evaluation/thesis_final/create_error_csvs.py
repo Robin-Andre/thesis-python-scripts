@@ -1,8 +1,15 @@
+import re
 from pathlib import Path
 
 from calibration.evolutionary.individual import Individual, DestinationIndividual
 from configurations import SPECS
 import mobitopp_execution as simulation
+
+def get_target_seed_from_string(string):
+    print(string)
+    temp = re.findall(r"\d*\_", string)
+    seed = temp[0][:-1]
+    return seed
 
 
 def write(path, csv):
@@ -17,7 +24,9 @@ def load_run(path, params, target):
         print(file)
         ind = Individual(param_list=params)
         ind.load(file)
-        csv_list.append(",".join([str(x[1]) for x in ind.errors(target.data)]))
+        csv_line = ",".join([str(x[1]) for x in ind.errors(target.data)])
+        print(csv_line)
+        csv_list.append(csv_line)
     csv_string = "\n".join(csv_list)
     write(path.parent.parent / "csv" / (path.name + "parameter_list.csv"), csv_string)
 
@@ -47,6 +56,11 @@ def load_run_competition_destination(path, params, target):
 def make_error_tracking_for_experiment(params, path, reference=None):
     for file in (path / "data/").iterdir():
         print(file)
+        print()
+        if reference is None:
+            reference = Individual(param_list=params, seed=get_target_seed_from_string(file.name))
+            reference.run()
+
         load_run(file, params, reference)
 
 def make_error_tracking_for_experiment_competition(params, path, reference=None):
@@ -57,16 +71,17 @@ def make_error_tracking_for_experiment_competition(params, path, reference=None)
 def make_error_tracking_for_experiment_competition_destination(params, path, reference=None):
     for file in (path / "data/").iterdir():
         print(file)
+
         load_run_competition(file, params, reference)
 
 def main():
     params = ["asc_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "asc_bike_mu", "b_tt_car_p_mu",
               "b_tt_car_d_mu", "b_tt_put_mu", "b_tt_bike_mu", "b_tt_ped"]
 
-    ref = Individual(param_list=params)
-    ref.run()
+    #ref = Individual(param_list=params)
+    #ref.run()
 
-    make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentBetterErrorGuessing/"), ref)
+    """make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentBetterErrorGuessing/"), ref)
     make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentQuantiles/"), ref)  # MyExperimentQuantiles
 
     make_error_tracking_for_experiment(params, Path(SPECS.EXP_PATH + "/MyExperimentVeryHighPrecision/"), ref)  # MyExperimentVeryHighPrecision
@@ -81,7 +96,7 @@ def main():
                                 "pyswarms_10_parameters", "pyswarms_10_parameters_target_has_same_seed",
                                 "spsa_10_parameters_target_has_same_seed"]
     for l in list_of_comp_experiments:
-        make_error_tracking_for_experiment_competition(params, "/" + l + "/", ref)
+        make_error_tracking_for_experiment_competition(params, "/" + l + "/", ref)"""
 
 
     """ individual_seed is set:
@@ -108,6 +123,15 @@ random_target_10_parameters_time_metric
     reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
             'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
     all_mode_params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
+    ref = Individual(param_list=all_mode_params)
+    ref.run()
+
+    #make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullMode/"), ref)
+    make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPasses/"), ref)
+    make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPassesNewSetWithTargetSeed/"), None)
+    return
+
+
 
     dest_params = simulation.default_yaml().get_all_dest_parameters_name([])
     dest_params.remove('b_cost')
