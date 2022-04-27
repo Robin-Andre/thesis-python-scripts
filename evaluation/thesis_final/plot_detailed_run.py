@@ -154,12 +154,13 @@ def make_plots_for_showing_not_well_calibrated():
     d.run()
     data = d.data
     fig, ax = plt.subplots(1, 2, figsize=(6, 3))
-    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 619, reference=data, axinput=ax[0], axis_title="Iteration 619")
+    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 619, reference=data, axinput=ax[1], axis_title="Iteration 619")
 
 
-    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 160, reference=data, axinput=ax[1], axis_title="Iteration 160")
-
+    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 160, reference=data, axinput=ax[0], axis_title="Iteration 160")
+    plt.tight_layout()
     fig.show()
+    fig.savefig("../../plots/Iterations.svg", format="svg")
     return
     plot_iteration_put_only(
         r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42",

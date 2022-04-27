@@ -235,8 +235,6 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
         cur_ax = axes[i]
         if axis_title is not None:
             title_internal = get_axis_labels_from_req(split_element_name)[i]
-            print(axis_title)
-            title_internal = axis_title
             cur_ax.set_title(title_internal)
         #if rest > 1:
         #    cur_ax = ax[i // rest][i % rest]
