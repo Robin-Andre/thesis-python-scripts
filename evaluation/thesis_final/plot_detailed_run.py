@@ -105,7 +105,7 @@ def plot_iteration(exp_path, name,  iteration, reference=None):
     c.show()
     return a, b, c
 
-def plot_iteration_put_only(path, iteration, reference=None):
+def plot_iteration_put_only(path, iteration, reference=None, axinput=None, axis_title=""):
     data = Data()
     data.load(path + "\\individual_" + str(iteration) + "\\results\\")
     tt = data.travel_time
@@ -113,11 +113,13 @@ def plot_iteration_put_only(path, iteration, reference=None):
     df = df[df["tripMode"] == 4]
     tt._data_frame = df
     title = "Travel Time Distribution: Iteration " + str(iteration)
+    title = ""
     if reference is not None:
-        b = tt.draw(reference=reference.travel_time, suptitle=title)
+        b = tt.draw(reference=reference.travel_time, suptitle=title, axinput=axinput, axis_title=axis_title)
     else:
         b = tt.draw(suptitle=title)
     b.show()
+    return b
 
 
 
@@ -140,7 +142,9 @@ def make_plots_for_showing_not_well_calibrated():
 
     values = get_stochastic_tests(0, 5, None, 1)
     print(are_you_not_calibrated(x, values))
-    experiment_inspector.plot_subset(x, values, legend_cols=["K-S", "T-Test", "Wilcoxon"], title="Public Transport Stochastic Tests")
+    fig, ax = plt.subplots(figsize=(3, 3))
+    experiment_inspector.plot_subset(x, values, axinput=ax, legend_cols=["K-S", "T-Test", "Wilcoxon"], title="Public Transport Stochastic Tests")
+    fig.show()
     reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
             'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
     params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
@@ -149,10 +153,14 @@ def make_plots_for_showing_not_well_calibrated():
     d = Individual(seed=42, param_list=params)
     d.run()
     data = d.data
-    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 619, reference=data)
+    fig, ax = plt.subplots(1, 2, figsize=(6, 3))
+    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 619, reference=data, axinput=ax[0], axis_title="Iteration 619")
 
-    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 160, reference=data)
 
+    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 160, reference=data, axinput=ax[1], axis_title="Iteration 160")
+
+    fig.show()
+    return
     plot_iteration_put_only(
         r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42",
         1400, reference=data)
@@ -190,8 +198,8 @@ def main():
     #make_directory_of_csvs_into_one_big_csv(path, "AlphaBeforeBeta", "Before")
 
     path = "\\\\ifv-fs\\User\\Abschlussarbeiten\\Robin.Andre\\Experimente\\Ergebnisse\\MyAlgorithmFullTwoPasses\\"
-    #make_plots_for_showing_not_well_calibrated()
-    #return
+    make_plots_for_showing_not_well_calibrated()
+    return
     name = "ImprovedDetailPasses100_Algo42"
     x = pandas.read_csv(path + name + ".csv")
     x["algorithm_seed"] = 100

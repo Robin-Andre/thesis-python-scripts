@@ -45,8 +45,17 @@ def plot_main_beta_params(df, ax=None):
     if show:
         fig.show()
 
-
-
+def plot_subset_car_age(df, ax=None):
+    temp = df.loc[:, ["asc_car_d_mu", "female_on_asc_car_d", "student_on_asc_car_d", "pkw_1_on_asc_car_d", "inc_high_on_asc_car_d", "age_70_100_on_b_tt_car_d"]]
+    temp.columns = ["Name", "Fem", "Student", "Pkw_1", "Rich Bois", "OLDGOATS"]
+    show = False
+    if ax is None:
+        fig, ax = plt.subplots()
+        show = True
+    temp.plot(ax=ax)
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    if show:
+        fig.show()
 def main():
     path = SPECS.EXP_PATH + r"\MyAlgorithmFullMode\csv\FixedQuantilesTarget101_Algo43parameter_list.csv"
     df = pandas.read_csv(path)

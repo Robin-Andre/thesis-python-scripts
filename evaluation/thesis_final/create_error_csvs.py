@@ -126,8 +126,9 @@ random_target_10_parameters_time_metric
     ref.run()
 
     #make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullMode/"), ref)
-    make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPasses/"), ref)
-    make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPassesNewSetWithTargetSeed/"), None)
+    #make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPasses/"), ref)
+    #make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPassesNewSetWithTargetSeed/"), None)
+    make_error_tracking_for_experiment(all_mode_params, Path(SPECS.EXP_PATH + "/MyAlgorithmFullTwoPassesNoMinMax/"), None)
     return
 
 

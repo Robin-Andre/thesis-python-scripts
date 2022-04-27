@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 from calibration.evolutionary.individual import Individual
 from configurations import SPECS
-from plotting_individual_errors import plot_main_asc_params, plot_main_beta_params
+from plotting_individual_errors import plot_main_asc_params, plot_main_beta_params, plot_subset_car_age
 from plot_detailed_run import get_stochastic_tests, get_p_row_analysis, plot_iteration, get_metrics, get_modal_metrics
 from experiment_inspector import plot_subset, pad_iterations
 
@@ -95,7 +95,8 @@ def plot_multiplicative_per_id(df, legend_cols=None, make_both_best_and_current=
     return
 
 
-def plot_param_errors(plot_dir, keyword="", exp_dir="tuningAlphabeforeBeta", identifiers=["BetaBeforeAlpha", "AlphaBeforeBeta"], figsize=(6, 3), supplement="", dirpath="C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\", override_path=None):
+def plot_param_errors(plot_dir, keyword="", exp_dir="tuningAlphabeforeBeta", identifiers=["BetaBeforeAlpha", "AlphaBeforeBeta"], figsize=(6, 3), supplement="", dirpath="C:\\Users\\bo5742\\Desktop\\thesis-experiments\\thesis_save-main\\",
+                      override_path=None, override_path2=None):
     target_seed = "100"
     algo_seed = "42"
     plotx, ploty = get_grid_from_inp_length(len(identifiers))
@@ -109,7 +110,7 @@ def plot_param_errors(plot_dir, keyword="", exp_dir="tuningAlphabeforeBeta", ide
         if override_path is None:
             path = dirpath + exp_dir + "\\csv\\" + id + supplement + target_seed + "_Algo" + algo_seed + "parameter_list.csv"
         else:
-            path = override_path
+            path = override_path[i]
         df = pandas.read_csv(path)
         plot_main_asc_params(df, ax=ax[i])
         ax[i].set_xlabel(id)
@@ -131,7 +132,7 @@ def plot_param_errors(plot_dir, keyword="", exp_dir="tuningAlphabeforeBeta", ide
         if override_path is None:
             path = dirpath + exp_dir + "\\csv\\" + id + supplement + target_seed + "_Algo" + algo_seed + "parameter_list.csv"
         else:
-            path = override_path
+            path = override_path[i]
         df = pandas.read_csv(path)
         plot_main_beta_params(df, ax=ax[i])
         ax[i].set_xlabel(id)
@@ -468,6 +469,8 @@ def plot_destination_main_plus_business():
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
     optnames = ["All", "m", "$\emptyset$"]
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], 0),
+                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], [4]),
                       savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
 
@@ -484,6 +487,8 @@ def plot_destination_main_plus_all():
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
     optnames = ["All", "m", "$\emptyset$"]
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], 0),
+                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], [4]),
                       savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
 
@@ -497,6 +502,9 @@ def plot_destination_main_comparison():
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
     optnames = ["All", "m", "$\emptyset$"]
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], 0),
+                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
+
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], [4]),
                       savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
 
@@ -554,14 +562,22 @@ def plot_mode_main_my_algorithm_comparison():
     alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal")
 
 
-def plot_only_mine():
-    csv = get_csv(make_csvs([17]))
+def plot_only_mine_errors():
+    csv = get_csv(make_csvs([17, 30]))
     plot_dir = "Temp"
     legend = ["Algo"]
-    plot_multi(csv, plot_dir, legend, plot_cur=True)
-    plot_param_errors("Temp", override_path=r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre"
-                                            r"\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\csv\ImprovedDetailPasses100_Algo42parameter_list")
+    #plot_multi(csv, plot_dir, legend, plot_cur=True)
 
+    paths = [r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre"
+                                            r"\Experimente\Ergebnisse\MyAlgorithmFullMode"
+                                             r"\csv\FixedQuantilesTarget100_Algo42parameter_list.csv",
+             r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre"
+             r"\Experimente\Ergebnisse\MyAlgorithmFullTwoPassesNoMinMax"
+             r"\csv\ImprovedDetailPasses101_Algo42parameter_list.csv"
+             ]
+    plot_param_errors("Temp", identifiers=["1Pass", "2Pass"], override_path=paths)
+    df = pandas.read_csv(paths[1])
+    plot_subset_car_age(df)
 
 def plot_external_errors():
     plot_param_errors("Temp", identifiers=["MAIN"], override_path=r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre"
@@ -579,6 +595,7 @@ def plot_recreation_experiment():
     alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal")
 
 if __name__ == "__main__":
+    #plot_only_mine_errors()
     #plot_external_errors()
     #plot_recreation_experiment()
     #plot_alpha_before_beta()
@@ -589,7 +606,7 @@ if __name__ == "__main__":
 
     """This section is the evaluation of my own algorithmic components"""
 
-    plot_mode_main_my_algorithm_comparison()
+    #plot_mode_main_my_algorithm_comparison()
 
     #plot_heuristics_mode_subset_time()
     #plot_heuristics_mode_subset_time_modal()
@@ -600,7 +617,7 @@ if __name__ == "__main__":
     #plot_destination_main_only()
     #plot_destination_main_plus_business()
     #plot_destination_main_plus_all()
-    #plot_destination_main_comparison()
+    plot_destination_main_comparison()
     #plot_mode_subset_comparison()
     exit(0)
     #    plot_dest(["pyswarms_main_destination_same_seed.csv", "spsa_main_destination_same_seed.csv", "pygad_main_destination_same_seed.csv"], "Temp", ["?", "?", "?", "?"])
