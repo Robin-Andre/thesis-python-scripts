@@ -120,18 +120,28 @@ def make_all_box_plots(csv):
     # make_statistic_box_plot(csv, "_ttest_")
 
 
-def temp_box_plot_of_ordered_frame(df, title="E", subspace=(3, 2)):
+def temp_box_plot_of_ordered_frame(df, title="E", subspace=(3, 2), names=None, shared_y_labels=None, supylabel="Significance", shared_x_labels=None):
     fig, ax = plt.subplots(subspace[0], subspace[1], sharex=True, sharey=True)
     fig.suptitle(title)
+    fig.supylabel(supylabel)
     plt.tight_layout()
+    if shared_x_labels is not None:
+        for a, n in zip(ax[0], shared_x_labels):
+            a.set_title(n)
+    if shared_y_labels is not None:
+        for a, n in zip(ax, shared_y_labels):
+            a[0].set_ylabel(n)
     axes = ax.flatten()
-
+    if names is not None:
+        for a, n in zip(axes, names):
+            a.set_title(n)
     for i, a in enumerate(axes):
         a.set_xticks([2.5, 6.5, 10.5])
         a.set_xticklabels(["KS-Test", "Wilcoxon", "T-Test"], rotation=0)
         a.axvline(x=4.5, linestyle="--", alpha=0.4, color="gray")
         a.axvline(x=8.5, linestyle="--", alpha=0.4, color="gray")
-        a.boxplot(df.iloc[:, i * 12: (i + 1) * 12], manage_ticks=False, showfliers=False, medianprops=dict(color="red"))
+        temp = df.iloc[:, i * 12: (i + 1) * 12]
+        a.boxplot(temp, manage_ticks=False, showfliers=False, medianprops=dict(color="red"))
     return fig
 
 
@@ -148,12 +158,13 @@ def make_dist_plots(csv, csv_5, csv_25, csv_full):
         sort_vector = sort_vector + [i + j * 36 for j in range(4)]
 
     temp = test.iloc[:, sort_vector]  # REorder the large dataframe to be more suited to the application
-    travel_time_plot = temp_box_plot_of_ordered_frame(temp.iloc[:, :72], title="Travel Time Distribution")
+    names = ["All", "Bike", "Car", "Passenger", "Pedestrian", "Publ. Transport"]
+    travel_time_plot = temp_box_plot_of_ordered_frame(temp.iloc[:, :72], title="Travel Time Distribution", names=names)
     travel_time_plot.show()
-    travel_time_plot.savefig("../../plots/travel_time_plot.svg", format="svg")
-    travel_dist_plot = temp_box_plot_of_ordered_frame(temp.iloc[:, 72:], title="Travel Distance Distribution")
+    travel_time_plot.savefig("../../plots/travel_time_plot.svg", format="svg", bbox_inches="tight")
+    travel_dist_plot = temp_box_plot_of_ordered_frame(temp.iloc[:, 72:], title="Travel Distance Distribution", names=names)
     travel_dist_plot.show()
-    travel_dist_plot.savefig("../../plots/travel_dist_plot.svg", format="svg")
+    travel_dist_plot.savefig("../../plots/travel_dist_plot.svg", format="svg", bbox_inches="tight")
 
 
 def make_count_plots(csv, csv_5, csv_25, csv_full):
@@ -179,11 +190,12 @@ def make_count_plots(csv, csv_5, csv_25, csv_full):
         i = j * 36
         sort_vector = sort_vector + list(range(i, i + 24))
     temp = temp.iloc[:, sort_vector]
-
-    travel_time_plot = temp_box_plot_of_ordered_frame(temp, title="Sample Statistic Tests", subspace=(4, 2))
+    shar = ["Time", "Demand", "Distance", "O-D"]
+    shar_x = ["$m$", "$\emptyset$"]
+    travel_time_plot = temp_box_plot_of_ordered_frame(temp, title="Sample Statistic Tests", subspace=(4, 2), shared_y_labels=shar, supylabel=None, shared_x_labels=shar_x)
     travel_time_plot.show()
 
-    travel_time_plot.savefig("../../plots/count_stochastics.svg", format="svg")
+    travel_time_plot.savefig("../../plots/count_stochastics.svg", format="svg", bbox_inches="tight")
     # travel_dist_plot = temp_box_plot_of_ordered_frame(temp.iloc[:, 72:], title="Travel Distance Ea", subspace=(4,2))
     # travel_dist_plot.show()
     # travel_dist_plot.savefig("../../plots/travel_dist_plot.svg", format="svg")
@@ -211,13 +223,14 @@ def metric_box_plots_demand(big_df):
 def single_metric_box_plots_demand(big_df, frame_zero=0):
     #for m in METRICS:
     fig, axe = plt.subplots(2, 4, figsize=(6, 2))
+    names = ["SSE", "MABSE", "MAVGE", "RMSE", "THEIL", "SSPE", "MSSE", "SCAE"]
     ax = axe.flatten()
     #plt.tight_layout()
-    for i, m in enumerate(METRICS):
+    for (i, m), n in zip(enumerate(METRICS), names):
         ax[i].set_yticks([])
         #ax[i].set_yticklabels([])
-
-        sse = big_df[get_metrics(frame_zero, [1, 2], m)]
+        ax[i].set_ylabel(n)
+        sse = big_df[get_metrics(frame_zero, [2, 1], m)]
         print(sse.columns)
         rename_temp(sse)
         sse.plot(kind='box', ax=ax[i],
@@ -229,13 +242,15 @@ def single_metric_box_plots_demand(big_df, frame_zero=0):
              capprops=dict(linestyle='-', linewidth=1.5),
              showfliers=False, grid=False, rot=0)
     plt.tight_layout()
+
+    #fig.text(0.05, 0.5, 'common ylabel', ha='center', va='center', rotation='vertical')
     fig.show()
     return fig
 
 
 def rename_temp(df):
     if len(df.columns) == 2:
-        df.columns = ["$m$", "$\emptyset$"]
+        df.columns = ["$\emptyset$", "$m$"]
     if len(df.columns) == 4:
         df.columns = ["2", "5", "25", "100"]
     elif len(df.columns) == 8:
@@ -289,7 +304,8 @@ def metric_box_plots(big_df, title="", resolution=1):
 
 def make_sse_and_theil_plot(big_df, num_data=0, call=get_metrics, frame=1):
     fig, ax = plt.subplots(1, 2, figsize=(6, 2))
-
+    ax[0].set_xlabel("SSE")
+    ax[1].set_xlabel("THEIL")
     plt.tight_layout()
     for i, m in enumerate([0, 4]):
         sse = big_df[make_id_appendix(call(num_data, frame, m))]
@@ -333,27 +349,31 @@ def main():
     # single_metric_box_plots_demand(csv)
     # metric_box_plots_demand(main_df)
     insanely_large_table(main_df)
-    exit()
+
     fig = single_metric_box_plots_demand(csv)
     fig.savefig("../../plots/Default_and_none_comparison_time.svg", format="svg")
+    fig.show()
+
     fig = single_metric_box_plots_demand(csv, frame_zero=5)
     fig.savefig("../../plots/Default_and_none_comparison_destination.svg", format="svg")
+    fig.show()
 
     #metric_box_plots(main_df, resolution=[1,2])
-    exit()
+
     fig = make_sse_and_theil_plot(main_df)
     fig.savefig("../../plots/SSE-and-Theil-TravelTime.svg", format="svg")
-
+    fig.show()
     fig = make_sse_and_theil_plot(main_df, call=get_modal_metrics, frame=0)
     fig.savefig("../../plots/SSE-and-Theil-ModalSplit.svg", format="svg")
-    exit()
+    fig.show()
+
     metric_modal_box_plots(main_df)
     make_sse_and_theil_plot(main_df, num_data=6)
-    exit()
+
     sse = main_df[make_id_appendix(get_metrics(0, 1, 0))]
     sse.plot(kind="box")
     plt.show()
-    exit()
+
     for x in [csv, csv_5, csv_25, csv_full]:
         x = x.rename(columns=lambda col: col.strip())
     x = csv.describe()
@@ -362,7 +382,7 @@ def main():
     print(get_metrics(0, None, None))
     get_table_contents(x[get_metrics(0, 2, 0)])
     get_table_contents(x[get_metrics(0, 0, None)])
-    exit()
+
     test = csv.mean()
     statistics = y.iloc[:, 202:]
     count_statistics = statistics.loc[:, :"CountComparisonStatisticTest_Destinations_ks_all"]
@@ -373,7 +393,7 @@ def main():
     # make_all_box_plots(csv_full)
 
     make_count_plots(csv, csv_5, csv_25, csv_full)
-    # make_dist_plots(csv, csv_5, csv_25, csv_full)
+    make_dist_plots(csv, csv_5, csv_25, csv_full)
     exit()
     make_all_distri_plots(csv)
     make_all_distri_plots(csv_5)

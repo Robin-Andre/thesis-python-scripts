@@ -165,6 +165,7 @@ def plot_multi(csv_name, plot_dir, legend=None, plot_cur=True, special_colors=No
         plot_multiplicative_per_id(x, test_set_num=set_number, axinput=ax[1], metric_num=2,
                                    make_both_best_and_current=plot_cur, rename_iteration="Wilcoxon", special_colors=special_colors)
         ax[0].get_legend().remove()
+        ax[0].set_ylabel("$p$ value")
         ax[1].get_legend().remove()
         handles, labels = ax[1].get_legend_handles_labels()
         plt.tight_layout()
@@ -188,7 +189,7 @@ def int_to_metric_name(num):
         1: "mean_absolute_error",
         2: "mean_average_error",
         3: "mean_average_error",
-        4: "Theils Inequality",
+        4: "Theil's Inequality coefficient",
         5: "sum_squared_percent_error",
         6: "Mean Sum Squared error",
         7: "Sum Cubed error",
@@ -218,11 +219,13 @@ def __help_plots(x, refs, values, metric_tuple, plot_dir, savestring, string_add
     else:
         colors = COLORS[:len(x.columns)]
 
-
+    tempeeeeee = x[values]
     if len(metrics) == 1:
         ax = [ax]
     else:
         ax = ax.flatten()
+
+    ax[0].set_ylabel("Metric value")
     for a, metric, name in zip(ax, metrics, names):
         reference = "_".join(metric.split("_")[:-1])
         print(reference)
@@ -345,14 +348,15 @@ def plot_experiment_compare_full_set_mode():
     csv = get_csv(make_csvs([5, 11, 16, 17]))
     plot_dir = "ModeMain"
     legend = ["Algo", "GA", "SPSA", "Swarm"]
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
+    colors = ["#ff7f00","#1f78b4",  "#e31a1c", "#33a02c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
 
     #alpha_before_beta(csv, plot_dir, metric_tuple=(5, 0, [0, 4]))
-    alpha_before_beta(csv, plot_dir, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
-    alpha_before_beta(csv, plot_dir, metric_tuple=(0, 0, [0, 4]), savestring="TravelTimeOptimizedMetric")
-    alpha_before_beta(csv, plot_dir, metric_tuple=(1, 1, [0, 4]), savestring="Demand")
-    alpha_before_beta(csv, plot_dir, metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
-    alpha_before_beta(csv, plot_dir, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal")
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime", special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend,  metric_tuple=(0, 0, [0, 4]), savestring="TravelTimeOptimizedMetric", special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend,  metric_tuple=(1, 1, [0, 4]), savestring="Demand", special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend,  metric_tuple=(4, 1, [0, 4]), savestring="Demand60", special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend,  metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal", special_colors=colors)
 
 def plot_comparison_seed_no_seed():
     #csv = get_csv(make_csvs([7, 20])) #Swarms
@@ -393,27 +397,30 @@ def plot_heuristics_mode_subset_time():
     csv = get_csv(make_csvs([1, 7]))
     plot_dir = "MetaHeuristicModeSubset"
     legend = ["GA", "Swarm"]
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
-    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
-    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
+    colors = ["#1f78b4", "#33a02c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime", special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit", special_colors=colors)
     #plot_param_errors(plot_dir, "", exp_dir="MyExperimentQuantiles", identifiers=list(set(csv["identifier"])))
 
 def plot_heuristics_mode_subset_time_modal():
     csv = get_csv(make_csvs([0, 6, 12]))
     plot_dir = "MetaHeuristicModeSubsetModal"
     legend = ["GA", "SPSA", "Swarm"]
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
-    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
-    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
+    colors = ["#1f78b4", "#e31a1c", "#33a02c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime", special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit", special_colors=colors)
     #plot_param_errors(plot_dir, "", exp_dir="MyExperimentQuantiles", identifiers=list(set(csv["identifier"])))
 
 def plot_heuristics_mode_subset_compare_ga():
     csv = get_csv(make_csvs([0, 1]))
     plot_dir = "MetaHeuristicModeSubsetMetricComparison"
     legend = ["GA-Modal", "GA-Time"]
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
-    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
-    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
+    colors = ["#a6cee3", "#1f78b4"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime", special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit", special_colors=colors)
     #plot_param_errors(plot_dir, "", exp_dir="MyExperimentQuantiles", identifiers=list(set(csv["identifier"])))
 
 
@@ -421,30 +428,33 @@ def plot_second_meta_heuristic_run():
     csv = get_csv(make_csvs([20, 21, 22]))
     plot_dir = "MetaHeuristicModeSubsetSecondRun"
     legend = ["GA", 'SPSA', 'Swarm']
-    #plot_multi(csv, plot_dir, legend, plot_cur=False)
+    colors = ["#1f78b4", "#e31a1c", "#33a02c"]
+    #plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
 
 
-    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime", special_colors=colors)
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics,
-                      savestring="ModalSplit")
+                      savestring="ModalSplit", special_colors=colors)
 
 def plot_seed_impact_on_ga():
     csv = get_csv(make_csvs([1, 21]))
     plot_dir = "MetaHeuristicSeedImpactGA"
     legend = ["GA+R", "GA"]
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
-    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
+    colors = ["#a6cee3", "#1f78b4"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime", special_colors=colors)
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics,
-                      savestring="ModalSplit")
+                      savestring="ModalSplit", special_colors=colors)
     optnames = ["Time", "Demand", "Demand 5", "Demand 15", "Demand 60", "Distance"]
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=([0, 1, 2, 3, 4, 5], 1, [4]),
-                      savestring="AllDfs", opt_names=optnames, figsize=(9, 6))
+                      savestring="AllDfs", opt_names=optnames, figsize=(9, 6), special_colors=colors)
 
 def plot_destination_main_only():
     csv = get_csv(make_csvs([2, 8, 13]))
     plot_dir = "DestinationMain"
     legend = ["GA", 'SPSA', 'Swarm']
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
+    colors = ["#1f78b4", "#e31a1c", "#33a02c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
 
 
 
@@ -454,13 +464,14 @@ def plot_destination_main_only():
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
     optnames = ["All", "m", "$\emptyset$"]
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], [4]),
-                      savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
+                      savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3), special_colors=colors)
 
 def plot_destination_main_plus_business():
     csv = get_csv(make_csvs([4, 10, 15]))
     plot_dir = "DestinationMainBusiness"
     legend = ["GA", 'SPSA', 'Swarm']
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
+    colors = ["#1f78b4", "#e31a1c", "#33a02c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
 
 
 
@@ -470,15 +481,16 @@ def plot_destination_main_plus_business():
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
     optnames = ["All", "m", "$\emptyset$"]
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], 0),
-                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
+                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3), special_colors=colors)
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], [4]),
-                      savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
+                      savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3), special_colors=colors)
 
 def plot_destination_main_plus_all():
     csv = get_csv(make_csvs([3, 9, 14]))
     plot_dir = "DestinationMainAll"
     legend = ["GA", 'SPSA', 'Swarm']
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
+    colors = ["#1f78b4", "#e31a1c", "#33a02c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
 
 
 
@@ -488,35 +500,36 @@ def plot_destination_main_plus_all():
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
     optnames = ["All", "m", "$\emptyset$"]
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], 0),
-                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
+                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3), special_colors=colors)
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], [4]),
-                      savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
+                      savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3), special_colors=colors)
 
 def plot_destination_main_comparison():
     csv = get_csv(make_csvs([2, 3, 4]))
     plot_dir = "DestinationMainComparison"
     legend = ["GA", 'GA+A', 'GA+B']
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
+    colors = ["#1f78b4", "#e31a1c", "#33a02c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(1, 1, [0, 4]), savestring="Demand")
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
     #alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
     optnames = ["All", "m", "$\emptyset$"]
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], 0),
-                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
+                      savestring="DistanceAllSSE", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3), special_colors=colors)
 
     alpha_before_beta(csv, plot_dir, legend=legend, metric_tuple=(5, [0, 1, 2], [4]),
-                      savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3))
+                      savestring="DistanceAll", opt_names=optnames, override_grid=(1, 3), figsize=(9, 3), special_colors=colors)
 
 
 def plot_mode_subset_comparison():
     plot_dir = "ModeSubset"
     legend = ["GA", "Algo", "Swarm"]
     csv = get_csv(make_csvs([28, 20, 21]))
-    colors = ["#ff0000", "#00ff00", "#0000ff"]
+    colors = ["#1f78b4", "#ff7f00", "#33a02c"]
     plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
     legend = ["GA", "Algo", "SPSA", "Swarm"]
-    colors = ["#ff0000", "#00ff00", "#000000", "#0000ff"]
+    colors = ["#1f78b4", "#ff7f00", "#e31a1c", "#33a02c"]
     csv = get_csv(make_csvs([28, 20, 21, 22]))
 
 
@@ -529,37 +542,41 @@ def plot_mode_subset_comparison():
     alpha_before_beta(csv, plot_dir, special_colors=colors,legend=legend,  metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
     alpha_before_beta(csv, plot_dir, special_colors=colors,legend=legend,  metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal")
 
-def __plot_my_component(num, plot_dir, legend, expdir, supplement, skip_param_errors=False):
+def __plot_my_component(num, plot_dir, legend, expdir, supplement, skip_param_errors=False, optnames=None):
     csv = get_csv(make_csvs([num]))
 
     plot_multi(csv, plot_dir, legend)
-    alpha_before_beta(csv, plot_dir, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
-    alpha_before_beta(csv, plot_dir, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit")
+    alpha_before_beta(csv, plot_dir, metric_tuple=(0, 1, [0, 4]), savestring="TravelTime", legend=optnames)
+    alpha_before_beta(csv, plot_dir, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="ModalSplit", legend=optnames)
     if not skip_param_errors:
         plot_param_errors(plot_dir, exp_dir=expdir, identifiers=list(set(csv["identifier"])), supplement=supplement)
 
 def plot_component_test_minmax():
-    __plot_my_component(25, "ComponentMinmax", ["?", "!"], "MyExperimentBetterErrorGuessing", "BetterBounds")
+    optnames = ["Static", "Interposed"]
+    __plot_my_component(25, "ComponentMinmax", ["Static$_{opt}$", "Static", "Interposed$_{opt}$", "Interposed"], "MyExperimentBetterErrorGuessing", "BetterBounds", optnames=optnames)
 
 def plot_component_quantiles_cost():
-    __plot_my_component(26, "ComponentVarQuantilesCost", ["?", "!"], "MyExperimentVariableQuantilesCostFixedOutput", "", skip_param_errors=True)
+    optnames = ["Static", "Interposed"]
+    __plot_my_component(26, "ComponentVarQuantilesCost",  ["Static$_{opt}$", "Static", "Interposed$_{opt}$", "Interposed"], "MyExperimentVariableQuantilesCostFixedOutput", "", skip_param_errors=True, optnames=optnames)
 
 def plot_component_quantiles():
-    __plot_my_component(27, "ComponentVarQuantiles", ["?", "!"], "MyExperimentVariableQuantilesFixedOutput", "")
+    optnames = ["Static", "Interposed"]
+    __plot_my_component(27, "ComponentVarQuantiles",  ["Static$_{opt}$", "Static", "Interposed$_{opt}$", "Interposed"], "MyExperimentVariableQuantilesFixedOutput", "", optnames=optnames)
 
 
 def plot_mode_main_my_algorithm_comparison():
     csv = get_csv(make_csvs([17, 19, 30]))
     plot_dir = "MyAlgorithmComparison"
-    legend = ['Algo', 'Algo2Passes', 'Algo2PassesNoMinMax']
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
+    legend = ['1 Pass', '2 Passes', '2 Passes (Gradient)']
+    colors = ["#ff7f00", "#e31a1c", "#33a02c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
 
     #alpha_before_beta(csv, plot_dir, metric_tuple=(5, 0, [0, 4]))
-    alpha_before_beta(csv, plot_dir, legend=legend,  metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
-    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(0, 0, [0, 4]), savestring="TravelTimeOptimizedMetric")
-    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(1, 1, [0, 4]), savestring="Demand")
-    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
-    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal")
+    alpha_before_beta(csv, plot_dir, legend=legend,  metric_tuple=(0, 1, [0, 4]), savestring="TravelTime", special_colors=colors)
+    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(0, 0, [0, 4]), savestring="TravelTimeOptimizedMetric", special_colors=colors)
+    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(1, 1, [0, 4]), savestring="Demand", special_colors=colors)
+    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(4, 1, [0, 4]), savestring="Demand60", special_colors=colors)
+    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal", special_colors=colors)
 
 
 def plot_only_mine_errors():
@@ -586,18 +603,22 @@ def plot_external_errors():
 def plot_recreation_experiment():
     csv = get_csv(make_csvs([17, 29]))
     plot_dir = "Recreation"
-    legend = ["Default Start", "BrokenStartAll", "BrokenStartOnlySubset"]
-    plot_multi(csv, plot_dir, legend, plot_cur=False)
-    alpha_before_beta(csv, plot_dir, legend=legend,  metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
-    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(0, 0, [0, 4]), savestring="TravelTimeOptimizedMetric")
-    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(1, 1, [0, 4]), savestring="Demand")
-    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
-    alpha_before_beta(csv, plot_dir,legend=legend, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal")
+    legend = ["Base", "Uncalibrated + All", "Uncalibrated + Subset"]
+    colors = ["#ff7f00","#1f78b4",  "#e31a1c"]
+    plot_multi(csv, plot_dir, legend, plot_cur=False, special_colors=colors)
+    alpha_before_beta(csv, plot_dir, legend=legend, special_colors=colors,  metric_tuple=(0, 1, [0, 4]), savestring="TravelTime")
+    alpha_before_beta(csv, plot_dir,legend=legend, special_colors=colors, metric_tuple=(0, 0, [0, 4]), savestring="TravelTimeOptimizedMetric")
+    alpha_before_beta(csv, plot_dir,legend=legend, special_colors=colors, metric_tuple=(1, 1, [0, 4]), savestring="Demand")
+    alpha_before_beta(csv, plot_dir,legend=legend, special_colors=colors, metric_tuple=(4, 1, [0, 4]), savestring="Demand60")
+    alpha_before_beta(csv, plot_dir,legend=legend, special_colors=colors, metric_tuple=(0, 0, [0, 4]), func=get_modal_metrics, savestring="Modal")
+
+COLOR_PALETTE = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00"]
 
 if __name__ == "__main__":
+    plot_experiment_compare_full_set_mode()
     #plot_only_mine_errors()
     #plot_external_errors()
-    #plot_recreation_experiment()
+    plot_recreation_experiment()
     #plot_alpha_before_beta()
     #plot_quantiles_experiment()
     #plot_component_test_minmax()
@@ -606,19 +627,19 @@ if __name__ == "__main__":
 
     """This section is the evaluation of my own algorithmic components"""
 
-    #plot_mode_main_my_algorithm_comparison()
+    plot_mode_main_my_algorithm_comparison()
 
-    #plot_heuristics_mode_subset_time()
-    #plot_heuristics_mode_subset_time_modal()
-    #plot_heuristics_mode_subset_compare_ga()
-    #plot_seed_impact_on_ga()
-    #plot_second_meta_heuristic_run()
-    #plot_experiment_compare_full_set_mode()
-    #plot_destination_main_only()
-    #plot_destination_main_plus_business()
-    #plot_destination_main_plus_all()
+    plot_heuristics_mode_subset_time()
+    plot_heuristics_mode_subset_time_modal()
+    plot_heuristics_mode_subset_compare_ga()
+    plot_seed_impact_on_ga()
+    plot_second_meta_heuristic_run()
+
+    plot_destination_main_only()
+    plot_destination_main_plus_business()
+    plot_destination_main_plus_all()
     plot_destination_main_comparison()
-    #plot_mode_subset_comparison()
+    plot_mode_subset_comparison()
     exit(0)
     #    plot_dest(["pyswarms_main_destination_same_seed.csv", "spsa_main_destination_same_seed.csv", "pygad_main_destination_same_seed.csv"], "Temp", ["?", "?", "?", "?"])
 
