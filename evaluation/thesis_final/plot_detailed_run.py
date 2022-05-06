@@ -105,7 +105,7 @@ def plot_iteration(exp_path, name,  iteration, reference=None):
     c.show()
     return a, b, c
 
-def plot_iteration_put_only(path, iteration, reference=None):
+def plot_iteration_put_only(path, iteration, reference=None, axinput=None, axis_title=""):
     data = Data()
     data.load(path + "\\individual_" + str(iteration) + "\\results\\")
     tt = data.travel_time
@@ -113,11 +113,13 @@ def plot_iteration_put_only(path, iteration, reference=None):
     df = df[df["tripMode"] == 4]
     tt._data_frame = df
     title = "Travel Time Distribution: Iteration " + str(iteration)
+    title = ""
     if reference is not None:
-        b = tt.draw(reference=reference.travel_time, suptitle=title)
+        b = tt.draw(reference=reference.travel_time, suptitle=title, axinput=axinput, axis_title=axis_title)
     else:
         b = tt.draw(suptitle=title)
     b.show()
+    return b
 
 
 
@@ -140,7 +142,11 @@ def make_plots_for_showing_not_well_calibrated():
 
     values = get_stochastic_tests(0, 5, None, 1)
     print(are_you_not_calibrated(x, values))
-    experiment_inspector.plot_subset(x, values, legend_cols=["K-S", "T-Test", "Wilcoxon"], title="Public Transport Stochastic Tests")
+    fig, ax = plt.subplots(figsize=(6, 3))
+    experiment_inspector.plot_subset(x, values, axinput=ax, legend_cols=["K-S", "T-Test", "Wilcoxon"], title="Public Transport Stochastic Tests")
+    plt.tight_layout()
+    fig.show()
+    fig.savefig("../../plots/PUT_statistic_tests.svg", format="svg")
     reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
             'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
     params = simulation.default_yaml().mode_config().get_all_parameter_names_on_requirements(reqs)
@@ -149,10 +155,24 @@ def make_plots_for_showing_not_well_calibrated():
     d = Individual(seed=42, param_list=params)
     d.run()
     data = d.data
-    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 619, reference=data)
+    fig, ax = plt.subplots(1, 2, figsize=(6, 3))
+    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 619, reference=data, axinput=ax[1], axis_title="Iteration 619")
 
-    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 160, reference=data)
 
+    plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", 160, reference=data, axinput=ax[0], axis_title="Iteration 160")
+    plt.tight_layout()
+    fig.show()
+    fig.savefig("../../plots/Iterations.svg", format="svg")
+
+    fig, ax = plt.subplots(3, 2, figsize=(6, 6))
+    ax = ax.flatten()
+    for i, iteration in enumerate(list(range(615, 621))):
+        print(f"{i} {iteration}")
+        plot_iteration_put_only(r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42", iteration, reference=data, axinput=ax[i], axis_title="Iteration " + str(iteration))
+    plt.tight_layout()
+    fig.show()
+    fig.savefig("../../plots/IterationsProcedure.svg", format="svg")
+    return
     plot_iteration_put_only(
         r"\\ifv-fs\User\Abschlussarbeiten\Robin.Andre\Experimente\Ergebnisse\MyAlgorithmFullTwoPasses\data\ImprovedDetailPasses100_Algo42",
         1400, reference=data)
@@ -190,8 +210,8 @@ def main():
     #make_directory_of_csvs_into_one_big_csv(path, "AlphaBeforeBeta", "Before")
 
     path = "\\\\ifv-fs\\User\\Abschlussarbeiten\\Robin.Andre\\Experimente\\Ergebnisse\\MyAlgorithmFullTwoPasses\\"
-    #make_plots_for_showing_not_well_calibrated()
-    #return
+    make_plots_for_showing_not_well_calibrated()
+    return
     name = "ImprovedDetailPasses100_Algo42"
     x = pandas.read_csv(path + name + ".csv")
     x["algorithm_seed"] = 100
@@ -294,16 +314,20 @@ def make_stochastic_multiplication_plots():
     plot_frame = {"K-S": ks, "T-Test": ttest, "Wilcoxon": ranksums}
     plot_df = pandas.DataFrame(plot_frame)
     plot_df = plot_df.rolling(5, center=True, min_periods=1).mean()
-    xshift = 0.8
+    xshift = 1
     temp_descriptor = ["K-S", "T-Test", "Wilcoxon"]
     plot_df.plot(ax=ax[2])
-    plt.tight_layout(rect=[0, 0.0, xshift, 1])
+    plt.tight_layout()
+    ax[0].set_ylabel("$p$ value")
     ax[0].get_legend().remove()
     ax[1].get_legend().remove()
     ax[2].get_legend().remove()
+    ax[0].set_xlabel("All tests")
+    ax[1].set_xlabel("Time tests")
+    ax[2].set_xlabel("Distance tests")
     fig.legend(temp_descriptor, bbox_to_anchor=(xshift, 0.5), loc="center left")
     fig.show()
-    fig.savefig("../../plots/multiplicative_statistics.svg", format="svg")
+    fig.savefig("../../plots/multiplicative_statistics.svg", format="svg", bbox_inches="tight")
 
     reqs = ['workday', 'gender', 'employment', 'age', 'activityType',
             'tripMode', 'previousMode', 'economicalStatus', 'nominalSize', 'totalNumberOfCars']
@@ -360,8 +384,9 @@ def make_count_plots_of_run():
     temp_descriptor = ["Wilcoxon", "T-Test", "K-S"]
     for k, v in {"Zones": 0, "Distance": 1, "Demand": 2, "Time": 3}.items():
         fig, ax = plt.subplots(1, 3, sharex=True, sharey=True, figsize=(6, 2))
-        xshift = 0.8
-        plt.tight_layout(rect=[0, 0.03, xshift, 0.97])
+        ax[0].set_ylabel("$p$ value")
+        xshift = 1
+        plt.tight_layout()
         subset_slicer = slice(None, None, 40)
         values = get_count_tests(v, 1, None, 1)
         experiment_inspector.plot_subset(x, values, title=k, hide_legend=True, axinput=ax[0], slicer=subset_slicer, rename_iteration="$\emptyset$")
@@ -374,12 +399,13 @@ def make_count_plots_of_run():
         values = get_count_tests(v, 2, None, 1)
         experiment_inspector.plot_subset(x, values, title=k, hide_legend=True, axinput=ax[2], slicer=subset_slicer, rename_iteration="$keys$")
         fig.legend(temp_descriptor, bbox_to_anchor=(xshift, 0.5), loc="center left")
-        fig.suptitle(k)
+        #fig.suptitle(k)
         fig.show()
-        fig.savefig("../../plots/CountStatistic_simulation_run" + k + ".svg", format="svg")
+        fig.savefig("../../plots/CountStatistic_simulation_run" + k + ".svg", format="svg", bbox_inches="tight")
 
 def __help_plot(x, label_list, color_list, s_slicer, temp_descriptor, smoothen, data_slicer, which_df_num=0, save_file=None):
-    fig, ax = plt.subplots(1, 3, sharex=True, sharey=True, figsize=(6, 2))
+    fig, ax = plt.subplots(1, 3, sharex=True, sharey=True, figsize=(6, 2.5))
+    ax[0].set_ylabel("$p$ value")
     values = get_stochastic_tests(which_df_num, None, 0, 1)[s_slicer]
     experiment_inspector.plot_subset(x, values, rename_iteration="K-S", hide_legend=True, axinput=ax[0], legend_cols=label_list[s_slicer], title="K-S", color=color_list[s_slicer], slicer=data_slicer, smoothen=smoothen)
     values = get_stochastic_tests(which_df_num, None, 1, 1)[s_slicer]
@@ -387,11 +413,11 @@ def __help_plot(x, label_list, color_list, s_slicer, temp_descriptor, smoothen, 
     values = get_stochastic_tests(which_df_num, None, 2, 1)[s_slicer]
     experiment_inspector.plot_subset(x, values, rename_iteration="Wilcoxon", hide_legend=True, axinput=ax[2], legend_cols=label_list[s_slicer], title="Wilcoxon", color=color_list[s_slicer], slicer=data_slicer, smoothen=smoothen)
     xshift = 1
-    plt.tight_layout(rect=[0, 0.0, 0.75, 1])
-    fig.legend(temp_descriptor, bbox_to_anchor=(xshift, 0.5), loc="center right")
+    plt.tight_layout()
+    fig.legend(temp_descriptor, bbox_to_anchor=(xshift, 0.5), loc="center left")
     fig.show()
     if save_file is not None:
-        fig.savefig(save_file, format="svg")
+        fig.savefig(save_file, format="svg", bbox_inches="tight")
 
 
 def make_stochastic_mode_split_plots():
@@ -450,7 +476,7 @@ def make_stochastic_mode_split_plots():
 
 if __name__ == "__main__":
     #make_stochastic_insignificance_plots()
-    #make_stochastic_multiplication_plots()
+    make_stochastic_multiplication_plots()
     #make_count_plots_of_run()
     #make_stochastic_mode_split_plots()
-    main()
+    #main()

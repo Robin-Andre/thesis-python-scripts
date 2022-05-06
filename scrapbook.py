@@ -1,13 +1,56 @@
 import math
 import unittest
+
+from matplotlib import pyplot as plt
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+
 from configurations.parameter import Parameter
 from calibration.evolutionary.individual import Individual
 from calibration.evolutionary.population import Population
 import mobitopp_execution as simulation
 from configurations import SPECS
 
+from numpy import exp, arange, log
+from pylab import meshgrid, cm, imshow, contour, clabel, colorbar, axis, title, show
+
+
+# the function that I'm going to plot
+def z_func(x, y):
+    return exp(x) / ((1 / y) + exp(x) - 1) - y
+
+def dest_util_func(x, y):
+    return log(exp(x) + exp(y)) - log(exp(x) + exp(y + 1))
+
+def plot3d():
+    x = arange(0, 10.0, 0.1)
+    y = arange(0.0, 1.0, 0.1)
+    X, Y = meshgrid(x, y)  # grid of point
+    Z = dest_util_func(X, Y)  # evaluation of the function on the grid
+
+    im = imshow(Z, cmap=cm.RdBu)  # drawing the function
+    # adding the Contour lines with labels
+    cset = contour(Z, arange(-1, 1.5, 0.2), linewidths=2, cmap=cm.Set2)
+    clabel(cset, inline=True, fmt='%1.1f', fontsize=10)
+    colorbar(im)  # adding the colobar on the right
+    # latex fashion title
+    title('$p\'(m)$')
+    plt.show()
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                           cmap=cm.RdBu, linewidth=0, antialiased=False)
+    ax.view_init(elev=10., azim=120)
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    plt.show()
 
 class MyTestCase(unittest.TestCase):
+
+    def test_plot(self):
+        plot3d()
     @unittest.skip
     def test_random(self):
         for string_val in ["asc_car_d_mu", "asc_car_p_mu", "asc_bike_mu", "asc_put_mu"]:

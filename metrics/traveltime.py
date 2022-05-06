@@ -43,7 +43,7 @@ class TravelTime(Metric):
     def read_from_raw_data(self, raw_data):
         self._data_frame = evaluation.create_travel_time_data_new(raw_data)
 
-    def draw(self, group="tripMode", reference=None, suptitle=None, axis_title=None):
+    def draw(self, group="tripMode", reference=None, suptitle=None, axis_title=None, axinput=None):
         if type(group) is not list:
             listgroup = [group]
         else:
@@ -56,7 +56,7 @@ class TravelTime(Metric):
         col_seperator="tripMode"
         if "tripMode" not in listgroup:
             col_seperator = None
-        return visualization.generic_plot(temp, group, "count", "durationTrip", reference_df=temp2, color_seperator=col_seperator, sharex=False, suptitle=suptitle, axis_title=axis_title)
+        return visualization.generic_plot(temp, group, "count", "durationTrip", reference_df=temp2, color_seperator=col_seperator, sharex=False, suptitle=suptitle, axis_title=axis_title, axinput=axinput)
 
     def reduce(self, keeper_list):
         self._data_frame = metric.reduce(self._data_frame, keeper_list, "durationTrip", "count")

@@ -206,13 +206,17 @@ def generic_smol_plot(data_frame, agg_list, keyword, x, element):
 def get_color_palette_from_seperator():
     pass
 
-def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None, set_title=False, suptitle=None, axis_title=None):
+def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=None, sharex=True, reference_df=None, set_title=False, suptitle=None, axis_title=None, axinput=None):
     inputs = list(set(data_frame[split_element_name]))
     inputs.sort()
     square_value = math.ceil(math.sqrt(len(inputs)))
     rest = math.ceil(len(inputs) / square_value)
-    fig, ax = plt.subplots(square_value, rest, sharex=sharex)
+    if axinput is None:
+        fig, ax = plt.subplots(square_value, rest, sharex=sharex)
 
+    else:
+        fig = axinput.get_figure()
+        ax = axinput
     fig.set_tight_layout(True)
     if len(inputs) > 1:
         axes = ax.flatten()
@@ -226,6 +230,7 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
         cur_ax = axes[i]
         if axis_title is not None:
             title_internal = get_axis_labels_from_req(split_element_name)[i]
+            #title_internal = axis_title
             cur_ax.set_title(title_internal)
         #if rest > 1:
         #    cur_ax = ax[i // rest][i % rest]
@@ -247,7 +252,7 @@ def generic_plot(data_frame, split_element_name, keyword, x, color_seperator=Non
         if reference_df is not None:
             temp2 = reference_df[reference_df[split_element_name] == element]
             rolled_and_smoked = temp2.copy()
-            rolled_and_smoked[keyword] = rolled_and_smoked[keyword].rolling(3, center=True, min_periods=1).mean()
+            rolled_and_smoked[keyword] = rolled_and_smoked[keyword].rolling(2, center=True, min_periods=1).mean()
             cur_ax.plot(rolled_and_smoked[x], rolled_and_smoked[keyword], color="black", linewidth=2, alpha=0.5, label="Target")
 
 
