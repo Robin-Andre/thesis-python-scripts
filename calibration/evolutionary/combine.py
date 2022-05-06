@@ -3,7 +3,11 @@ import random
 import numpy
 
 from calibration.evolutionary.individual import Individual
-
+"""
+This file is a relic of the attempt to implement an own evolutionary algorithm
+for the calibration problem. It contains the different combinatoric approaches
+to combine two different parent simulations into a child simulation.
+"""
 
 def basic_combine(ind1, ind2, child, target, parameter_list):
     for param in parameter_list:

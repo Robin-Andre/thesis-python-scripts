@@ -1,6 +1,9 @@
 import random
 
-
+"""
+A relic from creating an own evolutionary algorithm 
+Was intended to list all different mutation options
+"""
 def mutate(individual, mutation, target):
     temp = individual.evaluate_fitness_by_group(target)
     temp = -(temp / temp.abs().sum())

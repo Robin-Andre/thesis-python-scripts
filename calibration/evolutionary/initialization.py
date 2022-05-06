@@ -1,4 +1,6 @@
-
+"""
+A relic from creating the own evolutionary algorithm
+"""
 def basic_initialization(population, size, parameter_list):
     for i in range(size):
         individual = population.individual_constructor(population.seed)

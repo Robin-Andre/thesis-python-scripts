@@ -1,4 +1,9 @@
 
+"""
+This file is a relic of the attempt to create an evolutionary algorithm. It
+contains a rutimentary structure to implement different mutation and combination
+approaches.
+"""
 def temp_rename2(population):
     ind1, ind2 = self.double_tournament_selection()
     child = self.combine2(ind1, ind2)

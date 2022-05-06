@@ -1,4 +1,6 @@
-
+"""
+Relic implementation of the replacement strategies of the evolutionary algorithm
+"""
 
 def __check_not_empty(population, individual):
     if len(population) == 0:

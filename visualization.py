@@ -159,11 +159,6 @@ def draw_zone_demand(obj, reference=None):
         elif row["sourceZone"] == row["targetZone"] and row["traffic"] != 0:
             ax.plot(row["origin_x"], row["origin_y"], marker="o", color=col, markersize=math.log2(abs(row["traffic"])) - 1, alpha=math.log10(abs(row["traffic"])) * 0.05)
 
-
-    #ax.set_xlim([8.15, 8.25])
-    #ax.set_ylim([48.825, 48.9])
-    #ax.set_xlim([xmin, xmax])
-    #ax.set_ylim([ymin, ymax])
     fig.show()
 
 

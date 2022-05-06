@@ -7,6 +7,12 @@ from calibration.evolutionary.individual import Individual, BaseIndividual
 from configurations.parameter import Parameter
 from metrics.data import Comparison, Data
 
+"""
+This file contains two components, the population of the original evolutionary algorithm 
+that was kept for convenience purposes and the logger that grew from the
+requirement of keeping track of the simulation runs
+"""
+
 ACTIVE_PARAMETERS = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_mu", "asc_ped_mu", "b_tt_car_p_mu",
                      "b_tt_put_mu", "b_tt_ped", "asc_bike_mu", "b_tt_bike_mu", "b_cost", "b_cost_put",
                      #"asc_car_d_sig", "asc_car_p_sig", "asc_put_sig", "asc_ped_sig", "asc_bike_sig", "b_tt_car_p_sig",
@@ -14,6 +20,8 @@ ACTIVE_PARAMETERS = ["asc_car_d_mu", "b_tt_car_d_mu", "asc_car_p_mu", "asc_put_m
                      "b_u_put",  "b_logsum_acc_put",
                      "elasticity_acc_put", "b_park_car_d", "elasticity_parken"]
 
+"""
+"""
 
 class Logger:
     def __init__(self):
